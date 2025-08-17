@@ -1,8 +1,10 @@
 """
-This is a sample client implementation. Do not run directly.
+Do not run this file directly. Instead call it as a library (e.g. `import client`).
 """
 
 import socket
+
+# TODO: actually make this different from the sample client.
 
 # The server's hostname or IP address.
 # Since the server is being ran on the same machine, the loopback address is used.

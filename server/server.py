@@ -1,8 +1,10 @@
 """
-This is a sample server implementation. Do not run directly.
+Do not run this script directly. Instead, call it as a library (e.g. `import server`).
 """
 
 import socket
+
+# TODO: actually make this different from the sample server
 
 # Standard loopback interface address (localhost).
 # 127.0.0.1 makes it so that the server is only accesible from the same machine.
@@ -10,7 +12,7 @@ import socket
 HOST = "127.0.0.1"  
 PORT = 3000        # Port to listen on (non-privileged ports are > 1023)
 
-def read_sample_client_conn():
+def run():
         # AF_INET: socket family is IPv4
     # SOCK_STREAM: socket type is TCP (lossless)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
