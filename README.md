@@ -6,6 +6,17 @@ El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.o
 * Eduardo J. Matos Pérez
 * Guillermo Myers
 
+## Como correr el programa
+* OJO: La aplicación esta compuesta de dos partes: el cliente y el servidor.
+    - Solo debe haber 1 servidor corriendo.
+    - Pueden haber varios clientes corriendo.
+* OJO: El servidor tiene que estar corriendo para que funcione la aplicación.
+* Para probar la aplicación en un ambiente de prueba:
+    1. Ir al directorio de `Data-Com.-Game`.
+    2. Abrir al menos tres instancias del terminal en este directorio (1 para el servidor y 2 para el cliente).
+    3. En un terminal, ir al directorio del servidor `cd server` y luego correrlo `python main.py`.
+    4. En los otros dos terminales, ir al directorio del cliente `cd client` y correrlos `python main.py`.
+
 ## Ideas
 * Simple RPB (Puede ser complicado pensar en las mecanicas)
 * Juego de cartas
