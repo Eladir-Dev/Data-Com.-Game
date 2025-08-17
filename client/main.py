@@ -1,7 +1,7 @@
-import sample_client
+import client_core
 
 def main():
-    sample_client.conn_to_sample_server()
+    client_core.connect()
 
 if __name__ == "__main__":
     main()
