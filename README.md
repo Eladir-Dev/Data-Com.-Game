@@ -31,4 +31,6 @@ El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.o
 
 ## Herramientas
 * Lenguaje de programacián: Python
-* Framework para gráficas y UI: Pygame o tkinter
+* Framework para gráficas y UI: Pygame y pygame-menu
+* [Tutoriales de pygame](https://www.pygame.org/wiki/tutorials)
+  * [Como crear menus con pygame-menu](https://coderslegacy.com/python/create-menu-screens-in-pygame-tutorial/)
