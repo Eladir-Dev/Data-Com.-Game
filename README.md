@@ -21,9 +21,9 @@ El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.o
 * Simple RPB (Puede ser complicado pensar en las mecanicas)
 * Juego de cartas
 * Juegos de mesa
-  * Stratego ([video](https://youtu.be/3R7d0A9ymwQ?si=mtdiY1v7GfDuuOxt))
+  * Stratego ([video tutorial](https://youtu.be/3R7d0A9ymwQ?si=mtdiY1v7GfDuuOxt))
       - Desventaja: las partidas pueden ser largas (30 min.)
-  * Go ([video](https://youtu.be/gOvG5ACfeL4?si=De_OHUljeq2VZBPb))
+  * Go ([video tutorial](https://youtu.be/gOvG5ACfeL4?si=De_OHUljeq2VZBPb))
       - Desventaja: Los juegos pueden ser muy largos
 * Juego inspirado por [Wordle](https://en.wikipedia.org/wiki/Wordle), pero con elementos de multijugador.
     - Wordle típicamente es un juego de un solo jugador.
@@ -31,4 +31,8 @@ El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.o
 
 ## Herramientas
 * Lenguaje de programacián: Python
-* Framework para gráficas y UI: Pygame o tkinter
+* Framework para gráficas y UI: Pygame y pygame-menu
+
+## Tutoriales de programación
+* [Tutoriales de pygame](https://www.pygame.org/wiki/tutorials)
+  * [Como crear menus con pygame-menu](https://coderslegacy.com/python/create-menu-screens-in-pygame-tutorial/)
