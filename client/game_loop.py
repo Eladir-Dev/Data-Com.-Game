@@ -1,5 +1,13 @@
+"""
+Currently this module implements a UI for a simple chat between two clients.
+TODO: Actually implement the game.
+"""
+
 import pygame
 import sys
+import client_core
+import threading
+import queue
 
 # Screen dimensions
 SCREEN_WIDTH = 800
@@ -10,6 +18,15 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
 LIGHT_GRAY = (200, 200, 200)
+
+SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
+SOCKET_CLIENT_QUEUE: queue.Queue[str] = queue.Queue()
+
+SOCKET_CLIENT_THREAD = threading.Thread(target=client_core.connect, args=(SOCKET_SERVER_CMD_QUEUE, SOCKET_CLIENT_QUEUE))
+SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
+SOCKET_CLIENT_THREAD.start()
+
+PLAYER_ROLE = "UNKNOWN"
 
 def run_event_loop():
     # Initialize Pygame.
@@ -34,6 +51,20 @@ def run_event_loop():
     running = True
 
     while running:
+        while not SOCKET_SERVER_CMD_QUEUE.empty():
+            server_cmd = SOCKET_SERVER_CMD_QUEUE.get()
+            print(f"LOG: SOCKET COMMAND: {server_cmd}")
+
+            if server_cmd.startswith("?game-start"):
+                own_role_number = int(server_cmd.split(" ")[1])
+                opp_role_number = 1 if own_role_number == 2 else 2
+                OPPONENT_ROLE = f"Player {opp_role_number}"
+            elif server_cmd == "?game-over":
+                running = False
+            elif server_cmd.startswith("?message"):
+                content = " ".join(server_cmd.split(" ")[1:])
+                text_output = f"{OPPONENT_ROLE}: {content}"
+
         # Event handling
         for event in pygame.event.get():
 
@@ -44,7 +75,8 @@ def run_event_loop():
                 if event.key == pygame.K_RETURN:
                     # Process the input here.
                     # For testing, we'll just move the input to the output.
-                    text_output = "You said: " + text_input
+                    # text_output = "You said: " + text_input
+                    SOCKET_CLIENT_QUEUE.put(text_input)
                     text_input = "" # Clear the input box.
 
                 elif event.key == pygame.K_BACKSPACE:

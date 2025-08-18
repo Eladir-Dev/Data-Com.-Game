@@ -1,5 +1,5 @@
 """
-Do not run this script directly. Instead, call it as a library (e.g. `import server`).
+Do not run this script directly. Instead, call it as a library (e.g. `import server_core`).
 """
 
 import socket
