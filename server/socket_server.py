@@ -32,6 +32,101 @@ LOCK = threading.Lock()
 
 WAITING_PLAYERS: list[Player] = []
 
+#####################
+# Move this section to another file.
+from typing import Literal
+
+ROWS = 10
+COLS = 10
+
+# TODO: Move this over to the `stratego_server` module and import it to this module.
+class Game:
+    def __init__(self, player1: Player, player2: Player):
+        self.board = [[' ' for _ in range(COLS)] for _ in range(ROWS)]
+        
+        self.is_running = True
+        self.turn: Color = 'r'
+
+        self.player1 = player1
+        self.player2 = player2
+        self.players = [self.player1, self.player2]
+
+        # player color -> Player
+        self.turn_map: dict[Color, Player] = { player.color: player for player in self.players } # type: ignore
+
+
+    def get_current_player(self) -> Player:
+        """
+        Gets the player that is currently allowed to move.
+        """
+        return self.turn_map[self.turn]
+
+
+    def get_board_socket_repr(self) -> str:
+        flattened_board = [' ' for _ in range(ROWS * COLS)]
+
+        for r in range(ROWS):
+            for c in range(COLS):
+                # Maps 2D coords to 1D coords on a flattened array.
+                # A flat array is needed to send the board over the socket.
+                flat_idx = r * ROWS + c % COLS
+
+                flattened_board[flat_idx] = self.board[r][c]
+
+        return ':'.join(flattened_board)
+    
+
+    def run(self):
+        """
+        Runs the given game in a loop.
+        """
+
+        while self.is_running:
+            # Send turn info.
+            for player in self.players:
+                data = f"?turn-info:{self.turn}:{self.get_board_socket_repr()}"
+                player.conn.sendall(data.encode())
+
+            # Wait for (valid) player response.
+            while True:
+                conn_to_process = self.get_current_player().conn
+                data = conn_to_process.recv(BUF_SIZE).decode()
+
+                if data.startswith("?move"):
+                    fields = data.split(':')
+                    from_row = int(fields[1])
+                    from_col = int(fields[2])
+                    to_row = int(fields[3])
+                    to_col = int(fields[4])
+
+                    could_move = self.process_move((from_row, from_col), (to_row, to_col))
+                    if could_move:
+                        # Break out of the loop if the move was valid and the board was updated.
+                        break
+                    else:
+                        print(f"LOG: ({self.turn}) performed an invalid move")
+
+                else:
+                    print(f"ERROR: Invalid response '{data}'")
+
+        # TODO: Send the ?move-result command to the players. 
+
+        # TODO: Figure out how to get the result of the last move 
+        # (i.e. if a piece got attacked, which one was defeated, if there was a tie, etc.)
+        
+        # TODO: Implement the rest of the game here...
+
+
+    def process_move(self, from_pos: tuple[int, int], to_pos: tuple[int, int]) -> bool:
+        """
+        Processes the given move. Returns `True` if the move was valid and the board 
+        was updated. Otherwise, does nothing and returns `False`.
+        """
+        # TODO: Actually do this ^^^
+
+        return False
+
+######################
 
 def handle_client(conn: Connection, addr):
     client_deciding_game = True
@@ -82,11 +177,12 @@ def move_player_to_stratego_queue(player: Player):
     time.sleep(WAITING_TIMEOUT_IN_SECS)
 
     # Logic to start the game
-    print("LOG: Two players found. Starting game...")
     start_game(player1, player2)
 
 
 def start_game(player_1: Player, player_2: Player):
+    print("LOG: Two players found. Starting game...")
+
     assert player_1.color, player_2.color
 
     # Send a message to both players to start the game.
@@ -96,51 +192,11 @@ def start_game(player_1: Player, player_2: Player):
     print(f"LOG: {player_1.username} ({player_1.color}) has deck {player_1.starting_deck_repr}")
     print(f"LOG: {player_2.username} ({player_2.color}) has deck {player_2.starting_deck_repr}")
 
-    # TODO: Implement the rest of the game...
+    # The game for this thread. 
+    game = Game(player_1, player_2)
 
-
-# def start_game(conn_player_1: Connection, conn_player_2: Connection):
-#     # Send a message to both players to start the game
-#     conn_player_1.sendall(b"?game-start 1")
-#     conn_player_2.sendall(b"?game-start 2")
-    
-#     curr_player_conn = conn_player_1
-#     opponent_conn = conn_player_2
-
-#     game_running = True
-
-#     # A simple game loop.
-#     while game_running:
-#         # Get the move from the player whose turn it is
-#         try:
-#             curr_player_conn.sendall(b"?turn-info current")
-#             opponent_conn.sendall(b"?turn-info opponent")
-
-#             curr_player_command = curr_player_conn.recv(1024).decode()
-#             if not curr_player_command:
-#                 break # Connection closed
-
-#             if curr_player_command.startswith("?quit"):
-#                 print('LOG: game over')
-#                 game_running = False
-#                 break
-
-#             elif curr_player_command.startswith("?message"):
-#                 # Process the move and send the result.
-#                 opponent_conn.sendall(f"?curr-player-cmd {curr_player_command}".encode())
-            
-#             else:
-#                 print("ERROR: unknown client command")
-
-#             # Switch turns.
-#             curr_player_conn, opponent_conn = opponent_conn, curr_player_conn
-
-#         except Exception:
-#             # TODO: Do better error handling.
-#             break
-
-#     curr_player_conn.sendall(b"?game-over")
-#     opponent_conn.sendall(b"?game-over")
+    # Run the game in a loop.
+    game.run()
 
 
 def run():
