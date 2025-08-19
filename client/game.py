@@ -11,6 +11,7 @@ import threading
 
 import socket_client
 
+#=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
 SOCKET_CLIENT_QUEUE: queue.Queue[str] = queue.Queue()
 
@@ -57,6 +58,13 @@ def start():
 
     def show_wordle_menu():
         game_select_menu._open(wordle_menu)
+
+    def host_game_menu():
+        """
+        This method opens the host game menu
+        """
+        # TODO hacer que funcione bien :)
+        pass
     
 
     #===========================Logic===========================#
@@ -74,9 +82,10 @@ def start():
 
     stratego_menu = pygame_menu.Menu('Play Stratego', 600, 400, theme=themes.THEME_BLUE)
     stratego_menu.add.button('Find Match', show_loading_window_stratego)
+    stratego_menu.add.button('Local Game', host_game_menu)
 
-    loading_window_stratego = pygame_menu.Menu('Play Stratego', 600, 400, theme=themes.THEME_BLUE)
-    loading_window_stratego.add.label('Loading...')
+    loading_window_stratego = pygame_menu.Menu('Stratego', 600, 400, theme=themes.THEME_BLUE)
+    loading_window_stratego.add.label('Conecting...')
 
     wordle_menu = pygame_menu.Menu('Play Wordle', 600, 400, theme=themes.THEME_BLUE)
     wordle_menu.add.label('TODO')
