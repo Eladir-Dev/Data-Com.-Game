@@ -11,5 +11,5 @@ Aque se encuentra la logica de stratego
 
 
 
-[0R][SR][FR][1R][9R]
-[0R][SR][FR][1R][9R]
+# [0R][SR][FR][1R][9R]
+# [0R][SR][FR][1R][9R]
