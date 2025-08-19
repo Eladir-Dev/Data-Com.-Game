@@ -6,6 +6,17 @@
 import pygame
 import pygame_menu
 from pygame_menu import themes
+import queue
+import threading
+
+import socket_client
+
+SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
+SOCKET_CLIENT_QUEUE: queue.Queue[str] = queue.Queue()
+
+SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(SOCKET_SERVER_CMD_QUEUE, SOCKET_CLIENT_QUEUE))
+SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
+SOCKET_CLIENT_THREAD.start()
 
 GLOBALS = {
     "username": "johndoe"
@@ -41,6 +52,7 @@ def start():
     def show_loading_window_stratego():
         # TODO: Figure out how to remove back button or change the main menu.
         main_menu._open(loading_window_stratego)
+        SOCKET_CLIENT_QUEUE.put("?want-play-game:stratego")
 
 
     def show_wordle_menu():
