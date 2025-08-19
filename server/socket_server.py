@@ -8,9 +8,10 @@ import threading
 import time
 
 class Player:
-    def __init__(self, conn: Connection, username: str):
+    def __init__(self, conn: Connection, username: str, deck: list[list[str]]):
         self.conn = conn
         self.username = username
+        self.deck = deck
 
 # Standard loopback interface address (localhost).
 # 127.0.0.1 makes it so that the server is only accesible from the same machine.
