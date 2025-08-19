@@ -1,7 +1,7 @@
-import game_loop
+import game
 
 def main():
-    game_loop.run_event_loop()
+    game.start()
 
 if __name__ == "__main__":
     main()
