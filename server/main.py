@@ -1,7 +1,7 @@
-import server_core
+import socket_server
 
 def main():
-    server_core.run()
+    socket_server.run()
     
 
 if __name__ == "__main__":
