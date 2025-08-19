@@ -11,6 +11,8 @@ import threading
 
 import socket_client
 
+import stratego_client
+
 #=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
 SOCKET_CLIENT_QUEUE: queue.Queue[str] = queue.Queue()
@@ -53,7 +55,13 @@ def start():
     def show_loading_window_stratego():
         # TODO: Figure out how to remove back button or change the main menu.
         main_menu._open(loading_window_stratego)
-        SOCKET_CLIENT_QUEUE.put("?want-play-game:stratego")
+
+        # TODO: Send an actual deck customized by the player.
+        placeholder_deck = stratego_client.temp_generate_placeholder_deck()
+
+        SOCKET_CLIENT_QUEUE.put(
+            f"!want-play-game:stratego:{GLOBALS['username']}:{stratego_client.deck_to_socket_message_repr(placeholder_deck)}"
+        )
 
 
     def show_wordle_menu():

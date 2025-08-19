@@ -6,12 +6,17 @@ import socket
 from socket import socket as Connection
 import threading
 import time
+from typing import Literal
+
+Color = Literal['r', 'b']
 
 class Player:
-    def __init__(self, conn: Connection, username: str, deck: list[list[str]]):
+    def __init__(self, conn: Connection, username: str, starting_deck_repr: str, color: Color | None):
         self.conn = conn
         self.username = username
-        self.deck = deck
+        self.color = color
+
+        self.starting_deck_repr = starting_deck_repr
 
 # Standard loopback interface address (localhost).
 # 127.0.0.1 makes it so that the server is only accesible from the same machine.
@@ -36,6 +41,7 @@ def handle_client(conn: Connection, addr):
 
         if data.startswith("?game"):
             client_deciding_game = False
+            print(f"LOG: got data ({data})")
 
         else:
             print(f"ERROR: unknown client response: '{data}'")
@@ -43,8 +49,10 @@ def handle_client(conn: Connection, addr):
     fields = data.split(':')
     game = fields[1]
     username = fields[2]
+    starting_deck_repr = ':'.join(fields[3:])
 
-    player = Player(conn, username)
+    # The player's color has not been decided yet.
+    player = Player(conn, username, starting_deck_repr, color=None)
 
     if game == "stratego":
         move_player_to_stratego_queue(player)
@@ -66,6 +74,10 @@ def move_player_to_stratego_queue(player: Player):
     with LOCK:
         player1 = WAITING_PLAYERS.pop()
         player2 = WAITING_PLAYERS.pop()
+
+        # Set player colors.
+        player1.color = 'r'
+        player2.color = 'b'
     
     time.sleep(WAITING_TIMEOUT_IN_SECS)
 
@@ -75,9 +87,16 @@ def move_player_to_stratego_queue(player: Player):
 
 
 def start_game(player_1: Player, player_2: Player):
+    assert player_1.color, player_2.color
+
     # Send a message to both players to start the game.
-    player_1.conn.sendall(f"?game-start:r:{player_2.username}".encode())
-    player_2.conn.sendall(f"?game-start:b:{player_1.username}".encode())
+    player_1.conn.sendall(f"?game-start:{player_1.color}:{player_2.username}".encode())
+    player_2.conn.sendall(f"?game-start:{player_2.color}:{player_1.username}".encode())
+
+    print(f"LOG: {player_1.username} ({player_1.color}) has deck {player_1.starting_deck_repr}")
+    print(f"LOG: {player_2.username} ({player_2.color}) has deck {player_2.starting_deck_repr}")
+
+    # TODO: Implement the rest of the game...
 
 
 # def start_game(conn_player_1: Connection, conn_player_2: Connection):

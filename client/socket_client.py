@@ -4,6 +4,7 @@ Do not run this file directly. Instead call it as a library (e.g. `import socket
 
 import socket
 from queue import Queue
+from stratego_client import PlayerInfo
 
 # The server's hostname or IP address.
 # Since the server is being ran on the same machine, the loopback address is used.
@@ -12,6 +13,9 @@ PORT = 3000        # The port used by the server
 
 BUF_SIZE = 1024
 
+GLOBALS: dict[str, PlayerInfo | None] = {
+    "player_info": None,
+}
 
 def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
     while True:
@@ -20,9 +24,13 @@ def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
         while not client_queue.empty():
             client_msg = client_queue.get()
 
-            if client_msg.startswith("?want-play-game"):
+            if client_msg.startswith("!want-play-game"):
                 fields = client_msg.split(':')
                 game = fields[1]
+                username = fields[2]
+                starting_deck_repr = ':'.join(fields[3:]) # rejoin the deck
+
+                GLOBALS["player_info"] = PlayerInfo(username, starting_deck_repr)
 
                 if game == "stratego":
                     connect_stratego(server_command_queue, client_queue)
@@ -47,11 +55,12 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
-        # TODO: This should be obtained from the UI using the client_queue.
-        PLACEHOLDER_USERNAME = "johndoe"
+        player_info = GLOBALS['player_info']
+        # This variable must have been initialized by this point.
+        assert player_info
 
-        # Tell the server that this client wants to play Stratego under the given username.
-        s.sendall(f"?game:stratego:{PLACEHOLDER_USERNAME}".encode())
+        # Tell the server that this client wants to play Stratego under the given username and starting deck.
+        s.sendall(f"?game:stratego:{player_info.username}:{player_info.starting_deck_repr}".encode())
 
         # Wait for the server to confirm that the game has started.
         while True:
