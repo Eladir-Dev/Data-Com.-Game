@@ -15,6 +15,8 @@ import socket_client
 import stratego_client
 from stratego_client import Board
 
+import stratego_display
+
 #=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
 SOCKET_CLIENT_QUEUE: queue.Queue[str] = queue.Queue()
@@ -144,6 +146,8 @@ def start():
                     'turn': 'r',
                 }
                 change_game_state('in_stratego_game')
+                # Does this .disable() do anything here?
+                main_menu.disable()
 
             elif data.startswith("?turn-info"):
                 fields = data.split(':')
@@ -187,10 +191,20 @@ def start():
             if event.type == pygame.QUIT:
                 exit()
 
-        if main_menu.is_enabled():
-            main_menu.update(events)
-            main_menu.draw(surface)
-            if (main_menu.get_current().get_selected_widget()):
-                arrow.draw(surface, main_menu.get_current().get_selected_widget())
+        game_state: ValidState = GLOBALS['state']
+
+        if game_state == 'main_menu':
+            if main_menu.is_enabled():
+                main_menu.update(events)
+                main_menu.draw(surface)
+                if (main_menu.get_current().get_selected_widget()):
+                    arrow.draw(surface, main_menu.get_current().get_selected_widget())
+
+        elif game_state == 'in_stratego_game':
+            # Display Stratego game window.
+            stratego_display.stratego_update(surface, GLOBALS)
+
+        elif game_state == 'in_wordle_game':
+            print("ERROR: Wordle is not implemented yet")
 
         pygame.display.update()
