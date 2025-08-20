@@ -202,7 +202,7 @@ def start():
 
         elif game_state == 'in_stratego_game':
             # Display Stratego game window.
-            stratego_display.stratego_update(surface, GLOBALS)
+            stratego_display.stratego_update(surface, GLOBALS, SOCKET_SERVER_CMD_QUEUE, SOCKET_CLIENT_QUEUE)
 
         elif game_state == 'in_wordle_game':
             print("ERROR: Wordle is not implemented yet")

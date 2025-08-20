@@ -2,12 +2,14 @@ import pygame
 from pygame import Surface
 from typing import Any
 
+from queue import Queue
+
 from stratego_client import Board
 
 ROWS = 10
 COLS = 10
 
-def stratego_update(surface: Surface, global_game_data: dict[str, Any]):
+def stratego_update(surface: Surface, global_game_data: dict[str, Any], server_command_queue: Queue[str], client_queue: Queue[str]):
     # Get state.
     own_color = global_game_data['stratego_state']['own_color']
     opponent_color = 'r' if own_color == 'b' else 'b'
