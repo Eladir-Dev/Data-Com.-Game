@@ -10,8 +10,22 @@ import random
 # recoger comando
 # empezar partida (el rojo empieza)
 
-# unit librar:
-#   's', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'b', 'f'
+# Indice de tropas:
+#   's' = Espía (Spy)
+#   '1' = Explorador
+#   '2' = Minero derrota a 'b'
+#   '3' = Sargento
+#   '4' = Teniente
+#   '5' = Capitan
+#   '6' = Comandante
+#   '7' = Coronel
+#   '8' = General
+#   '9' = Mariscal derrota a todos, pwro es derotado por 's'
+#   'b' = Bomba derrota a todo excepto a '2'
+#   'f' = Bandera (flag) el que la capture gana
+
+Mariscal (1), General (1), Coronel (2), Comandante (2), Capitán (3), Teniente (4), Sargento (4), Minero (8), Explorador (8), Espía (1), Bomba (6) y Bandera (1). 
+
 
 def create_board(user1: str, deck1: list[list[str]], user2: str, deck2: list[list[str]]):
   board = [["" for _ in range (10)]for _ in range (10)]
