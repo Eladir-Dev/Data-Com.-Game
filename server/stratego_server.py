@@ -32,8 +32,14 @@ def create_board(user1: str, deck1: list[list[str]], user2: str, deck2: list[lis
   for row in deck2:
     for element in row:
       board[row + temp][element] = deck[row][element]
-    temp = temp - 1
-    
+    temp = temp - 2
+
+  for row in range(4..2):
+    for element in row:
+      if (element > 1 and element < 4) or (element > 6 and element < 9):
+        board[row][element] = "XX"
+      else:
+        board[row][element] = "00"
     
 
 
