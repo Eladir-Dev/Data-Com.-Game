@@ -39,6 +39,8 @@ from typing import Literal
 ROWS = 10
 COLS = 10
 
+DECK_ROWS = 4
+
 # TODO: Move this over to the `stratego_server` module and import it to this module.
 class Game:
     def __init__(self, player1: Player, player2: Player):
@@ -53,6 +55,28 @@ class Game:
 
         # player color -> Player
         self.turn_map: dict[Color, Player] = { player.color: player for player in self.players } # type: ignore
+
+        self.add_player_starting_decks_to_board()
+
+
+    def add_player_starting_decks_to_board(self):
+        # Add red player deck.
+        player = self.turn_map['r']
+        deck_repr = player.starting_deck_repr.split(':')
+
+        for r in range(DECK_ROWS):
+            for c in range(COLS):
+                deck_flat_idx = r * DECK_ROWS + c % COLS
+                self.board[-(r + 1)][c] = f"r{deck_repr[deck_flat_idx]}"
+
+        # Add blue player deck.
+        player = self.turn_map['b']
+        deck_repr = player.starting_deck_repr.split(':')
+
+        for r in range(DECK_ROWS):
+            for c in range(COLS):
+                deck_flat_idx = r * DECK_ROWS + c % COLS
+                self.board[r][c] = f"b{deck_repr[deck_flat_idx]}"
 
 
     def get_current_player(self) -> Player:

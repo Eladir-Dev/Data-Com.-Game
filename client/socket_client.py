@@ -67,7 +67,7 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
             data = s.recv(BUF_SIZE).decode()
 
             if data.startswith("?game-start"):
-                # Send command from server directly to the UI.
+                # Forward the game start command to the UI.
                 server_command_queue.put(data)
                 break
 
@@ -81,7 +81,7 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
         while client_running:
             data = s.recv(BUF_SIZE).decode()
 
-            # Forward the turn info server command.
+            # Forward the turn info server command to the UI.
             if data.startswith("?turn-info"):
                 server_command_queue.put(data)
 

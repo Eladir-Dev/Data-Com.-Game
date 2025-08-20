@@ -159,6 +159,13 @@ def start():
 
                 # TEMP: Check current state.
                 print(GLOBALS)
+                print(f"=== BOARD ===")
+                for r in range(10):
+                    for c in range(10):
+                        flat_idx = r * 10 + c % 10
+                        print(f"{board.elements[flat_idx]} ", end='')
+                    
+                    print()
 
             else:
                 print(f"ERROR: Unknown server command: '{data}'")
