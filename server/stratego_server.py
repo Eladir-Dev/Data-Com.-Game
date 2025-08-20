@@ -28,6 +28,17 @@ def create_board(user1: str, deck1: list[list[str]], user2: str, deck2: list[lis
     for element in row:
       board[row][element] = deck[row][element]
 
+  temp = 9
+  for row in deck2:
+    for element in row:
+      board[row + temp][element] = deck[row][element]
+    temp = temp - 1
+    
+    
+
+
+
+
 
 
 def set_team(team: str, deck: list[list[str]]):
