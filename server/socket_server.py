@@ -211,4 +211,5 @@ def run():
             conn, addr = s.accept()
             # Start a new thread for each client.
             thread = threading.Thread(target=handle_client, args=(conn, addr))
+            thread.daemon = True
             thread.start()

@@ -6,12 +6,14 @@
 import pygame
 import pygame_menu
 from pygame_menu import themes
+from typing import Literal
 import queue
 import threading
 
 import socket_client
 
 import stratego_client
+from stratego_client import Board
 
 #=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
@@ -22,8 +24,20 @@ SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thre
 SOCKET_CLIENT_THREAD.start()
 
 GLOBALS = {
-    "username": "johndoe"
+    "username": "johndoe",
+    'state': "main_menu",
+    'stratego_state': None,
 }
+
+ValidState = Literal['main_menu', 'in_stratego_game', 'in_wordle_game']
+
+
+def change_game_state(new_state: ValidState):
+    """
+    Changes the game's state. Used to determine the screen that is being shown.
+    """
+    GLOBALS['state'] = new_state
+
 
 def start():
     pygame.init()
@@ -37,7 +51,6 @@ def start():
 
     def set_username(new_username):
         GLOBALS['username'] = new_username
-        print(GLOBALS['username'])
 
     
     def show_game_select_menu():
@@ -67,6 +80,7 @@ def start():
     def show_wordle_menu():
         game_select_menu._open(wordle_menu)
 
+
     def host_game_menu():
         """
         This method opens the host game menu
@@ -93,7 +107,7 @@ def start():
     stratego_menu.add.button('Local Game', host_game_menu)
 
     loading_window_stratego = pygame_menu.Menu('Stratego', 600, 400, theme=themes.THEME_BLUE)
-    loading_window_stratego.add.label('Conecting...')
+    loading_window_stratego.add.label('Connecting...')
 
     wordle_menu = pygame_menu.Menu('Play Wordle', 600, 400, theme=themes.THEME_BLUE)
     wordle_menu.add.label('TODO')
@@ -113,6 +127,47 @@ def start():
 
     # ciclo del juego
     while True:
+        while not SOCKET_SERVER_CMD_QUEUE.empty():
+            data = SOCKET_SERVER_CMD_QUEUE.get()
+
+            if data.startswith("?game-start"):
+                fields = data.split(':')
+                own_color = fields[1]
+                opponent_username = fields[2]
+
+                GLOBALS['stratego_state'] = {
+                    'own_color': own_color,
+                    'opponent_username': opponent_username,
+                    # Empty board; gets filled in each turn with info from the server.
+                    'board': Board(), 
+                    # The red player always goes first.
+                    'turn': 'r',
+                }
+                change_game_state('in_stratego_game')
+
+            elif data.startswith("?turn-info"):
+                fields = data.split(':')
+                current_turn = fields[1]
+                board_repr = ':'.join(fields[2:])
+
+                # Update the turn.
+                GLOBALS['stratego_state']['turn'] = current_turn
+
+                # Update the board with the data from the server.
+                board: Board = GLOBALS['stratego_state']['board']
+                board.update_elements_with_socket_repr(board_repr)
+
+                # TEMP: Check current state.
+                print(GLOBALS)
+
+            else:
+                print(f"ERROR: Unknown server command: '{data}'")
+
+        while not SOCKET_CLIENT_QUEUE.empty():
+            data = SOCKET_CLIENT_QUEUE.get()
+            
+            print(f"ERROR: Unknown data from client: '{data}'")
+
         events = pygame.event.get()
         for event in events:
             if event.type == update_loading:

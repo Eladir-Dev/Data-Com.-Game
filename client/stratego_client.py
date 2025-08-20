@@ -27,11 +27,15 @@ class PlayerInfo:
 
 class Board:
     def __init__(self):
-        self.elements = [' ' for _ in range(ROWS * COLS)]
-
+        self.elements = ['0' for _ in range(ROWS * COLS)]
+        
     
     def to_socket_msg_repr(self) -> str:
         return _flat_array_to_message_repr(self.elements)
+    
+    
+    def update_elements_with_socket_repr(self, socket_repr: str):
+        self.elements = _message_repr_to_flat_array(socket_repr)
 
 
 def temp_generate_placeholder_deck() -> list[str]:
@@ -45,4 +49,8 @@ def deck_to_socket_message_repr(deck: list[str]):
 
 def _flat_array_to_message_repr(flat_array: list[str] ) -> str:
     return ':'.join(flat_array)
+
+
+def _message_repr_to_flat_array(message_repr: str) -> list[str]:
+    return message_repr.split(':')
 

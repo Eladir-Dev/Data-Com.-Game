@@ -67,18 +67,23 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
             data = s.recv(BUF_SIZE).decode()
 
             if data.startswith("?game-start"):
-                fields = data.split(':')
-                color = fields[1]
-                opponent_name = fields[2]
-
-                # TODO: use these fields, send them to the UI.
-                print(f"COLOR: {color}")
-                print(f"OPPONENT NAME: {opponent_name}")
+                # Send command from server directly to the UI.
+                server_command_queue.put(data)
                 break
 
             else:
                 print(f"ERROR: Unknown server response: '{data}'")
 
-        # TODO: implement game...
         print("LOG: starting game on client...")
 
+        client_running = True
+
+        while client_running:
+            data = s.recv(BUF_SIZE).decode()
+
+            # Forward the turn info server command.
+            if data.startswith("?turn-info"):
+                server_command_queue.put(data)
+
+            else:
+                print(f"CLIENT ERROR: Unknown server command '{data}'")
