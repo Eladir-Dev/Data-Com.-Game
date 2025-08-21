@@ -3,7 +3,7 @@ Aque se encuentra la logica de stratego
 """
 import random
 import socket_server
-from socket_server import Player 
+from socket_server import StrategoPlayer 
 # El cliente (jugador) va a tener listo su deck antes de empezar el juego
 
 # recoger queue 
