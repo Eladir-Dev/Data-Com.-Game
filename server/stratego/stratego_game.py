@@ -1,11 +1,20 @@
-
 from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS
 from .stratego_player import StrategoPlayer
 
 from server_types import BUF_SIZE
 
 class StrategoGame:
+    """
+    Represents a Stratego game on the server. Used for core game logic.
+    """
+
     def __init__(self, player1: StrategoPlayer, player2: StrategoPlayer):
+        """
+        Initializes the game with the given players. Note that the players objects already have 
+        had their colors decided. Also, the players already have sent their usernames and starting decks.
+        """
+
+        # Initializes an empty board.
         self.board = [[' ' for _ in range(COLS)] for _ in range(ROWS)]
         
         self.is_running = True
@@ -22,6 +31,10 @@ class StrategoGame:
 
 
     def add_player_starting_decks_to_board(self):
+        """
+        Adds the players' starting decks to the board. Note, the starting decks are not validated in this method.
+        """
+
         # Add red player deck.
         player = self.turn_map['r']
         deck_repr = player.starting_deck_repr.split(':')
@@ -49,6 +62,10 @@ class StrategoGame:
 
 
     def get_board_socket_repr(self) -> str:
+        """
+        Gets a socket-friendly string format for the board.
+        """
+
         flattened_board = [' ' for _ in range(ROWS * COLS)]
 
         for r in range(ROWS):
