@@ -4,7 +4,7 @@ Do not run this file directly. Instead call it as a library (e.g. `import socket
 
 import socket
 from queue import Queue
-from stratego_client import PlayerInfo
+from stratego.stratego_types import StrategoPlayerInfo
 
 # The server's hostname or IP address.
 # Since the server is being ran on the same machine, the loopback address is used.
@@ -13,7 +13,7 @@ PORT = 3000        # The port used by the server
 
 BUF_SIZE = 1024
 
-GLOBALS: dict[str, PlayerInfo | None] = {
+GLOBALS: dict[str, StrategoPlayerInfo | None] = {
     "player_info": None,
 }
 
@@ -30,7 +30,7 @@ def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
                 username = fields[2]
                 starting_deck_repr = ':'.join(fields[3:]) # rejoin the deck
 
-                GLOBALS["player_info"] = PlayerInfo(username, starting_deck_repr)
+                GLOBALS["player_info"] = StrategoPlayerInfo(username, starting_deck_repr)
 
                 if game == "stratego":
                     connect_stratego(server_command_queue, client_queue)

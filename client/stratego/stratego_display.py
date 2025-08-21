@@ -1,13 +1,14 @@
+"""
+This module is for displaying the Stratego board on a game window.
+"""
+
 import pygame
 from pygame import Surface
 from typing import Any
 
 from queue import Queue
 
-from stratego_client import Board
-
-ROWS = 10
-COLS = 10
+from .stratego_types import Board, ROWS, COLS
 
 def stratego_update(surface: Surface, global_game_data: dict[str, Any], server_command_queue: Queue[str], client_queue: Queue[str]):
     # Get state.

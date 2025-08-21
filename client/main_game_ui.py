@@ -12,10 +12,9 @@ import threading
 
 import socket_client
 
-import stratego_client
-from stratego_client import Board
-
-import stratego_display
+import stratego.stratego_types as stratego_types
+from stratego.stratego_types import Board, ROWS, COLS
+import stratego.stratego_display as stratego_display
 
 #=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
@@ -25,6 +24,10 @@ SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(SOCK
 SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
 SOCKET_CLIENT_THREAD.start()
 
+# TODO: This global state object can be cleaned up into a proper class.
+# The Stratego state objects definitely need to be re-organized. It is awkward tha the username 
+# is in a different spot than the rest of the Stratego stuff and different than the `StrategoPlayerInfo` 
+# used by the `socket_client` module.
 GLOBALS = {
     "username": "johndoe",
     'state': "main_menu",
@@ -72,10 +75,10 @@ def start():
         main_menu._open(loading_window_stratego)
 
         # TODO: Send an actual deck customized by the player.
-        placeholder_deck = stratego_client.temp_generate_placeholder_deck()
+        placeholder_deck = stratego_types.temp_generate_placeholder_deck()
 
         SOCKET_CLIENT_QUEUE.put(
-            f"!want-play-game:stratego:{GLOBALS['username']}:{stratego_client.deck_to_socket_message_repr(placeholder_deck)}"
+            f"!want-play-game:stratego:{GLOBALS['username']}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
         )
 
 
@@ -163,13 +166,28 @@ def start():
 
                 # TEMP: Check current state.
                 print(GLOBALS)
+
                 print(f"=== BOARD ===")
-                for r in range(10):
-                    for c in range(10):
-                        flat_idx = r * 10 + c % 10
+
+                if GLOBALS['stratego_state']['own_color'] == 'r':
+                    get_row_range = lambda: range(ROWS)
+                    get_col_range = lambda: range(COLS)
+                
+                else:
+                    get_row_range = lambda: reversed(range(ROWS))
+                    get_col_range = lambda: reversed(range(COLS))
+
+                times = 0
+                for r in get_row_range():
+                    for c in get_col_range():
+                        flat_idx = r * ROWS + c % COLS
                         print(f"{board.elements[flat_idx]} ", end='')
+
+                        times += 1
                     
                     print()
+
+                print(f"Printed {times} board elements")
 
             else:
                 print(f"ERROR: Unknown server command: '{data}'")
