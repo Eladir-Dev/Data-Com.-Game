@@ -42,6 +42,8 @@ class StrategoGame:
         for r in range(DECK_ROWS):
             for c in range(COLS):
                 deck_flat_idx = r * DECK_ROWS + c % COLS
+
+                # Mirror the rows to add the pieces starting from the bottom.
                 self.board[-(r + 1)][c] = f"r{deck_repr[deck_flat_idx]}"
 
         # Add blue player deck.
@@ -51,7 +53,12 @@ class StrategoGame:
         for r in range(DECK_ROWS):
             for c in range(COLS):
                 deck_flat_idx = r * DECK_ROWS + c % COLS
-                self.board[r][c] = f"b{deck_repr[deck_flat_idx]}"
+
+                # Mirror the columns to make sure the pieces are added in a way 
+                # that makes sense from the blue player's perspective. If they were added without 
+                # mirroring the columns, they would be mirrored when compared to the blue player's 
+                # starting deck (from their POV). 
+                self.board[r][-(c + 1)] = f"b{deck_repr[deck_flat_idx]}"
 
 
     def get_current_player(self) -> StrategoPlayer:

@@ -169,11 +169,22 @@ def start():
 
                 print(f"=== BOARD ===")
 
+
+                # TODO: This is temporary.
+                # However, similar logic will be added to the `stratego_display` module 
+                # for displaying the board on the actual UI.
+
+                # The ranges need to be lambdas since ranges (like all generators) are 
+                # mutable. If stored in a variable and used, they will be exhausted by the 
+                # time of the next loop iteration, causing unexpected behavior.
+                # This is resolved with the use of a lambda, which returns a new range 
+                # each time it's called.
                 if GLOBALS['stratego_state']['own_color'] == 'r':
                     get_row_range = lambda: range(ROWS)
                     get_col_range = lambda: range(COLS)
                 
                 else:
+                    # Return reversed ranges to view the board at a 180 degree view.
                     get_row_range = lambda: reversed(range(ROWS))
                     get_col_range = lambda: reversed(range(COLS))
 
