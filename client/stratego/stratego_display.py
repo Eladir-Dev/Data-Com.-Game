@@ -8,7 +8,9 @@ from typing import Any
 
 from queue import Queue
 
-from .stratego_types import Board, ROWS, COLS
+from .stratego_types import Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, SPRITE_HEIGHT
+
+from game_types import Pair
 
 def get_module_outer_path(script_file_path: str) -> str:
     """
@@ -17,8 +19,6 @@ def get_module_outer_path(script_file_path: str) -> str:
     """
     return '\\'.join(script_file_path.split('\\')[:-1])
 
-
-Pair = tuple[int, int]
 
 def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair):
     scaled = pygame.transform.scale(sprite, target_dimensions)
@@ -57,10 +57,6 @@ def display_board_grid(surface: Surface, global_game_data: dict[str, Any], serve
         # Return reversed ranges to view the board at a 180 degree view.
         get_row_range = lambda: reversed(range(ROWS))
         get_col_range = lambda: reversed(range(COLS))
-
-    GRID_START_LOCATION = (16, 16)
-    SPRITE_WIDTH = 32
-    SPRITE_HEIGHT = 32
 
     for r in get_row_range():
         for c in get_col_range():

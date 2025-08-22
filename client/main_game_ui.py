@@ -11,7 +11,7 @@ import queue
 import threading
 
 import socket_client
-
+from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import stratego.stratego_types as stratego_types
 from stratego.stratego_types import Board, ROWS, COLS
 import stratego.stratego_display as stratego_display
@@ -46,7 +46,7 @@ def change_game_state(new_state: ValidState):
 
 def start():
     pygame.init()
-    surface = pygame.display.set_mode((600, 400))
+    surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
     #==========================UI Methods=======================#
     def set_difficulty(value, difficulty):
@@ -97,32 +97,32 @@ def start():
     #===========================Logic===========================#
 
     # Se declaran los butones del menu y su funcion
-    main_menu = pygame_menu.Menu('Stratego+Wordle', 600, 400, theme=themes.THEME_SOLARIZED)
+    main_menu = pygame_menu.Menu('Stratego+Wordle', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
     main_menu.add.text_input('Name: ', default=GLOBALS['username'], onchange=set_username)
     main_menu.add.button('Game Select', show_game_select_menu)
     main_menu.add.button('Settings', show_settings_menu)
     main_menu.add.button('Quit', pygame_menu.events.EXIT)
 
-    game_select_menu = pygame_menu.Menu('Game Select', 600, 400, theme=themes.THEME_BLUE)
+    game_select_menu = pygame_menu.Menu('Game Select', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     game_select_menu.add.button('Stratego', show_stratego_menu)
     game_select_menu.add.button('Wordle', show_wordle_menu)
 
-    stratego_menu = pygame_menu.Menu('Play Stratego', 600, 400, theme=themes.THEME_BLUE)
+    stratego_menu = pygame_menu.Menu('Play Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     stratego_menu.add.button('Find Match', show_loading_window_stratego)
     stratego_menu.add.button('Local Game', host_game_menu)
 
-    loading_window_stratego = pygame_menu.Menu('Stratego', 600, 400, theme=themes.THEME_BLUE)
+    loading_window_stratego = pygame_menu.Menu('Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     loading_window_stratego.add.label('Connecting...')
 
-    wordle_menu = pygame_menu.Menu('Play Wordle', 600, 400, theme=themes.THEME_BLUE)
+    wordle_menu = pygame_menu.Menu('Play Wordle', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     wordle_menu.add.label('TODO')
 
     # Se declara el sub menu
-    settings_menu = pygame_menu.Menu('Settings Menu', 600, 400, theme=themes.THEME_BLUE)
+    settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     settings_menu.add.selector('Difficulty (This is a placeholder setting TO BE REMOVED) :', [('Hard', 1), ('Easy', 2)], onchange=set_difficulty)
 
     # se declara la pantalla de carga
-    loading = pygame_menu.Menu('Loading the Game...', 600, 400, theme=themes.THEME_DARK)
+    loading = pygame_menu.Menu('Loading the Game...', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_DARK)
     loading.add.progress_bar("Progress", progressbar_id="1", default=0, width=200, )
 
     # se declara la flechita

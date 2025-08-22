@@ -1,3 +1,4 @@
+from game_types import SCREEN_WIDTH
 
 # The dimensions of a Stratego board.
 ROWS = 10
@@ -5,6 +6,16 @@ COLS = 10
 
 # The number of rows on a player's starting Stratego deck.
 DECK_ROWS = 4
+
+# The size of a Stratego piece's sprite.
+SPRITE_WIDTH = 32
+SPRITE_HEIGHT = 32
+
+# The starting point of the Stratego grid's rendering.
+# NOTE: The x coordinate of this tuple computes the starting coordinate such that 
+# the grid renders in the center of the screen.
+# The y coordinate is arbitrary, it just serves as padding.
+GRID_START_LOCATION = (SCREEN_WIDTH // 2 - (SPRITE_WIDTH * ROWS) // 2, 16)
 
 class StrategoPlayerInfo:
     """
