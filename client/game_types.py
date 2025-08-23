@@ -10,6 +10,14 @@ SCREEN_HEIGHT = 400
 Pair = tuple[int, int]
 
 # == Utility functions ==
+def row_col_to_flat_index(r: int, c: int, logical_cols: int) -> int:
+    """
+    Maps 2D row-column coodinates to an index into a 'flat' (1D) array.
+    This function needs the number of columns in the 2D array to compute the final index.
+    """
+    return r * logical_cols + c
+
+
 from typing import TypeVar
 
 K = TypeVar('K')

@@ -1,7 +1,7 @@
 from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS
 from .stratego_player import StrategoPlayer
 
-from server_types import BUF_SIZE
+from server_types import BUF_SIZE, row_col_to_flat_index
 
 class StrategoGame:
     """
@@ -30,6 +30,8 @@ class StrategoGame:
         self.add_player_starting_decks_to_board()
         self.add_lakes_to_board()
 
+        self.debug_print_board()
+
 
     def add_player_starting_decks_to_board(self):
         """
@@ -42,7 +44,7 @@ class StrategoGame:
 
         for r in range(DECK_ROWS):
             for c in range(COLS):
-                deck_flat_idx = r * DECK_ROWS + c % COLS
+                deck_flat_idx = row_col_to_flat_index(r, c, COLS)
 
                 # Mirror the rows to add the pieces starting from the bottom.
                 self.board[-(r + 1)][c] = f"r{deck_repr[deck_flat_idx]}"
@@ -53,7 +55,7 @@ class StrategoGame:
 
         for r in range(DECK_ROWS):
             for c in range(COLS):
-                deck_flat_idx = r * DECK_ROWS + c % COLS
+                deck_flat_idx = row_col_to_flat_index(r, c, COLS)
 
                 # Mirror the columns to make sure the pieces are added in a way 
                 # that makes sense from the blue player's perspective. If they were added without 
@@ -88,6 +90,14 @@ class StrategoGame:
         return self.turn_map[self.turn]
 
 
+    def debug_print_board(self):
+        for r in range(ROWS):
+            for c in range(COLS):
+                print(self.board[r][c].ljust(3), end='')
+
+            print()
+
+
     def get_board_socket_repr(self) -> str:
         """
         Gets a socket-friendly string format for the board.
@@ -99,7 +109,7 @@ class StrategoGame:
             for c in range(COLS):
                 # Maps 2D coords to 1D coords on a flattened array.
                 # A flat array is needed to send the board over the socket.
-                flat_idx = r * ROWS + c % COLS
+                flat_idx = row_col_to_flat_index(r, c, COLS)
 
                 flattened_board[flat_idx] = self.board[r][c]
 

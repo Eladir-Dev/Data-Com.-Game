@@ -11,7 +11,7 @@ import queue
 import threading
 
 import socket_client
-from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
+from game_types import SCREEN_WIDTH, SCREEN_HEIGHT, row_col_to_flat_index
 import stratego.stratego_types as stratego_types
 from stratego.stratego_types import Board, ROWS, COLS
 import stratego.stratego_display as stratego_display
@@ -191,7 +191,7 @@ def start():
                 times = 0
                 for r in get_row_range():
                     for c in get_col_range():
-                        flat_idx = r * ROWS + c % COLS
+                        flat_idx = row_col_to_flat_index(r, c, COLS)
                         print(f"{board.elements[flat_idx]} ", end='')
 
                         times += 1

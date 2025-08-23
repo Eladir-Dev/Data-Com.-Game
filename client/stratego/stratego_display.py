@@ -11,7 +11,7 @@ from queue import Queue
 from .stratego_types import (Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
                              SPRITE_HEIGHT, Color, PieceName, get_full_color_name, parse_piece_from_encoded_str)
 
-from game_types import Pair
+from game_types import Pair, row_col_to_flat_index
 
 def get_module_outer_path(script_file_path: str) -> str:
     """
@@ -75,7 +75,7 @@ def display_board_grid(surface: Surface, global_game_data: dict[str, Any], serve
 
     for r in range(ROWS):
         for c in range(COLS):
-            flat_idx = r * ROWS + c % COLS
+            flat_idx = row_col_to_flat_index(r, c, COLS)
             element = board.elements[flat_idx]
 
             # For Pygame's coordinate system.
@@ -97,7 +97,7 @@ def display_board_grid(surface: Surface, global_game_data: dict[str, Any], serve
                 encoded_piece_str = element[1]
                 piece_name = parse_piece_from_encoded_str(encoded_piece_str)
                 draw_piece(surface, piece_name, own_color, location)
-                
+
             # Hide the opponent's pieces.
             elif len(element) >= 2:
                 draw_hidden_slot(surface, location)
