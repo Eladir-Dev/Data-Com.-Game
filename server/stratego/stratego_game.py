@@ -28,6 +28,7 @@ class StrategoGame:
         self.turn_map: dict[StrategoColor, StrategoPlayer] = { player.color: player for player in self.players } # type: ignore
 
         self.add_player_starting_decks_to_board()
+        self.add_lakes_to_board()
 
 
     def add_player_starting_decks_to_board(self):
@@ -59,6 +60,25 @@ class StrategoGame:
                 # mirroring the columns, they would be mirrored when compared to the blue player's 
                 # starting deck (from their POV). 
                 self.board[r][-(c + 1)] = f"b{deck_repr[deck_flat_idx]}"
+
+
+    def add_lakes_to_board(self):
+        LAKE_ENCODING = 'XX'
+
+        LAKE_POSITIONS = [
+            (4, 2),
+            (4, 3),
+            (5, 2),
+            (5, 3),
+
+            (4, 6),
+            (4, 7),
+            (5, 6),
+            (5, 7),
+        ]
+
+        for r, c in LAKE_POSITIONS:
+            self.board[r][c] = LAKE_ENCODING
 
 
     def get_current_player(self) -> StrategoPlayer:

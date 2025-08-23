@@ -8,7 +8,8 @@ from typing import Any
 
 from queue import Queue
 
-from .stratego_types import Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, SPRITE_HEIGHT, Color, PieceName, get_full_color_name
+from .stratego_types import (Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
+                             SPRITE_HEIGHT, Color, PieceName, get_full_color_name, parse_piece_from_encoded_str)
 
 from game_types import Pair
 
@@ -93,7 +94,10 @@ def display_board_grid(surface: Surface, global_game_data: dict[str, Any], serve
                 draw_lake_slot(surface, location)
             # TODO: Actually draw the piece. Only lieutenants are drawn for now.
             elif len(element) >= 2 and element.startswith(own_color):
-                draw_piece(surface, 'lieutenant', own_color, location)
+                encoded_piece_str = element[1]
+                piece_name = parse_piece_from_encoded_str(encoded_piece_str)
+                draw_piece(surface, piece_name, own_color, location)
+                
             # Hide the opponent's pieces.
             elif len(element) >= 2:
                 draw_hidden_slot(surface, location)
