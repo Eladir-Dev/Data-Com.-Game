@@ -1,3 +1,5 @@
+from typing import Literal
+
 from game_types import SCREEN_WIDTH
 
 # The dimensions of a Stratego board.
@@ -16,6 +18,18 @@ SPRITE_HEIGHT = 32
 # the grid renders in the center of the screen.
 # The y coordinate is arbitrary, it just serves as padding.
 GRID_START_LOCATION = (SCREEN_WIDTH // 2 - (SPRITE_WIDTH * ROWS) // 2, 16)
+
+Color = Literal['r', 'b']
+PieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant', 'major', 'marshal', 'miner', 'scout', 'sergeant', 'spy']
+
+def get_full_color_name(color: Color) -> str:
+    if color == 'r':
+        return "red"
+    elif color == 'b':
+        return "blue"
+    else:
+        # Unreachable.
+        raise Exception(f"unexpected color: {color}")
 
 class StrategoPlayerInfo:
     """

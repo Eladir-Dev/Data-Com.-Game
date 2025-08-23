@@ -8,7 +8,7 @@ from typing import Any
 
 from queue import Queue
 
-from .stratego_types import Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, SPRITE_HEIGHT
+from .stratego_types import Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, SPRITE_HEIGHT, Color, PieceName, get_full_color_name
 
 from game_types import Pair
 
@@ -20,12 +20,33 @@ def get_module_outer_path(script_file_path: str) -> str:
     return '\\'.join(script_file_path.split('\\')[:-1])
 
 
-def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair):
+def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair = (SPRITE_WIDTH, SPRITE_HEIGHT)):
     scaled = pygame.transform.scale(sprite, target_dimensions)
     surface.blit(scaled, location)
 
 
-PLACEHOLDER_SPRITE = pygame.image.load(f"{get_module_outer_path(__file__)}/assets/placeholder_sprite.png")
+SPRITE_FOLDER = f"{get_module_outer_path(__file__)}/assets"
+
+
+def draw_empty_grid_slot(surface: Surface, location: Pair):
+    empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/empty_space.png")
+    draw_sprite_on_surface(surface, empty_space_sprite, location)
+
+
+def draw_lake_slot(surface: Surface, location: Pair):
+    empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/lake.png")
+    draw_sprite_on_surface(surface, empty_space_sprite, location)
+
+
+def draw_hidden_slot(surface: Surface, location: Pair):
+    empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/hidden.png")
+    draw_sprite_on_surface(surface, empty_space_sprite, location)
+
+
+def draw_piece(surface: Surface, piece_name: PieceName, color: Color, location: Pair):
+    piece_sprite = pygame.image.load(f"{SPRITE_FOLDER}/{get_full_color_name(color)}_{piece_name}.png")
+    draw_sprite_on_surface(surface, piece_sprite, location)
+
 
 def stratego_update(surface: Surface, global_game_data: dict[str, Any], server_command_queue: Queue[str], client_queue: Queue[str]):
     # Get state.
@@ -38,7 +59,7 @@ def stratego_update(surface: Surface, global_game_data: dict[str, Any], server_c
     pygame.display.set_caption(f"Stratego - {global_game_data['username']} ({own_color}) VS {opponent_username} ({opponent_color}) - Current Turn ({turn})")
 
     # Clear the screen with black.
-    surface.fill((0, 0, 0))
+    surface.fill((100, 100, 100))
 
     # Get the board from the global state.
     board: Board = global_game_data['stratego_state']['board']
@@ -49,7 +70,10 @@ def stratego_update(surface: Surface, global_game_data: dict[str, Any], server_c
 def display_board_grid(surface: Surface, global_game_data: dict[str, Any], server_command_queue: Queue[str], client_queue: Queue[str], board: Board):
     # TODO: Read the elements of the board to render the sprites in a grid on the screen.
 
-    if global_game_data['stratego_state']['own_color'] == 'r':
+    own_color: Color = global_game_data['stratego_state']['own_color']
+    opponent_color: Color = 'r' if own_color == 'b' else 'b'
+
+    if own_color == 'r':
         get_row_range = lambda: range(ROWS)
         get_col_range = lambda: range(COLS)
     
@@ -61,10 +85,20 @@ def display_board_grid(surface: Surface, global_game_data: dict[str, Any], serve
     for r in get_row_range():
         for c in get_col_range():
             flat_idx = r * ROWS + c % COLS
-            # TODO: Use the element on the board to render the sprite (somehow).
-            # element = board.elements[flat_idx]
+            element = board.elements[flat_idx]
 
             location = (GRID_START_LOCATION[0] + SPRITE_WIDTH * r, GRID_START_LOCATION[1] + SPRITE_HEIGHT * c)
 
-            draw_sprite_on_surface(surface, PLACEHOLDER_SPRITE, location, (SPRITE_WIDTH, SPRITE_HEIGHT))
+            if element == "":
+                draw_empty_grid_slot(surface, location)
+            elif element == "XX":
+                draw_lake_slot(surface, location)
+            # TODO: Actually draw the piece. Only lieutenants are drawn for now.
+            elif len(element) >= 2 and element.startswith(own_color):
+                draw_piece(surface, 'lieutenant', own_color, location)
+            # Hide the opponent's pieces.
+            elif len(element) >= 2:
+                draw_hidden_slot(surface, location)
+            else:
+                draw_empty_grid_slot(surface, location)
 
