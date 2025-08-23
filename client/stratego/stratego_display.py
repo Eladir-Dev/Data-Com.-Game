@@ -71,23 +71,21 @@ def display_board_grid(surface: Surface, global_game_data: dict[str, Any], serve
     # TODO: Read the elements of the board to render the sprites in a grid on the screen.
 
     own_color: Color = global_game_data['stratego_state']['own_color']
-    opponent_color: Color = 'r' if own_color == 'b' else 'b'
 
-    if own_color == 'r':
-        get_row_range = lambda: range(ROWS)
-        get_col_range = lambda: range(COLS)
-    
-    else:
-        # Return reversed ranges to view the board at a 180 degree view.
-        get_row_range = lambda: reversed(range(ROWS))
-        get_col_range = lambda: reversed(range(COLS))
-
-    for r in get_row_range():
-        for c in get_col_range():
+    for r in range(ROWS):
+        for c in range(COLS):
             flat_idx = r * ROWS + c % COLS
             element = board.elements[flat_idx]
 
-            location = (GRID_START_LOCATION[0] + SPRITE_WIDTH * r, GRID_START_LOCATION[1] + SPRITE_HEIGHT * c)
+            # For Pygame's coordinate system.
+            if own_color == 'r':
+                x, y = c, r
+            else:
+                # Mirror the row/col coordiantes (w.r.t. to the board) so that 
+                # the blue player's pieces render from a 180 degree POV on the Pygame screen.
+                x, y = -(c + 1) % COLS, -(r + 1) % ROWS
+
+            location = (GRID_START_LOCATION[0] + SPRITE_WIDTH * x, GRID_START_LOCATION[1] + SPRITE_HEIGHT * y)
 
             if element == "":
                 draw_empty_grid_slot(surface, location)
