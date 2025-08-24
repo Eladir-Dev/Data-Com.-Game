@@ -14,12 +14,11 @@ from .stratego_types import (Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDT
 
 from game_types import Pair, row_col_to_flat_index
 
-# TODO: Change this class so that it just contains the encoded string. This way it 
-# can be used for empty space and lake tiles.
 class RenderedTile:
-    def __init__(self, sprite_rect: Rect, str_encoding: str):
+    def __init__(self, sprite_rect: Rect, str_encoding: str, board_location: Pair):
         self.sprite_rect = sprite_rect
         self.str_encoding = str_encoding
+        self.board_location = board_location
 
 
 def get_module_outer_path(script_file_path: str) -> str:
@@ -60,7 +59,14 @@ def draw_piece(surface: Surface, piece_name: PieceName, color: Color, location: 
     return draw_sprite_on_surface(surface, piece_sprite, location)
 
 
-def stratego_update(events: list[Event], surface: Surface, global_game_data: dict[str, Any], server_command_queue: Queue[str], client_queue: Queue[str]):
+def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
+    components = [from_pos[0], from_pos[1], to_pos[0], to_pos[1]]
+    components_str = ':'.join(str(c) for c in components)
+    return f"!move:{components_str}"
+
+
+def stratego_update(events: list[Event], surface: Surface, global_game_data: dict[str, Any], 
+                    server_command_queue: Queue[str], client_queue: Queue[str]) -> str | None:
     # Get state.
     own_color = global_game_data['stratego_state']['own_color']
     opponent_color = 'r' if own_color == 'b' else 'b'
@@ -78,6 +84,8 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
 
     rendered_tiles = render_board_tiles(surface, global_game_data, server_command_queue, client_queue, board)
 
+    move_cmd: str | None = None
+
     for event in events:
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
@@ -91,6 +99,20 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
                     # TODO: Do not print these out in an actual game, it 
                     # would ruin the entire point of hiding the opponent's pieces.
                     print(rendered_tile.str_encoding)
+
+                    if global_game_data['stratego_state']['last_selected_piece'] is None:
+                        # Select the tile.
+                        global_game_data['stratego_state']['last_selected_piece'] = rendered_tile
+
+                    else:
+                        from_pos = global_game_data['stratego_state']['last_selected_piece'].board_location
+                        to_pos = rendered_tile.board_location
+
+                        move_cmd = gen_move_cmd(from_pos, to_pos)
+
+                        global_game_data['stratego_state']['last_selected_piece'] = None
+
+    return move_cmd
 
 
 def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], 
@@ -134,6 +156,6 @@ def render_board_tiles(surface: Surface, global_game_data: dict[str, Any],
             else:
                 sprite = draw_empty_grid_slot(surface, location)
 
-            rendered_tiles.append(RenderedTile(sprite, encoded_element_str))
+            rendered_tiles.append(RenderedTile(sprite, encoded_element_str, (r, c)))
 
     return rendered_tiles

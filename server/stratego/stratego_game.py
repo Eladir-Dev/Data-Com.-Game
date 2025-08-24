@@ -132,7 +132,7 @@ class StrategoGame:
                 conn_to_process = self.get_current_player().conn
                 data = conn_to_process.recv(BUF_SIZE).decode()
 
-                if data.startswith("?move"):
+                if data.startswith("!move"):
                     fields = data.split(':')
                     from_row = int(fields[1])
                     from_col = int(fields[2])
@@ -163,5 +163,7 @@ class StrategoGame:
         was updated. Otherwise, does nothing and returns `False`.
         """
         # TODO: Actually do this ^^^
+
+        print(f"ERROR: move processing is not implemented {from_pos} -> {to_pos}")
 
         return False

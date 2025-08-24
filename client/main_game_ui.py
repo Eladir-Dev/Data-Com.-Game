@@ -14,7 +14,7 @@ import socket_client
 from game_types import SCREEN_WIDTH, SCREEN_HEIGHT, row_col_to_flat_index
 import stratego.stratego_types as stratego_types
 from stratego.stratego_types import Board, ROWS, COLS
-import stratego.stratego_display as stratego_display
+import stratego.stratego_game as stratego_game
 
 #=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
@@ -147,6 +147,7 @@ def start():
                     'board': Board(), 
                     # The red player always goes first.
                     'turn': 'r',
+                    'last_selected_piece': None,
                 }
                 change_game_state('in_stratego_game')
                 # Does this .disable() do anything here?
@@ -192,7 +193,7 @@ def start():
                 for r in get_row_range():
                     for c in get_col_range():
                         flat_idx = row_col_to_flat_index(r, c, COLS)
-                        print(f"{board.elements[flat_idx]} ", end='')
+                        print(board.elements[flat_idx].ljust(3), end='')
 
                         times += 1
                     
@@ -226,7 +227,10 @@ def start():
 
         elif game_state == 'in_stratego_game':
             # Display Stratego game window.
-            stratego_display.stratego_update(events, surface, GLOBALS, SOCKET_SERVER_CMD_QUEUE, SOCKET_CLIENT_QUEUE)
+            move_cmd = stratego_game.stratego_update(events, surface, GLOBALS, SOCKET_SERVER_CMD_QUEUE, SOCKET_CLIENT_QUEUE)
+
+            if move_cmd is not None:
+                SOCKET_CLIENT_QUEUE.put(move_cmd)
 
         elif game_state == 'in_wordle_game':
             print("ERROR: Wordle is not implemented yet")

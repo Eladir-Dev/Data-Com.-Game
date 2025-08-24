@@ -55,6 +55,9 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
+        # Prevents the socket from blocking the entire client thread when reading.
+        s.settimeout(0.1)
+
         player_info = GLOBALS['player_info']
         # This variable must have been initialized by this point.
         assert player_info
@@ -64,26 +67,43 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
 
         # Wait for the server to confirm that the game has started.
         while True:
-            data = s.recv(BUF_SIZE).decode()
+            try:
+                data = s.recv(BUF_SIZE).decode()
 
-            if data.startswith("?game-start"):
-                # Forward the game start command to the UI.
-                server_command_queue.put(data)
-                break
+                if data.startswith("?game-start"):
+                    # Forward the game start command to the UI.
+                    server_command_queue.put(data)
+                    break
 
-            else:
-                print(f"ERROR: Unknown server response: '{data}'")
+                else:
+                    print(f"ERROR: Unknown server response: '{data}'")
+
+            except socket.timeout: pass
 
         print("LOG: starting game on client...")
 
         client_running = True
 
         while client_running:
-            data = s.recv(BUF_SIZE).decode()
+            try:
+                data = s.recv(BUF_SIZE).decode()
 
-            # Forward the turn info server command to the UI.
-            if data.startswith("?turn-info"):
-                server_command_queue.put(data)
+                # Forward the turn info server command to the UI.
+                if data.startswith("?turn-info"):
+                    server_command_queue.put(data)
 
-            else:
-                print(f"CLIENT ERROR: Unknown server command '{data}'")
+                else:
+                    print(f"CLIENT ERROR: Unknown server command '{data}'")
+
+            except socket.timeout: pass
+
+            while not client_queue.empty():
+                data = client_queue.get()
+
+                # Forward the move command to the server.
+                if data.startswith('!move'):
+                    print(f"LOG: trying to send move command: '{data}'")
+                    s.sendall(data.encode())
+
+                else:
+                    print(f"ERROR: Unknown client message '{data}'")
