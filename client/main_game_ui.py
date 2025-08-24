@@ -203,11 +203,6 @@ def start():
             else:
                 print(f"ERROR: Unknown server command: '{data}'")
 
-        while not SOCKET_CLIENT_QUEUE.empty():
-            data = SOCKET_CLIENT_QUEUE.get()
-            
-            print(f"ERROR: Unknown data from client: '{data}'")
-
         events = pygame.event.get()
         for event in events:
             if event.type == update_loading:
