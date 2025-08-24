@@ -1,4 +1,4 @@
-from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS
+from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value
 from .stratego_player import StrategoPlayer
 
 from server_types import BUF_SIZE, row_col_to_flat_index
@@ -15,7 +15,7 @@ class StrategoGame:
         """
 
         # Initializes an empty board.
-        self.board = [[' ' for _ in range(COLS)] for _ in range(ROWS)]
+        self.board = [['' for _ in range(COLS)] for _ in range(ROWS)]
         
         self.is_running = True
         self.turn: StrategoColor = 'r'
@@ -83,6 +83,11 @@ class StrategoGame:
             self.board[r][c] = LAKE_ENCODING
 
 
+    def toggle_turn(self):
+        toggle = lambda t: 'r' if t == 'b' else 'b'
+        self.turn = toggle(self.turn)
+
+
     def get_current_player(self) -> StrategoPlayer:
         """
         Gets the player that is currently allowed to move.
@@ -103,7 +108,7 @@ class StrategoGame:
         Gets a socket-friendly string format for the board.
         """
 
-        flattened_board = [' ' for _ in range(ROWS * COLS)]
+        flattened_board = ['' for _ in range(ROWS * COLS)]
 
         for r in range(ROWS):
             for c in range(COLS):
@@ -149,12 +154,36 @@ class StrategoGame:
                 else:
                     print(f"ERROR: Invalid response '{data}'")
 
-        # TODO: Send the ?move-result command to the players. 
+            # TODO: Send the ?move-result command to the players (this is for animating the results). 
 
-        # TODO: Figure out how to get the result of the last move 
-        # (i.e. if a piece got attacked, which one was defeated, if there was a tie, etc.)
+            # TODO: Figure out how to get the result of the last move 
+            # (i.e. if a piece got attacked, which one was defeated, if there was a tie, etc.)
+            
+            # TODO: Implement the rest of the game here...
+
+            # Toggle the turn.
+            self.toggle_turn()
+
+
+    def check_valid_movement(self, from_pos: tuple[int, int], to_pos: tuple[int, int]):
+        r_from, c_from = from_pos
+        r_to, c_to = to_pos
+
+        dr = abs(r_to - r_from)
+        dc = abs(c_to - c_from)
+
+        # TODO: Handle special cases, such as the scout's movement.
+
+        # Diagonal movement, disallowed.
+        if dr == dc:
+            return False
         
-        # TODO: Implement the rest of the game here...
+        # Non-adjacent movement, disallowed.
+        elif dr > 1 or dc > 1:
+            return False
+        
+        else:
+            return True
 
 
     def process_move(self, from_pos: tuple[int, int], to_pos: tuple[int, int]) -> bool:
@@ -162,8 +191,64 @@ class StrategoGame:
         Processes the given move. Returns `True` if the move was valid and the board 
         was updated. Otherwise, does nothing and returns `False`.
         """
-        # TODO: Actually do this ^^^
+        current_player = self.get_current_player()
 
-        print(f"ERROR: move processing is not implemented {from_pos} -> {to_pos}")
+        element_from = self.board[from_pos[0]][from_pos[1]]
+        element_to = self.board[to_pos[0]][to_pos[1]]
 
-        return False
+        print(f"trying to move {from_pos} -> {to_pos}")
+        print(f"`{element_from}` -> `{element_to}`")
+
+        if from_pos == to_pos:
+            return False
+        
+        elif not self.check_valid_movement(from_pos, to_pos):
+            return False
+        
+        # Prevent the player from moving lake or empty spaces.
+        elif element_from in {"XX", ""}:
+            return False
+        
+        # Prevent the player from moving into lakes.
+        elif element_to == "XX":
+            return False
+        
+        # Disallow pieces from the same color to attack each other.
+        elif len(element_to) == 2 and element_from[0] == element_to[0]:
+            return False
+        
+        # Disallow the player from moving pieces they don't own.
+        elif element_from[0] != current_player.color:
+            return False
+        
+        # Player is moving into an empty tile (valid).
+        elif element_from[0] == current_player.color and element_to == "":
+            self.board[from_pos[0]][from_pos[1]] = ""
+            self.board[to_pos[0]][to_pos[1]] = element_from
+
+            return True
+        
+        # The current player is attacking one of the opponent's pieces (valid).
+        else:
+            own_piece_name = parse_piece_from_encoded_str(element_from[1])
+            own_piece_value = get_piece_value(own_piece_name)
+
+            opp_piece_name = parse_piece_from_encoded_str(element_to[1])
+            opp_piece_value = get_piece_value(opp_piece_name)
+
+            # TODO: Handle special cases (like those involving the spy, etc.).
+
+            if own_piece_value > opp_piece_value:
+                # Remove the opponent piece.
+                self.board[to_pos[0]][to_pos[1]] = ""
+
+            elif own_piece_value < opp_piece_value:
+                # Remove the current player's piece.
+                self.board[from_pos[0]][from_pos[1]] = ""
+
+            else:
+                # Remove both pieces.
+                self.board[to_pos[0]][to_pos[1]] = ""
+                self.board[from_pos[0]][from_pos[1]] = ""
+
+            return True

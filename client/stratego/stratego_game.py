@@ -153,6 +153,7 @@ def render_board_tiles(surface: Surface, global_game_data: dict[str, Any],
             elif len(encoded_element_str) >= 2:
                 sprite = draw_hidden_slot(surface, location)
 
+            # Fallback.
             else:
                 sprite = draw_empty_grid_slot(surface, location)
 
