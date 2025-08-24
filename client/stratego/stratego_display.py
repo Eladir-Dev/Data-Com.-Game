@@ -3,7 +3,7 @@ This module is for displaying the Stratego board on a game window.
 """
 
 import pygame
-from pygame import Surface
+from pygame import Surface, Rect
 from pygame.event import Event
 from typing import Any
 
@@ -16,11 +16,10 @@ from game_types import Pair, row_col_to_flat_index
 
 # TODO: Change this class so that it just contains the encoded string. This way it 
 # can be used for empty space and lake tiles.
-class RenderedPiece:
-    def __init__(self, sprite: Surface, name: PieceName, color: Color):
-        self.sprite = sprite
-        self.name = name
-        self.color = color
+class RenderedTile:
+    def __init__(self, sprite_rect: Rect, str_encoding: str):
+        self.sprite_rect = sprite_rect
+        self.str_encoding = str_encoding
 
 
 def get_module_outer_path(script_file_path: str) -> str:
@@ -31,31 +30,32 @@ def get_module_outer_path(script_file_path: str) -> str:
     return '\\'.join(script_file_path.split('\\')[:-1])
 
 
-def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair = (SPRITE_WIDTH, SPRITE_HEIGHT)):
+def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair = (SPRITE_WIDTH, SPRITE_HEIGHT)) -> Rect:
     scaled = pygame.transform.scale(sprite, target_dimensions)
-    surface.blit(scaled, location)
-    return scaled
+    sprite_rect = scaled.get_rect(topleft=location)
+    surface.blit(scaled, sprite_rect)
+    return sprite_rect
 
 
 SPRITE_FOLDER = f"{get_module_outer_path(__file__)}/assets"
 
 
-def draw_empty_grid_slot(surface: Surface, location: Pair):
+def draw_empty_grid_slot(surface: Surface, location: Pair) -> Rect:
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/empty_space.png")
-    draw_sprite_on_surface(surface, empty_space_sprite, location)
+    return draw_sprite_on_surface(surface, empty_space_sprite, location)
 
 
-def draw_lake_slot(surface: Surface, location: Pair):
+def draw_lake_slot(surface: Surface, location: Pair) -> Rect:
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/lake.png")
-    draw_sprite_on_surface(surface, empty_space_sprite, location)
+    return draw_sprite_on_surface(surface, empty_space_sprite, location)
 
 
-def draw_hidden_slot(surface: Surface, location: Pair):
+def draw_hidden_slot(surface: Surface, location: Pair) -> Rect:
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/hidden.png")
     return draw_sprite_on_surface(surface, empty_space_sprite, location)
 
 
-def draw_piece(surface: Surface, piece_name: PieceName, color: Color, location: Pair):
+def draw_piece(surface: Surface, piece_name: PieceName, color: Color, location: Pair) -> Rect:
     piece_sprite = pygame.image.load(f"{SPRITE_FOLDER}/{get_full_color_name(color)}_{piece_name}.png")
     return draw_sprite_on_surface(surface, piece_sprite, location)
 
@@ -76,9 +76,7 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
     # Get the board from the global state.
     board: Board = global_game_data['stratego_state']['board']
 
-    # TODO: Currently this only returns the player's own pieces. The opponents pieces, empty 
-    # spaces, and lakes are not accounted for.
-    rendered_pieces = display_board_grid(surface, global_game_data, server_command_queue, client_queue, board)
+    rendered_tiles = render_board_tiles(surface, global_game_data, server_command_queue, client_queue, board)
 
     for event in events:
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -86,27 +84,25 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
 
             print(mouse_pos)
             
-            # This is the "event-driven" check you're looking for
-            # Loop through all your sprites
-            for rendered_piece in rendered_pieces:
-                sprite = rendered_piece.sprite
+            for rendered_tile in rendered_tiles:
+                sprite_rect = rendered_tile.sprite_rect
 
-                # TODO: This isn't working, the sprites act as if they're at (0, 0).
-                # The mouse click detection and position works fine though.
-                if sprite.get_rect().collidepoint(mouse_pos):
-                    print(f"CLICKED: '{rendered_piece.color} {rendered_piece.name}'")
+                if sprite_rect.collidepoint(mouse_pos):
+                    # TODO: Do not print these out in an actual game, it 
+                    # would ruin the entire point of hiding the opponent's pieces.
+                    print(rendered_tile.str_encoding)
 
 
-def display_board_grid(surface: Surface, global_game_data: dict[str, Any], server_command_queue: Queue[str], client_queue: Queue[str], board: Board):
+def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], 
+                       server_command_queue: Queue[str], client_queue: Queue[str], board: Board) -> list[RenderedTile]:
     own_color: Color = global_game_data['stratego_state']['own_color']
 
-    # TODO: Add ALL the rendered tiles to this list; not just own colored pieces.
-    rendered_pieces: list[RenderedPiece] = []
+    rendered_tiles: list[RenderedTile] = []
 
     for r in range(ROWS):
         for c in range(COLS):
             flat_idx = row_col_to_flat_index(r, c, COLS)
-            element = board.elements[flat_idx]
+            encoded_element_str = board.elements[flat_idx]
 
             # For Pygame's coordinate system.
             if own_color == 'r':
@@ -118,24 +114,26 @@ def display_board_grid(surface: Surface, global_game_data: dict[str, Any], serve
 
             location = (GRID_START_LOCATION[0] + SPRITE_WIDTH * x, GRID_START_LOCATION[1] + SPRITE_HEIGHT * y)
 
-            if element == "":
-                draw_empty_grid_slot(surface, location)
+            if encoded_element_str == "":
+                sprite = draw_empty_grid_slot(surface, location)
 
-            elif element == "XX":
-                draw_lake_slot(surface, location)
+            elif encoded_element_str == "XX":
+                sprite = draw_lake_slot(surface, location)
 
-            elif len(element) >= 2 and element.startswith(own_color):
-                encoded_piece_str = element[1]
+            elif len(encoded_element_str) >= 2 and encoded_element_str.startswith(own_color):
+                # Just the piece encoding without the color.
+                encoded_piece_str = encoded_element_str[1]
+
                 piece_name = parse_piece_from_encoded_str(encoded_piece_str)
-                piece_sprite = draw_piece(surface, piece_name, own_color, location)
-
-                rendered_pieces.append(RenderedPiece(piece_sprite, piece_name, own_color))
+                sprite = draw_piece(surface, piece_name, own_color, location)
 
             # Hide the opponent's pieces.
-            elif len(element) >= 2:
-                draw_hidden_slot(surface, location)
+            elif len(encoded_element_str) >= 2:
+                sprite = draw_hidden_slot(surface, location)
 
             else:
-                draw_empty_grid_slot(surface, location)
+                sprite = draw_empty_grid_slot(surface, location)
 
-    return rendered_pieces
+            rendered_tiles.append(RenderedTile(sprite, encoded_element_str))
+
+    return rendered_tiles
