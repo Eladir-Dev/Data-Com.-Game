@@ -56,7 +56,7 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
         s.connect((HOST, PORT))
 
         # Prevents the socket from blocking the entire client thread when reading.
-        s.settimeout(0.1)
+        s.settimeout(1.0)
 
         player_info = GLOBALS['player_info']
         # This variable must have been initialized by this point.
