@@ -308,8 +308,11 @@ class StrategoGame:
             miner_attacking_bomb = own_piece_name == 'miner' and opp_piece_name == 'bomb'
 
             if own_piece_value > opp_piece_value or spy_attacking_marshal or miner_attacking_bomb:
-                # Remove the opponent piece.
-                self.board[to_pos[0]][to_pos[1]] = ""
+                # Replace the defeated piece with the attacking player's piece.
+                self.board[to_pos[0]][to_pos[1]] = element_from
+
+                # Remove the attacking piece from its old position.
+                self.board[from_pos[0]][from_pos[1]] = ""
 
                 if opp_piece_name == 'flag':
                     winning_color: StrategoColor = element_from[0] # type: ignore
@@ -331,5 +334,7 @@ class StrategoGame:
         """
         Ends the game and declares a winner.
         """
+        print(f"LOG: Player `{self.turn_map[winner].username}` ({winner}) has won.")
+
         self.is_running = False
         self.result = StrategoGameResult(winner, abrupt_end=False)
