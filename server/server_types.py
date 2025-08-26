@@ -1,4 +1,5 @@
 from socket import socket
+from typing import Literal
 
 # Re-export Python's `socket` type under a different name so that it doesn't conflict with
 # the name of the module, which is also named `socket`.
@@ -14,6 +15,22 @@ def row_col_to_flat_index(r: int, c: int, logical_cols: int) -> int:
     This function needs the number of columns in the 2D array to compute the final index.
     """
     return r * logical_cols + c
+
+
+def get_sign(num: int) -> Literal[0, 1, -1]:
+    """
+    Returns the sign of the given number. 
+    * 1 if positive
+    * -1 if negative
+    * 0 if the given number is 0.
+    """
+
+    if num < 0:
+        return -1
+    elif num > 0:
+        return 1
+    else:
+        return 0
 
 
 from typing import TypeVar

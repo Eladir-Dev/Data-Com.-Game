@@ -1,7 +1,7 @@
 from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value, Pair
 from .stratego_player import StrategoPlayer
 
-from server_types import BUF_SIZE, row_col_to_flat_index
+from server_types import BUF_SIZE, row_col_to_flat_index, get_sign
 
 class StrategoGame:
     """
@@ -169,8 +169,10 @@ class StrategoGame:
     def get_scout_long_range_path(self, from_pos: Pair, to_pos: Pair) -> list[Pair]:
         path: list[Pair] = []
 
-        dr = to_pos[0] - from_pos[0]
-        dc = to_pos[1] - to_pos[1]
+        # The row and columns only need to change by 1 (or -1), so the
+        # sign function is used.
+        dr = get_sign(to_pos[0] - from_pos[0])
+        dc = get_sign(to_pos[1] - to_pos[1])
 
         curr_pos = from_pos
 
@@ -182,7 +184,7 @@ class StrategoGame:
         return path[:-1]
 
 
-    def check_valid_movement(self, from_pos: Pair, to_pos: Pair):
+    def check_valid_movement(self, from_pos: Pair, to_pos: Pair) -> bool:
         r_from, c_from = from_pos
         r_to, c_to = to_pos
 
@@ -206,6 +208,11 @@ class StrategoGame:
         
         # Scout movement.
         elif is_scout:
+            # Disallow movement that involves going in BOTH the row and column directions.
+            # The scout should only move forward.
+            if dr != 0 and dc != 0:
+                return False
+
             path = self.get_scout_long_range_path(from_pos, to_pos)
 
             # Check every position in the scout's path.
