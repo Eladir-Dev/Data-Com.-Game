@@ -92,6 +92,13 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
                 if data.startswith("?turn-info"):
                     server_command_queue.put(data)
 
+                elif data.startswith("?game-over"):
+                    # Stop the client.
+                    client_running = False
+
+                    # Forward the game over command to the UI.
+                    server_command_queue.put(data)
+
                 else:
                     print(f"CLIENT ERROR: Unknown server command '{data}'")
 

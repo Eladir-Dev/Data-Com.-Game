@@ -201,6 +201,20 @@ def start():
 
                 print(f"Printed {times} board elements")
 
+            elif data.startswith("?game-over"):
+                fields = data.split(':')
+                reason = fields[1]
+
+                if reason == "winner-determined":
+                    winning_color = fields[2]
+                    print(f"The ({winning_color}) has won!")
+
+                elif reason == "abrupt-end":
+                    print("The game was abruptly ended.")
+
+                else:
+                    print(f"ERROR: The game unexpectedly ended after server send `{data}`.")
+
             else:
                 print(f"ERROR: Unknown server command: '{data}'")
 

@@ -1,5 +1,6 @@
 from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value, Pair
 from .stratego_player import StrategoPlayer
+from .stratego_game_result import StrategoGameResult
 
 from server_types import BUF_SIZE, row_col_to_flat_index, get_sign
 
@@ -26,6 +27,8 @@ class StrategoGame:
 
         # player color -> Player
         self.turn_map: dict[StrategoColor, StrategoPlayer] = { player.color: player for player in self.players } # type: ignore
+
+        self.result: StrategoGameResult | None = None
 
         self.add_player_starting_decks_to_board()
         self.add_lakes_to_board()
@@ -164,6 +167,22 @@ class StrategoGame:
             # Toggle the turn.
             self.toggle_turn()
 
+        # Game ended.
+        for player in self.players:
+            # The result of the game must have been determined already.
+            assert self.result
+
+            # There is a winner.
+            if self.result.winner is not None:
+                player.conn.sendall(f"?game-over:winner-determined:{self.result.winner}".encode())
+
+            # The game abruptly ended before finishing normally.
+            elif self.result.abrupt_end:
+                player.conn.sendall("?game-over:abrupt-end".encode())
+
+            else:
+                print("ERROR: Unknown win condition")
+
 
     # TODO: This function needs more testing.
     def get_scout_long_range_path(self, from_pos: Pair, to_pos: Pair) -> list[Pair]:
@@ -284,11 +303,17 @@ class StrategoGame:
             opp_piece_name = parse_piece_from_encoded_str(element_to[1])
             opp_piece_value = get_piece_value(opp_piece_name)
 
-            # TODO: Handle special cases (like those involving the spy, etc.).
+            # These conditions override the normal attack conditions.
+            spy_attacking_marshal = own_piece_name == 'spy' and opp_piece_name == 'marshal'
+            miner_attacking_bomb = own_piece_name == 'miner' and opp_piece_name == 'bomb'
 
-            if own_piece_value > opp_piece_value:
+            if own_piece_value > opp_piece_value or spy_attacking_marshal or miner_attacking_bomb:
                 # Remove the opponent piece.
                 self.board[to_pos[0]][to_pos[1]] = ""
+
+                if opp_piece_name == 'flag':
+                    winning_color: StrategoColor = element_from[0] # type: ignore
+                    self.declare_winner(winning_color)
 
             elif own_piece_value < opp_piece_value:
                 # Remove the current player's piece.
@@ -300,3 +325,11 @@ class StrategoGame:
                 self.board[from_pos[0]][from_pos[1]] = ""
 
             return True
+        
+
+    def declare_winner(self, winner: StrategoColor):
+        """
+        Ends the game and declares a winner.
+        """
+        self.is_running = False
+        self.result = StrategoGameResult(winner, abrupt_end=False)
