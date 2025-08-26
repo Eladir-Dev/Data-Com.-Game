@@ -35,17 +35,17 @@ PIECE_TO_ENCODED_STR: dict[PieceName, str] = gen_flipped_dict(ENCODED_STR_TO_PIE
 
 PIECE_TO_VALUE: dict[PieceName, int] = {
     'spy': 1,
-    'marshal': 1,
-    'general': 1,
-    'coronel': 2,
-    'major': 3,
-    'captain': 4,
-    'lieutenant': 4,
+    'marshal': 10,
+    'general': 9,
+    'coronel': 8,
+    'major': 7,
+    'captain': 6,
+    'lieutenant': 5,
     'sergeant': 4,
-    'scout': 8,
-    'miner': 5,
-    'bomb': 6,
-    'flag': 1,
+    'scout': 2,
+    'miner': 3,
+    'bomb': 999,
+    'flag': 0,
 }
 
 def parse_piece_from_encoded_str(encoded_str: str) -> PieceName:

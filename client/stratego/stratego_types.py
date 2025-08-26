@@ -114,21 +114,6 @@ ENCODED_STR_TO_PIECE: dict[str, PieceName] = {
 
 PIECE_TO_ENCODED_STR: dict[PieceName, str] = gen_flipped_dict(ENCODED_STR_TO_PIECE)
 
-PIECE_TO_VALUE: dict[PieceName, int] = {
-    'spy': 1,
-    'marshal': 1,
-    'general': 1,
-    'coronel': 2,
-    'major': 3,
-    'captain': 4,
-    'lieutenant': 4,
-    'sergeant': 4,
-    'scout': 8,
-    'miner': 5,
-    'bomb': 6,
-    'flag': 1,
-}
-
 def parse_piece_from_encoded_str(encoded_str: str) -> PieceName:
     """
     Encoding legend:
@@ -150,11 +135,3 @@ def parse_piece_from_encoded_str(encoded_str: str) -> PieceName:
         raise Exception(f"Unknown encoded piece string: '{encoded_str}'")
     
     return piece
-
-
-def get_piece_value(piece: PieceName) -> int:
-    value = PIECE_TO_VALUE.get(piece)
-    if value is None:
-        raise Exception(f"Got unexpected piece '{piece}'")
-    
-    return value

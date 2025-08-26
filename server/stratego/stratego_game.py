@@ -172,15 +172,29 @@ class StrategoGame:
         dr = abs(r_to - r_from)
         dc = abs(c_to - c_from)
 
-        # TODO: Handle special cases, such as the scout's movement.
+        can_move = True
+        is_scout = False
+
+        elem = self.board[r_from][c_from]
+        if len(elem) == 2:
+            can_move = parse_piece_from_encoded_str(elem[1]) not in {'bomb', 'flag'}
+            is_scout = parse_piece_from_encoded_str(elem[1]) == 'scout'
+
+        if not can_move:
+            return False
 
         # Diagonal movement, disallowed.
-        if dr == dc:
+        elif dr == dc:
             return False
         
         # Non-adjacent movement, disallowed.
-        elif dr > 1 or dc > 1:
+        elif dr > 1 or dc > 1 and not is_scout:
             return False
+        
+        # Scout movement.
+        elif is_scout:
+            # TODO: Implement logic for not jumping over pieces.
+            return True
         
         else:
             return True
