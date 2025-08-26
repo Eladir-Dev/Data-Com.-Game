@@ -27,7 +27,7 @@ from socket_server import StrategoPlayer
 #   'f' = Bandera (flag) el que la capture gana
 
 
-def create_board(user1: str, deck1: list[list[str]], user2: str, deck2: list[list[str]]):
+def create_board(user1: StrategoPlayer, user2: StrategoPlayer):
   """
     This method take car of creating the board for both players
     Note: two boards are return because each player will see their units in the bottum, it is the same board in diferent perspectives 
@@ -36,56 +36,55 @@ def create_board(user1: str, deck1: list[list[str]], user2: str, deck2: list[lis
         player1 (object)
         player2 (object)
       Output:
-        boards (an array of length 2 that contains the board for player 1 (idx 0) and the board for player 2 (idx 1))
+        returns a list containing [ user1: StrategoPlayer, user2: StrategoPlayer, board: list[list[str]] ]
   """
   # board = [["" for _ in range (10)]for _ in range (10)]
   team = random.uniform(0, 1) # the team is selected
+  deck1 = user1.starting_deck_repr
+  deck2 = user2.starting_deck_repr
 
   if  (team<1):
+    user1.color = 'r'
+    user2.color = 'b'
     deck1 = set_team("R", deck1) # R = team red
     deck2 = set_team("B", deck2) # B = team blue
   else:
+    user1.color = 'b'
+    user1.color = 'r'
     deck1 = set_team("B", deck1) # R = team red
     deck2 = set_team("R", deck2) # B = team blue
 
-  board1 = set_board(1,deck1,deck2)
-  board2 = set_board(2,deck1,deck2)
+  board = set_board(deck1,deck2)
 
-  boards = [board1, board2]
+  output = [user1, user2, board]
   #users = [user1, user2]
 
-  return boards
+  return output
     
 
-def set_board(player: int, deck1: list[list[str]], deck2: list[list[str]]):
+def set_board(deck1: list[list[str]], deck2: list[list[str]]):
   """
     This method set the board for the decired player
   """
   board = [["" for _ in range (10)]for _ in range (10)]
-  if player == 2:
-    temp = deck1
-    deck1 = deck2
-    deck2 = temp
-  if player >0 and player<3:
-    for row in range(4):
-      for element in range(10):
-        board[row][element] = deck1[row][element]
+  
+  for row in range(4):
+    for element in range(10):
+      board[row][element] = deck1[row][element]
 
-    temp = 9
-    for row in range(4):
-      for element in range(10):
-        board[row + temp][element] = deck2[row][element]
-      temp = temp - 2
+  temp = 9
+  for row in range(4):
+    for element in range(10):
+      board[row + temp][element] = deck2[row][element]
+    temp = temp - 2
 
-    for row in range(2):
-      for element in range(10):
-        if (element > 1 and element < 4) or (element > 6 and element < 9):
-          board[row+4][element] = "XX"
-        else:
-          board[row+4][element] = "00"
-  else:
-    print(f"ERROR, incorect player value: {player}")
-    exit()
+  for row in range(2):
+    for element in range(10):
+      if (element > 1 and element < 4) or (element > 5 and element < 8):
+        board[row+4][element] = "XX"
+      else:
+        board[row+4][element] = "00"
+
   return board
 
 
@@ -180,12 +179,17 @@ def main():
   print("Creating decks...")
   deck1 = create_debug_deck()
   deck2 = create_debug_deck()
+  player1 = StrategoPlayer(None,"Player 1",deck1,None)
+  player2 = StrategoPlayer(None,"Player 2",deck2,None)
   print("Creating boards")
-  boards = create_board("Player 1", deck1, "Player 2", deck2)
+  input = create_board(player1, player2)
+  board = input[2]
+  player1 = input[0]
+  player2 = input[1]
   print("Printing board for player 1")
-  print_board(boards[0])
+  print_board(board)
   print("Printing board for player 2")
-  print_board(boards[1])
+  
 
 
 if __name__ == "__main__":
