@@ -1,4 +1,4 @@
-from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value
+from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value, Pair
 from .stratego_player import StrategoPlayer
 
 from server_types import BUF_SIZE, row_col_to_flat_index
@@ -165,7 +165,24 @@ class StrategoGame:
             self.toggle_turn()
 
 
-    def check_valid_movement(self, from_pos: tuple[int, int], to_pos: tuple[int, int]):
+    # TODO: This function needs more testing.
+    def get_scout_long_range_path(self, from_pos: Pair, to_pos: Pair) -> list[Pair]:
+        path: list[Pair] = []
+
+        dr = to_pos[0] - from_pos[0]
+        dc = to_pos[1] - to_pos[1]
+
+        curr_pos = from_pos
+
+        while curr_pos != to_pos:
+            curr_pos = (curr_pos[0] + dr, curr_pos[1] + dc)
+            path.append(curr_pos)
+
+        # Don't include the last element since we only care about the in-between pieces.
+        return path[:-1]
+
+
+    def check_valid_movement(self, from_pos: Pair, to_pos: Pair):
         r_from, c_from = from_pos
         r_to, c_to = to_pos
 
@@ -176,7 +193,7 @@ class StrategoGame:
         is_scout = False
 
         elem = self.board[r_from][c_from]
-        if len(elem) == 2:
+        if len(elem) == 2 and elem != 'XX':
             can_move = parse_piece_from_encoded_str(elem[1]) not in {'bomb', 'flag'}
             is_scout = parse_piece_from_encoded_str(elem[1]) == 'scout'
 
@@ -187,20 +204,30 @@ class StrategoGame:
         elif dr == dc:
             return False
         
-        # Non-adjacent movement, disallowed.
-        elif dr > 1 or dc > 1 and not is_scout:
-            return False
-        
         # Scout movement.
         elif is_scout:
-            # TODO: Implement logic for not jumping over pieces.
+            path = self.get_scout_long_range_path(from_pos, to_pos)
+
+            # Check every position in the scout's path.
+            for pos in path:
+                elem = self.board[pos[0]][pos[1]]
+
+                # If any in-between tile is non-empty (i.e. a lake or a piece), then the 
+                # long range scout movement is not valid.
+                if len(elem) == 2:
+                    return False
+
             return True
+        
+        # Non-adjacent movement, disallowed.
+        elif dr > 1 or dc > 1:
+            return False
         
         else:
             return True
 
 
-    def process_move(self, from_pos: tuple[int, int], to_pos: tuple[int, int]) -> bool:
+    def process_move(self, from_pos: Pair, to_pos: Pair) -> bool:
         """
         Processes the given move. Returns `True` if the move was valid and the board 
         was updated. Otherwise, does nothing and returns `False`.

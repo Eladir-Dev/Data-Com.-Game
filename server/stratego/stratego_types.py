@@ -7,6 +7,8 @@ from server_types import gen_flipped_dict
 StrategoColor = Literal['r', 'b']
 PieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant', 'major', 'marshal', 'miner', 'scout', 'sergeant', 'spy']
 
+Pair = tuple[int, int]
+
 # === Constants ===
 
 # The dimensions of a board.
