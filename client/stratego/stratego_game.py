@@ -12,7 +12,7 @@ from queue import Queue
 from .stratego_types import (Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
                              SPRITE_HEIGHT, Color, PieceName, get_full_color_name, parse_piece_from_encoded_str)
 
-from game_types import Pair, row_col_to_flat_index
+from game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
 
 class RenderedTile:
     def __init__(self, sprite_rect: Rect, str_encoding: str, board_location: Pair):
@@ -37,6 +37,15 @@ def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, ta
 
 
 SPRITE_FOLDER = f"{get_module_outer_path(__file__)}/assets"
+
+
+def draw_text(surface: Surface, text: str, font_size: int, location: Pair, color: tuple[int, int, int]):
+    font = pygame.font.SysFont(None, font_size)
+    text_surface = font.render(text, True, color)
+
+    # Make `location` be the center.
+    text_rect = text_surface.get_rect(center=location)
+    surface.blit(text_surface, text_rect)
 
 
 def draw_empty_grid_slot(surface: Surface, location: Pair) -> Rect:
@@ -73,11 +82,20 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
     opponent_username = global_game_data['stratego_state']['opponent_username']
     turn = global_game_data['stratego_state']['turn']
 
-    # Set screen caption with some state information (this info should be in a proper UI on the screen).
-    pygame.display.set_caption(f"Stratego - {global_game_data['username']} ({own_color}) VS {opponent_username} ({opponent_color}) - Current Turn ({turn})")
+    # Set screen caption.
+    pygame.display.set_caption(f"Stratego")
 
-    # Clear the screen with black.
+    # Clear the screen.
     surface.fill((100, 100, 100))
+
+    # Draw UI text.
+    draw_text(surface, "Stratego", 100, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
+
+    player_info_string = f"{global_game_data['username']} ({own_color}) VS {opponent_username} ({opponent_color})"
+    draw_text(surface, player_info_string, 40, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+
+    turn_info_string = f"Current Turn: ({turn})"
+    draw_text(surface, turn_info_string, 40, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
 
     # Get the board from the global state.
     board: Board = global_game_data['stratego_state']['board']

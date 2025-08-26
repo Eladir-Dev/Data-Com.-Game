@@ -3,8 +3,8 @@ This module is for types and constants that are shared between games.
 """
 
 # Dimensions in common for all games.
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 400
+SCREEN_WIDTH = 900
+SCREEN_HEIGHT = 600
 
 # Utility type for games.
 Pair = tuple[int, int]
