@@ -172,7 +172,7 @@ class StrategoGame:
         # The row and columns only need to change by 1 (or -1), so the
         # sign function is used.
         dr = get_sign(to_pos[0] - from_pos[0])
-        dc = get_sign(to_pos[1] - to_pos[1])
+        dc = get_sign(to_pos[1] - from_pos[1])
 
         curr_pos = from_pos
 
