@@ -4,6 +4,7 @@ Aqui se encuentra la logica de stratego
 import random
 import socket_server
 from socket_server import StrategoPlayer 
+from server_types import ColorCode
 # El cliente (jugador) va a tener listo su deck antes de empezar el juego
 
 # recoger queue 
@@ -25,26 +26,6 @@ from socket_server import StrategoPlayer
 #   '9' = Mariscal derrota a todos, pwro es derotado por 's'
 #   'b' = Bomba derrota a todo excepto a '2'
 #   'f' = Bandera (flag) el que la capture gana
-
-# Color codes
-class Colors:
-    # Text colors
-    RED = "\033[31m"
-    GREEN = "\033[32m"
-    YELLOW = "\033[33m"
-    BLUE = "\033[34m"
-    MAGENTA = "\033[35m"
-    CYAN = "\033[36m"
-    WHITE = "\033[37m"
-    RESET = "\033[0m"  # To reset the color
-    # Background colors
-    BACKGROUND_RED = "\033[41m"
-    BACKGROUND_GREEN = "\033[42m"
-    BACKGROUND_YELLOW = "\033[43m"
-    BACKGROUND_BLUE = "\033[44m"
-    BACKGROUND_MAGENTA = "\033[45m"
-    BACKGROUND_CYAN = "\033[46m"
-    BACKGROUND_WHITE = "\033[47m"
 
 def create_board(user1: StrategoPlayer, user2: StrategoPlayer):
   """
@@ -184,23 +165,23 @@ def print_board(board: list[list[str]]):
     Parameters:
   board (the board tha will be printed)
   """
-  print(f"{Colors.GREEN}+==00==01==02==03==04==05==06==07==08==09==+")
+  print(f"{ColorCode.GREEN}+==00==01==02==03==04==05==06==07==08==09==+")
   for colom in range(10):
-    print(f"{Colors.GREEN}{colom}", end=f"{Colors.RESET}")
+    print(f"{ColorCode.GREEN}{colom}", end=f"{ColorCode.RESET}")
     for row in range(10):
         if "R" in board[colom][row].upper():
-            print(Colors.RED, end="")
+            print(ColorCode.RED, end="")
         elif "B" in board[colom][row].upper():
-            print(Colors.BLUE, end="")
+            print(ColorCode.BLUE, end="")
         if "X" in board[colom][row].upper():
-            print(Colors.CYAN, end="")
+            print(ColorCode.CYAN, end="")
 
 
         print(f"  {board[colom][row]}", end="")
-        print(Colors.RESET, end="")
-    print(f"{Colors.GREEN}  |{Colors.RESET}")
+        print(ColorCode.RESET, end="")
+    print(f"{ColorCode.GREEN}  |{ColorCode.RESET}")
 
-  print(f"{Colors.GREEN}+==========================================+", end=f"{Colors.RESET}\n")
+  print(f"{ColorCode.GREEN}+==========================================+", end=f"{ColorCode.RESET}\n")
   
 def main():
   """
