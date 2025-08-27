@@ -4,6 +4,26 @@ from .stratego_game_result import StrategoGameResult
 
 from server_types import BUF_SIZE, row_col_to_flat_index, get_sign
 
+# Color codes
+class Colors:
+    # Text colors
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    MAGENTA = "\033[35m"
+    CYAN = "\033[36m"
+    WHITE = "\033[37m"
+    RESET = "\033[0m"  # To reset the color
+    # Background colors
+    BACKGROUND_RED = "\033[41m"
+    BACKGROUND_GREEN = "\033[42m"
+    BACKGROUND_YELLOW = "\033[43m"
+    BACKGROUND_BLUE = "\033[44m"
+    BACKGROUND_MAGENTA = "\033[45m"
+    BACKGROUND_CYAN = "\033[46m"
+    BACKGROUND_WHITE = "\033[47m"
+
 class StrategoGame:
     """
     Represents a Stratego game on the server. Used for core game logic.
@@ -98,12 +118,36 @@ class StrategoGame:
         return self.turn_map[self.turn]
 
 
-    def debug_print_board(self):
-        for r in range(ROWS):
-            for c in range(COLS):
-                print(self.board[r][c].ljust(3), end='')
+    def debug_print_board(self): # codigo copiado y modificado de stratego_server
+        """
+            This method prints the board on terminal
+            Parameters:
+              board (the board tha will be printed)
+          """
+        print(f"{Colors.GREEN}+==00==01==02==03==04==05==06==07==08==09==+")
+        for colom in range(10):
+            print(f"{Colors.GREEN}{colom}", end=f"{Colors.RESET}")
+            for row in range(10):
+                if "R" in self.board[colom][row].upper():
+                    print(Colors.RED, end="")
+                elif "B" in self.board[colom][row].upper():
+                    print(Colors.BLUE, end="")
+                elif "X" in self.board[colom][row].upper():
+                    print(Colors.CYAN, end="")
+                if (self.board[colom][row] == ""):
+                    print("  00", end="")
 
-            print()
+                else:
+                    print(f"  {self.board[colom][row]}", end="")
+                print(Colors.RESET, end="")
+            print(f"{Colors.GREEN}  |{Colors.RESET}")
+
+        print(f"{Colors.GREEN}+==========================================+", end=f"{Colors.RESET}\n")
+        # for r in range(ROWS):
+        #     for c in range(COLS):
+        #         print(self.board[r][c].ljust(3), end='')
+        #
+        #     print()
 
 
     def get_board_socket_repr(self) -> str:

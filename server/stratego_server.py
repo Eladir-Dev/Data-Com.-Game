@@ -1,5 +1,5 @@
 """
-Aque se encuentra la logica de stratego
+Aqui se encuentra la logica de stratego
 """
 import random
 import socket_server
@@ -26,6 +26,25 @@ from socket_server import StrategoPlayer
 #   'b' = Bomba derrota a todo excepto a '2'
 #   'f' = Bandera (flag) el que la capture gana
 
+# Color codes
+class Colors:
+    # Text colors
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    MAGENTA = "\033[35m"
+    CYAN = "\033[36m"
+    WHITE = "\033[37m"
+    RESET = "\033[0m"  # To reset the color
+    # Background colors
+    BACKGROUND_RED = "\033[41m"
+    BACKGROUND_GREEN = "\033[42m"
+    BACKGROUND_YELLOW = "\033[43m"
+    BACKGROUND_BLUE = "\033[44m"
+    BACKGROUND_MAGENTA = "\033[45m"
+    BACKGROUND_CYAN = "\033[46m"
+    BACKGROUND_WHITE = "\033[47m"
 
 def create_board(user1: StrategoPlayer, user2: StrategoPlayer):
   """
@@ -161,16 +180,27 @@ def create_debug_deck():
 
 def print_board(board: list[list[str]]):
   """
-    This method prints the board on terminal
+  This method prints the board on terminal
     Parameters:
-      board (the board tha will be printed)
+  board (the board tha will be printed)
   """
-  print("+===00====01====02====03====04====05====06====07====08====09=+")
-  count = 0
-  for row in board:
-      print(f"{count} {row}")
-      count+=1
-  print("+============================================================+")
+  print(f"{Colors.GREEN}+==00==01==02==03==04==05==06==07==08==09==+")
+  for colom in range(10):
+    print(f"{Colors.GREEN}{colom}", end=f"{Colors.RESET}")
+    for row in range(10):
+        if "R" in board[colom][row].upper():
+            print(Colors.RED, end="")
+        elif "B" in board[colom][row].upper():
+            print(Colors.BLUE, end="")
+        if "X" in board[colom][row].upper():
+            print(Colors.CYAN, end="")
+
+
+        print(f"  {board[colom][row]}", end="")
+        print(Colors.RESET, end="")
+    print(f"{Colors.GREEN}  |{Colors.RESET}")
+
+  print(f"{Colors.GREEN}+==========================================+", end=f"{Colors.RESET}\n")
   
 def main():
   """
