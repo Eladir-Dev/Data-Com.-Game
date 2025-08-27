@@ -1,3 +1,7 @@
+"""
+This module is for shared types and constants for the Stratego modules.
+"""
+
 from typing import Literal
 from server_types import gen_flipped_dict
 

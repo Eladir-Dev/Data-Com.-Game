@@ -1,3 +1,7 @@
+"""
+This module is for shared server types and constants.
+"""
+
 from socket import socket
 from typing import Literal
 

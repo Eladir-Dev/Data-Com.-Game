@@ -1,5 +1,5 @@
 """
-This module is for types and constants that are shared between games.
+This module is for types and constants that are shared between games (client-side).
 """
 
 # Dimensions in common for all games.
