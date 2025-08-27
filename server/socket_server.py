@@ -23,17 +23,22 @@ LOCK = threading.Lock()
 WAITING_STRATEGO_PLAYERS: list[StrategoPlayer] = []
 
 def handle_client(conn: Connection, addr):
+    # This timeout is for communicating with existing clients.
+    conn.settimeout(0.1)
     client_deciding_game = True
 
     while client_deciding_game:
-        data = conn.recv(BUF_SIZE).decode()
+        try:
+            data = conn.recv(BUF_SIZE).decode()
 
-        if data.startswith("?game"):
-            client_deciding_game = False
-            print(f"LOG: got data ({data})")
+            if data.startswith("?game"):
+                client_deciding_game = False
+                print(f"LOG: got data ({data})")
 
-        else:
-            print(f"ERROR: unknown client response: '{data}'")
+            else:
+                print(f"ERROR: unknown client response: '{data}'")
+
+        except socket.timeout: continue
 
     fields = data.split(':')
     game = fields[1]
@@ -99,11 +104,16 @@ def run():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen()
+        # This timeout is only for the accept calls (for connecting new clients).
+        s.settimeout(2.0)
         print(f"LOG: Server listening on {HOST}:{PORT}")
 
         while True:
-            conn, addr = s.accept()
-            # Start a new thread for each client.
-            thread = threading.Thread(target=handle_client, args=(conn, addr))
-            thread.daemon = True
-            thread.start()
+            try:
+                conn, addr = s.accept()
+                # Start a new thread for each client.
+                thread = threading.Thread(target=handle_client, args=(conn, addr))
+                thread.daemon = True
+                thread.start()
+
+            except socket.timeout: continue

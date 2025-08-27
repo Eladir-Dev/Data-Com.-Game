@@ -83,3 +83,7 @@ def get_piece_value(piece: PieceName) -> int:
         raise Exception(f"Got unexpected piece '{piece}'")
     
     return value
+
+
+def toggle_color(color: StrategoColor) -> StrategoColor:
+    return 'r' if color == 'b' else 'b'

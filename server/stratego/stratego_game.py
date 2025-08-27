@@ -1,4 +1,6 @@
-from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value, Pair
+import socket
+
+from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value, Pair, toggle_color
 from .stratego_player import StrategoPlayer
 from .stratego_game_result import StrategoGameResult
 
@@ -87,8 +89,7 @@ class StrategoGame:
 
 
     def toggle_turn(self):
-        toggle = lambda t: 'r' if t == 'b' else 'b'
-        self.turn = toggle(self.turn)
+        self.turn = toggle_color(self.turn)
 
 
     def get_current_player(self) -> StrategoPlayer:
@@ -159,27 +160,15 @@ class StrategoGame:
                 data = f"?turn-info:{self.turn}:{self.get_board_socket_repr()}"
                 player.conn.sendall(data.encode())
 
-            # Wait for (valid) player response.
-            while True:
-                conn_to_process = self.get_current_player().conn
-                data = conn_to_process.recv(BUF_SIZE).decode()
+            valid_move_sent = False
 
-                if data.startswith("!move"):
-                    fields = data.split(':')
-                    from_row = int(fields[1])
-                    from_col = int(fields[2])
-                    to_row = int(fields[3])
-                    to_col = int(fields[4])
+            while not valid_move_sent:
+                for player in self.players:
+                    could_move = self.handle_player_client_response(player)
 
-                    could_move = self.process_move((from_row, from_col), (to_row, to_col))
                     if could_move:
-                        # Break out of the loop if the move was valid and the board was updated.
-                        break
-                    else:
-                        print(f"LOG: ({self.turn}) performed an invalid move")
-
-                else:
-                    print(f"ERROR: Invalid response '{data}'")
+                        valid_move_sent = True
+                        break # break out of for loop
 
             # TODO: Send the ?move-result command to the players (this is for animating the results). 
 
@@ -206,6 +195,38 @@ class StrategoGame:
 
             else:
                 print("ERROR: Unknown win condition")
+
+
+    def handle_player_client_response(self, player: StrategoPlayer) -> bool | None:
+        try:
+            conn_to_process = player.conn
+            data = conn_to_process.recv(BUF_SIZE).decode()
+
+            if data.startswith("!move"):
+                if player.color != self.turn:
+                    username = self.turn_map[player.color].username # type: ignore
+                    print(f"LOG: Player '{username}' ({player.color}) tried to move even though it was not their turn.")
+                    return None # player cannot move if it's not their turn
+
+                fields = data.split(':')
+                from_row = int(fields[1])
+                from_col = int(fields[2])
+                to_row = int(fields[3])
+                to_col = int(fields[4])
+
+                could_move = self.process_move((from_row, from_col), (to_row, to_col))
+
+                if not could_move:
+                    print(f"LOG: ({self.turn}) performed an invalid move")
+
+                return could_move
+                    
+            else:
+                print(f"ERROR: Invalid response '{data}'")
+                return None # unknown command from client
+
+        except socket.timeout:
+            return None # no response
 
 
     # TODO: This function needs more testing.
