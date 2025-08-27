@@ -151,9 +151,40 @@ class StrategoGame:
 
     def run(self):
         """
-        Runs the given game in a loop.
+        Runs the given game.
         """
+        try:
+            self.run_main_game_loop()
 
+        # End the game if a connection error occurs.
+        except ConnectionResetError:
+            self.result = StrategoGameResult(None, abrupt_end=True)
+
+        # Game ended.
+        for player in self.players:
+            # The result of the game must have been determined already.
+            assert self.result
+
+            try:
+                # There is a winner.
+                if self.result.winner is not None:
+                    player.conn.sendall(f"?game-over:winner-determined:{self.result.winner}".encode())
+
+                # The game abruptly ended before finishing normally.
+                elif self.result.abrupt_end:
+                    player.conn.sendall("?game-over:abrupt-end".encode())
+
+                else:
+                    print("ERROR: Unknown win condition")
+
+            # Do not bother trying to send a game over message if the client's socket is disconnected.
+            except ConnectionResetError: pass
+
+
+    def run_main_game_loop(self):
+        """
+        Runs the main part of the game loop.
+        """
         while self.is_running:
             # Send turn info.
             for player in self.players:
@@ -179,22 +210,6 @@ class StrategoGame:
 
             # Toggle the turn.
             self.toggle_turn()
-
-        # Game ended.
-        for player in self.players:
-            # The result of the game must have been determined already.
-            assert self.result
-
-            # There is a winner.
-            if self.result.winner is not None:
-                player.conn.sendall(f"?game-over:winner-determined:{self.result.winner}".encode())
-
-            # The game abruptly ended before finishing normally.
-            elif self.result.abrupt_end:
-                player.conn.sendall("?game-over:abrupt-end".encode())
-
-            else:
-                print("ERROR: Unknown win condition")
 
 
     def handle_player_client_response(self, player: StrategoPlayer) -> bool | None:
