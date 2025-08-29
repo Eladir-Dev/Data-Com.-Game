@@ -34,8 +34,15 @@ GLOBALS = {
     'stratego_state': None,
 }
 
-ValidState = Literal['main_menu', 'in_stratego_game', 'in_wordle_game']
-
+ValidState = Literal[
+    'main_menu', 
+    'loading_stratego_game',
+    'in_stratego_game', 
+    'finished_stratego_game', 
+    'in_wordle_game',
+    'loading_wordle_game', 
+    'finished_wordle_game',
+]
 
 def change_game_state(new_state: ValidState):
     """
@@ -70,12 +77,11 @@ def start():
         game_select_menu._open(stratego_menu)
 
 
-    def show_loading_window_stratego():
-        # TODO: Figure out how to remove back button or change the main menu.
-        main_menu._open(loading_window_stratego)
-
+    def start_loading_stratego_game():
         # TODO: Send an actual deck customized by the player.
         placeholder_deck = stratego_types.temp_generate_placeholder_deck()
+
+        change_game_state('loading_stratego_game')
 
         SOCKET_CLIENT_QUEUE.put(
             f"!want-play-game:stratego:{GLOBALS['username']}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
@@ -108,11 +114,16 @@ def start():
     game_select_menu.add.button('Wordle', show_wordle_menu)
 
     stratego_menu = pygame_menu.Menu('Play Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
-    stratego_menu.add.button('Find Match', show_loading_window_stratego)
+    stratego_menu.add.button('Find Match', start_loading_stratego_game)
     stratego_menu.add.button('Local Game', host_game_menu)
 
     loading_window_stratego = pygame_menu.Menu('Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     loading_window_stratego.add.label('Connecting...')
+
+    stratego_game_over_menu = pygame_menu.Menu('Stratego Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
+    stratego_game_over_menu.add.label('...', 'stratego_game_over_label')
+    stratego_game_over_menu.add.button('Go To Main Menu', lambda: change_game_state('main_menu'))
+    stratego_game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
 
     wordle_menu = pygame_menu.Menu('Play Wordle', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     wordle_menu.add.label('TODO')
@@ -150,8 +161,6 @@ def start():
                     'last_selected_piece': None,
                 }
                 change_game_state('in_stratego_game')
-                # Does this .disable() do anything here?
-                main_menu.disable()
 
             elif data.startswith("?turn-info"):
                 fields = data.split(':')
@@ -207,13 +216,20 @@ def start():
 
                 if reason == "winner-determined":
                     winning_color = fields[2]
-                    print(f"The ({winning_color}) has won!")
+                    game_over_message = f"The ({winning_color}) has won!"
 
                 elif reason == "abrupt-end":
-                    print("The game was abruptly ended.")
+                    game_over_message = "The game was abruptly ended."
 
                 else:
-                    print(f"ERROR: The game unexpectedly ended after server send `{data}`.")
+                    print(f"ERROR: The game unexpectedly ended after server sent `{data}`.")
+                    game_over_message = "MISSING GAME OVER MESSAGE"
+
+                label = stratego_game_over_menu.get_widget('stratego_game_over_label')
+                assert label
+                label.set_title(game_over_message)
+
+                change_game_state('finished_stratego_game')
 
             else:
                 print(f"ERROR: Unknown server command: '{data}'")
@@ -233,11 +249,10 @@ def start():
         game_state: ValidState = GLOBALS['state']
 
         if game_state == 'main_menu':
-            if main_menu.is_enabled():
-                main_menu.update(events)
-                main_menu.draw(surface)
-                if (main_menu.get_current().get_selected_widget()):
-                    arrow.draw(surface, main_menu.get_current().get_selected_widget())
+            main_menu.update(events)
+            main_menu.draw(surface)
+            if (main_menu.get_current().get_selected_widget()):
+                arrow.draw(surface, main_menu.get_current().get_selected_widget())
 
         elif game_state == 'in_stratego_game':
             # Display Stratego game window.
@@ -246,7 +261,24 @@ def start():
             if move_cmd is not None:
                 SOCKET_CLIENT_QUEUE.put(move_cmd)
 
+        elif game_state == 'loading_stratego_game':
+            loading_window_stratego.update(events)
+            loading_window_stratego.draw(surface)
+
+        elif game_state == 'finished_stratego_game':
+            stratego_game_over_menu.update(events)
+            stratego_game_over_menu.draw(surface)
+
         elif game_state == 'in_wordle_game':
             print("ERROR: Wordle is not implemented yet")
+
+        elif game_state == 'loading_wordle_game':
+            print("ERROR: Wordle is not implemented yet")
+
+        elif game_state == 'finished_wordle_game':
+            print("ERROR: Wordle is not implemented yet")
+
+        else:
+            print(f"ERROR: unhandled game state '{game_state}'")
 
         pygame.display.update()
