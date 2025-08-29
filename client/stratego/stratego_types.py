@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from typing import Literal
 
-from game_types import SCREEN_WIDTH, gen_flipped_dict
+from game_types import SCREEN_WIDTH, Pair, gen_flipped_dict
 
 # The dimensions of a Stratego board.
 ROWS = 10
@@ -21,6 +22,12 @@ GRID_START_LOCATION = (SCREEN_WIDTH // 2 - (SPRITE_WIDTH * ROWS) // 2, 100)
 
 Color = Literal['r', 'b']
 PieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant', 'major', 'marshal', 'miner', 'scout', 'sergeant', 'spy']
+
+@dataclass
+class StrategoMoveResult:
+    kind: Literal['movement', 'attack_success', 'attack_fail', 'tie']
+    attacking_pos: Pair
+    defending_pos: Pair
 
 def get_full_color_name(color: Color) -> str:
     if color == 'r':

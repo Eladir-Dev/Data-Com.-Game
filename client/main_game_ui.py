@@ -13,7 +13,7 @@ import threading
 import socket_client
 from game_types import SCREEN_WIDTH, SCREEN_HEIGHT, row_col_to_flat_index
 import stratego.stratego_types as stratego_types
-from stratego.stratego_types import Board, ROWS, COLS
+from stratego.stratego_types import Board, ROWS, COLS, StrategoMoveResult
 import stratego.stratego_game as stratego_game
 
 #=======================Client conection====================#
@@ -159,6 +159,7 @@ def start():
                     # The red player always goes first.
                     'turn': 'r',
                     'last_selected_piece': None,
+                    'current_move_result': None,
                 }
                 change_game_state('in_stratego_game')
 
@@ -169,6 +170,10 @@ def start():
 
                 # Update the turn.
                 GLOBALS['stratego_state']['turn'] = current_turn
+
+                # Reset the move result (it no longer needs to be shown, since the board is going 
+                # to be reset anyways due to the new turn).
+                GLOBALS['stratego_state']['current_move_result'] = None
 
                 # Update the board with the data from the server.
                 board: Board = GLOBALS['stratego_state']['board']
@@ -212,8 +217,18 @@ def start():
 
 
             elif data.startswith("?move-result"):
-                # Example: ?move-result:attack_fail:3:9:6:9
-                print(f"Received the following move result: {data}")
+                fields = data.split(':')
+                kind = fields[1]
+                r_atk = int(fields[2])
+                c_atk = int(fields[3])
+                r_def = int(fields[4])
+                c_def = int(fields[5])
+                move_result = StrategoMoveResult(kind=kind, attacking_pos=(r_atk, c_atk), defending_pos=(r_def, c_def)) # type: ignore
+
+                print(f"Received the following move result CMD: {data}")
+                print(f"Received the following move result: {move_result}")
+
+                GLOBALS['stratego_state']['current_move_result'] = move_result
             
 
             elif data.startswith("?game-over"):
@@ -262,7 +277,7 @@ def start():
 
         elif game_state == 'in_stratego_game':
             # Display Stratego game window.
-            move_cmd = stratego_game.stratego_update(events, surface, GLOBALS, SOCKET_SERVER_CMD_QUEUE, SOCKET_CLIENT_QUEUE)
+            move_cmd = stratego_game.stratego_update(events, surface, GLOBALS)
 
             if move_cmd is not None:
                 SOCKET_CLIENT_QUEUE.put(move_cmd)

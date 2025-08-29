@@ -7,9 +7,7 @@ from pygame import Surface, Rect
 from pygame.event import Event
 from typing import Any
 
-from queue import Queue
-
-from .stratego_types import (Board, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
+from .stratego_types import (Board, StrategoMoveResult, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
                              SPRITE_HEIGHT, Color, PieceName, get_full_color_name, parse_piece_from_encoded_str)
 
 from game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
@@ -74,8 +72,7 @@ def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
     return f"!move:{components_str}"
 
 
-def stratego_update(events: list[Event], surface: Surface, global_game_data: dict[str, Any], 
-                    server_command_queue: Queue[str], client_queue: Queue[str]) -> str | None:
+def stratego_update(events: list[Event], surface: Surface, global_game_data: dict[str, Any]) -> str | None:
     # Get state.
     own_color = global_game_data['stratego_state']['own_color']
     opponent_color = 'r' if own_color == 'b' else 'b'
@@ -87,6 +84,19 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
 
     # Clear the screen.
     surface.fill((100, 100, 100))
+
+    # TODO: Only for testing out move result detection.
+    # TODO: Add a better indicator for the kind of move result.
+    move_result: StrategoMoveResult | None = global_game_data['stratego_state']['current_move_result']
+    if move_result is not None:
+        if move_result.kind == 'attack_success':
+            surface.fill((0, 100, 0))
+
+        elif move_result.kind == 'attack_fail':
+            surface.fill((100, 0, 0))
+
+        else:
+            surface.fill((0, 0, 0))
 
     # Draw UI text.
     draw_text(surface, "Stratego", 100, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
@@ -100,7 +110,7 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
     # Get the board from the global state.
     board: Board = global_game_data['stratego_state']['board']
 
-    rendered_tiles = render_board_tiles(surface, global_game_data, server_command_queue, client_queue, board)
+    rendered_tiles = render_board_tiles(surface, global_game_data, board)
 
     move_cmd: str | None = None
 
@@ -133,9 +143,9 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
     return move_cmd
 
 
-def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], 
-                       server_command_queue: Queue[str], client_queue: Queue[str], board: Board) -> list[RenderedTile]:
+def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], board: Board) -> list[RenderedTile]:
     own_color: Color = global_game_data['stratego_state']['own_color']
+    move_result: StrategoMoveResult | None = global_game_data['stratego_state']['current_move_result']
 
     rendered_tiles: list[RenderedTile] = []
 
@@ -154,18 +164,24 @@ def render_board_tiles(surface: Surface, global_game_data: dict[str, Any],
 
             location = (GRID_START_LOCATION[0] + SPRITE_WIDTH * x, GRID_START_LOCATION[1] + SPRITE_HEIGHT * y)
 
+            # Normal piece drawing mode. Own pieces are visible and opponent pieces are hidden.
+            should_draw_own_piece_outside_of_attack = move_result is None and encoded_element_str.startswith(own_color)
+
+            # Drawing mode during an attack. Only the pieces involved in an attack are shown.
+            should_draw_pieces_involved_in_attack = move_result is not None and (r, c) in { move_result.attacking_pos, move_result.defending_pos }
+
             if encoded_element_str == "":
                 sprite = draw_empty_grid_slot(surface, location)
 
             elif encoded_element_str == "XX":
                 sprite = draw_lake_slot(surface, location)
 
-            elif len(encoded_element_str) >= 2 and encoded_element_str.startswith(own_color):
-                # Just the piece encoding without the color.
-                encoded_piece_str = encoded_element_str[1]
+            elif len(encoded_element_str) >= 2 and (should_draw_own_piece_outside_of_attack or should_draw_pieces_involved_in_attack):
+                color: Color = encoded_element_str[0] # type: ignore
+                encoded_piece_str = encoded_element_str[1] # just the piece encoding without the color
 
                 piece_name = parse_piece_from_encoded_str(encoded_piece_str)
-                sprite = draw_piece(surface, piece_name, own_color, location)
+                sprite = draw_piece(surface, piece_name, color, location)
 
             # Hide the opponent's pieces.
             elif len(encoded_element_str) >= 2:
@@ -173,7 +189,7 @@ def render_board_tiles(surface: Surface, global_game_data: dict[str, Any],
 
             # Fallback.
             else:
-                sprite = draw_empty_grid_slot(surface, location)
+                sprite = draw_hidden_slot(surface, location)
 
             rendered_tiles.append(RenderedTile(sprite, encoded_element_str, (r, c)))
 
