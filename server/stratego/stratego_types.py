@@ -32,7 +32,7 @@ DECK_ROWS = 4
 
 # The duration that the server waits after sending a turn's move result, 
 # and before starting the next turn.
-MOVE_RESULT_VIEW_DURATION_SECS = 5
+MOVE_RESULT_VIEW_DURATION_SECS = 2.5
 
 ENCODED_STR_TO_PIECE: dict[str, PieceName] = {
     'S': 'spy',

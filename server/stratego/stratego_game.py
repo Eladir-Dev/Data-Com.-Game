@@ -222,7 +222,10 @@ class StrategoGame:
                 player.conn.sendall(move_result_to_command(move_result).encode())
             
             # Wait a duration so that the client has time to display the sent move result to the user.
-            time.sleep(MOVE_RESULT_VIEW_DURATION_SECS)
+            if move_result.kind == 'movement':
+                time.sleep(MOVE_RESULT_VIEW_DURATION_SECS / 2)
+            else:
+                time.sleep(MOVE_RESULT_VIEW_DURATION_SECS)
 
             # Toggle the turn.
             self.toggle_turn()

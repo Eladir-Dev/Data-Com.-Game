@@ -217,6 +217,8 @@ def start():
 
 
             elif data.startswith("?move-result"):
+                print(f"Received the following move result CMD: {data}")
+
                 fields = data.split(':')
                 kind = fields[1]
                 r_atk = int(fields[2])
@@ -225,7 +227,6 @@ def start():
                 c_def = int(fields[5])
                 move_result = StrategoMoveResult(kind=kind, attacking_pos=(r_atk, c_atk), defending_pos=(r_def, c_def)) # type: ignore
 
-                print(f"Received the following move result CMD: {data}")
                 print(f"Received the following move result: {move_result}")
 
                 GLOBALS['stratego_state']['current_move_result'] = move_result
@@ -237,7 +238,7 @@ def start():
 
                 if reason == "winner-determined":
                     winning_color = fields[2]
-                    game_over_message = f"The ({winning_color}) has won!"
+                    game_over_message = f"The ({winning_color}) player has won!"
 
                 elif reason == "abrupt-end":
                     game_over_message = "The game was abruptly ended."

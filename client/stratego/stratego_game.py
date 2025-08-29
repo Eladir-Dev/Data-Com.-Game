@@ -95,7 +95,7 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
         elif move_result.kind == 'attack_fail':
             surface.fill((100, 0, 0))
 
-        else:
+        elif move_result.kind != 'movement':
             surface.fill((0, 0, 0))
 
     # Draw UI text.
@@ -164,11 +164,19 @@ def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], board
 
             location = (GRID_START_LOCATION[0] + SPRITE_WIDTH * x, GRID_START_LOCATION[1] + SPRITE_HEIGHT * y)
 
+            # Show the special move-result view when the move result exists (it being non-None indicates that 
+            # the result should be visible). Filters out for when the move result indicates simple movement.
+            should_show_move_view = move_result is not None and move_result.kind != 'movement'
+
             # Normal piece drawing mode. Own pieces are visible and opponent pieces are hidden.
-            should_draw_own_piece_outside_of_attack = move_result is None and encoded_element_str.startswith(own_color)
+            should_draw_own_piece_outside_of_attack = not should_show_move_view and encoded_element_str.startswith(own_color)
 
             # Drawing mode during an attack. Only the pieces involved in an attack are shown.
-            should_draw_pieces_involved_in_attack = move_result is not None and (r, c) in { move_result.attacking_pos, move_result.defending_pos }
+            should_draw_pieces_involved_in_attack = (
+                should_show_move_view 
+                and move_result is not None # redundant check since `should_show_move_view` already guarantees it
+                and (r, c) in { move_result.attacking_pos, move_result.defending_pos }
+            )
 
             if encoded_element_str == "":
                 sprite = draw_empty_grid_slot(surface, location)
