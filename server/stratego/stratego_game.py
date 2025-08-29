@@ -161,6 +161,8 @@ class StrategoGame:
             self.result = StrategoGameResult(None, abrupt_end=True)
 
         # Game ended.
+        print("LOG: game ended")
+
         for player in self.players:
             # The result of the game must have been determined already.
             assert self.result
