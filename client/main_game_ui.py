@@ -210,6 +210,12 @@ def start():
 
                 print(f"Printed {times} board elements")
 
+
+            elif data.startswith("?move-result"):
+                # Example: ?move-result:attack_fail:3:9:6:9
+                print(f"Received the following move result: {data}")
+            
+
             elif data.startswith("?game-over"):
                 fields = data.split(':')
                 reason = fields[1]

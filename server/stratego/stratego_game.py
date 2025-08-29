@@ -1,6 +1,19 @@
 import socket
+import time
 
-from .stratego_types import StrategoColor, ROWS, COLS, DECK_ROWS, parse_piece_from_encoded_str, get_piece_value, Pair, toggle_color
+from .stratego_types import (
+    parse_piece_from_encoded_str, 
+    get_piece_value, 
+    toggle_color,
+    move_result_to_command,
+    ROWS, 
+    COLS, 
+    DECK_ROWS, 
+    MOVE_RESULT_VIEW_DURATION_SECS,
+    StrategoColor, 
+    StrategoMoveResult, 
+    Pair, 
+)
 from .stratego_player import StrategoPlayer
 from .stratego_game_result import StrategoGameResult
 
@@ -193,28 +206,29 @@ class StrategoGame:
                 data = f"?turn-info:{self.turn}:{self.get_board_socket_repr()}"
                 player.conn.sendall(data.encode())
 
-            valid_move_sent = False
+            move_result: StrategoMoveResult | None = None
 
-            while not valid_move_sent:
+            while move_result is None:
                 for player in self.players:
-                    could_move = self.handle_player_client_response(player)
+                    move_result = self.handle_player_client_response(player)
 
-                    if could_move:
-                        valid_move_sent = True
-                        break # break out of for loop
+                    if move_result is not None:
+                        break # early-exit out of for loop
 
-            # TODO: Send the ?move-result command to the players (this is for animating the results). 
+            print(move_result)
 
-            # TODO: Figure out how to get the result of the last move 
-            # (i.e. if a piece got attacked, which one was defeated, if there was a tie, etc.)
+            # Send the move result command to the players (this is for animating the results). 
+            for player in self.players:
+                player.conn.sendall(move_result_to_command(move_result).encode())
             
-            # TODO: Implement the rest of the game here...
+            # Wait a duration so that the client has time to display the sent move result to the user.
+            time.sleep(MOVE_RESULT_VIEW_DURATION_SECS)
 
             # Toggle the turn.
             self.toggle_turn()
 
 
-    def handle_player_client_response(self, player: StrategoPlayer) -> bool | None:
+    def handle_player_client_response(self, player: StrategoPlayer) -> StrategoMoveResult | None:
         try:
             conn_to_process = player.conn
             data = conn_to_process.recv(BUF_SIZE).decode()
@@ -231,12 +245,12 @@ class StrategoGame:
                 to_row = int(fields[3])
                 to_col = int(fields[4])
 
-                could_move = self.process_move((from_row, from_col), (to_row, to_col))
+                move_result = self.process_move((from_row, from_col), (to_row, to_col))
 
-                if not could_move:
+                if move_result is None:
                     print(f"LOG: ({self.turn}) performed an invalid move")
 
-                return could_move
+                return move_result
                     
             else:
                 print(f"ERROR: Invalid response '{data}'")
@@ -315,7 +329,7 @@ class StrategoGame:
             return True
 
 
-    def process_move(self, from_pos: Pair, to_pos: Pair) -> bool:
+    def process_move(self, from_pos: Pair, to_pos: Pair) -> StrategoMoveResult | None:
         """
         Processes the given move. Returns `True` if the move was valid and the board 
         was updated. Otherwise, does nothing and returns `False`.
@@ -329,33 +343,33 @@ class StrategoGame:
         print(f"`{element_from}` -> `{element_to}`")
 
         if from_pos == to_pos:
-            return False
+            return None
         
         elif not self.check_valid_movement(from_pos, to_pos):
-            return False
+            return None
         
         # Prevent the player from moving lake or empty spaces.
         elif element_from in {"XX", ""}:
-            return False
+            return None
         
         # Prevent the player from moving into lakes.
         elif element_to == "XX":
-            return False
+            return None
         
         # Disallow pieces from the same color to attack each other.
         elif len(element_to) == 2 and element_from[0] == element_to[0]:
-            return False
+            return None
         
         # Disallow the player from moving pieces they don't own.
         elif element_from[0] != current_player.color:
-            return False
+            return None
         
         # Player is moving into an empty tile (valid).
         elif element_from[0] == current_player.color and element_to == "":
             self.board[from_pos[0]][from_pos[1]] = ""
             self.board[to_pos[0]][to_pos[1]] = element_from
 
-            return True
+            return StrategoMoveResult(kind='movement', attacking_pos=from_pos, defending_pos=to_pos)
         
         # The current player is attacking one of the opponent's pieces (valid).
         else:
@@ -380,16 +394,22 @@ class StrategoGame:
                     winning_color: StrategoColor = element_from[0] # type: ignore
                     self.declare_winner(winning_color)
 
+                move_result = StrategoMoveResult(kind='attack_success', attacking_pos=from_pos, defending_pos=to_pos)
+
             elif own_piece_value < opp_piece_value:
                 # Remove the current player's piece.
                 self.board[from_pos[0]][from_pos[1]] = ""
+
+                move_result = StrategoMoveResult(kind='attack_fail', attacking_pos=from_pos, defending_pos=to_pos)
 
             else:
                 # Remove both pieces.
                 self.board[to_pos[0]][to_pos[1]] = ""
                 self.board[from_pos[0]][from_pos[1]] = ""
 
-            return True
+                move_result = StrategoMoveResult(kind='attack_fail', attacking_pos=from_pos, defending_pos=to_pos)
+
+            return move_result
         
 
     def declare_winner(self, winner: StrategoColor):

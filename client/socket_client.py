@@ -92,6 +92,10 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str])
                 if data.startswith("?turn-info"):
                     server_command_queue.put(data)
 
+                # Forward move result commands to the UI.
+                elif data.startswith("?move-result"):
+                    server_command_queue.put(data)
+
                 elif data.startswith("?game-over"):
                     # Stop the client.
                     client_running = False

@@ -4,6 +4,7 @@ This module is for shared types and constants for the Stratego modules.
 
 from typing import Literal
 from server_types import gen_flipped_dict
+from dataclasses import dataclass
 
 # === Types ===
 
@@ -13,6 +14,13 @@ PieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant
 
 Pair = tuple[int, int]
 
+@dataclass
+class StrategoMoveResult:
+    kind: Literal['movement', 'attack_success', 'attack_fail', 'tie']
+    attacking_pos: Pair
+    defending_pos: Pair
+
+
 # === Constants ===
 
 # The dimensions of a board.
@@ -21,6 +29,10 @@ COLS = 10
 
 # The amount of rows that a player's starting deck has.
 DECK_ROWS = 4
+
+# The duration that the server waits after sending a turn's move result, 
+# and before starting the next turn.
+MOVE_RESULT_VIEW_DURATION_SECS = 5
 
 ENCODED_STR_TO_PIECE: dict[str, PieceName] = {
     'S': 'spy',
@@ -87,3 +99,9 @@ def get_piece_value(piece: PieceName) -> int:
 
 def toggle_color(color: StrategoColor) -> StrategoColor:
     return 'r' if color == 'b' else 'b'
+
+
+def move_result_to_command(move_result: StrategoMoveResult) -> str:
+    r_atk, c_atk = move_result.attacking_pos
+    r_def, c_def = move_result.defending_pos
+    return f"?move-result:{move_result.kind}:{r_atk}:{c_atk}:{r_def}:{c_def}"
