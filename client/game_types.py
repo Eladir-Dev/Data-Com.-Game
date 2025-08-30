@@ -9,6 +9,8 @@ SCREEN_HEIGHT = 600
 # Utility type for games.
 Pair = tuple[int, int]
 
+
+
 # == Utility functions ==
 def row_col_to_flat_index(r: int, c: int, logical_cols: int) -> int:
     """

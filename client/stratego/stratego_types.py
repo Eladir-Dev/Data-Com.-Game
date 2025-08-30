@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Literal
 
+from pygame import Rect
+
 from game_types import SCREEN_WIDTH, Pair, gen_flipped_dict
 
 # The dimensions of a Stratego board.
@@ -20,8 +22,8 @@ SPRITE_HEIGHT = 32
 # The y coordinate is arbitrary, it just serves as padding.
 GRID_START_LOCATION = (SCREEN_WIDTH // 2 - (SPRITE_WIDTH * ROWS) // 2, 100)
 
-Color = Literal['r', 'b']
-PieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant', 'major', 'marshal', 'miner', 'scout', 'sergeant', 'spy']
+StrategoColor = Literal['r', 'b']
+StrategoPieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant', 'major', 'marshal', 'miner', 'scout', 'sergeant', 'spy']
 
 @dataclass
 class StrategoMoveResult:
@@ -29,7 +31,7 @@ class StrategoMoveResult:
     attacking_pos: Pair
     defending_pos: Pair
 
-def get_full_color_name(color: Color) -> str:
+def get_full_color_name(color: StrategoColor) -> str:
     if color == 'r':
         return "red"
     elif color == 'b':
@@ -37,6 +39,17 @@ def get_full_color_name(color: Color) -> str:
     else:
         # Unreachable.
         raise Exception(f"unexpected color: {color}")
+    
+def toggle_color(color: StrategoColor) -> StrategoColor:
+    return 'r' if color == 'b' else 'b'
+
+
+def assert_str_is_color(string: str) -> StrategoColor:
+    if string not in {'r', 'b'}:
+        raise ValueError(f"String '{string}' is not a valid color")
+    
+    return string # type: ignore
+
 
 class StrategoPlayerInfo:
     """
@@ -48,7 +61,7 @@ class StrategoPlayerInfo:
         self.starting_deck_repr = starting_deck_str_repr
 
 
-class Board:
+class StrategoBoard:
     """
     The client-side type for the board. In constrast to the server, this class 
     stores its elements in a flat array since that is the format that the socket 
@@ -71,6 +84,13 @@ class Board:
         Updates the board's elements using the given socket string representation of a board.
         """
         self.elements = _message_repr_to_flat_array(socket_repr)
+
+
+class StrategoRenderedTile:
+    def __init__(self, sprite_rect: Rect, str_encoding: str, board_location: Pair):
+        self.sprite_rect = sprite_rect
+        self.str_encoding = str_encoding
+        self.board_location = board_location
 
 
 def temp_generate_placeholder_deck() -> list[str]:
@@ -104,7 +124,7 @@ def _message_repr_to_flat_array(message_repr: str) -> list[str]:
     return message_repr.split(':')
 
 
-ENCODED_STR_TO_PIECE: dict[str, PieceName] = {
+ENCODED_STR_TO_PIECE: dict[str, StrategoPieceName] = {
     'S': 'spy',
     '1': 'marshal',
     'G': 'general',
@@ -119,9 +139,9 @@ ENCODED_STR_TO_PIECE: dict[str, PieceName] = {
     'F': 'flag',
 }
 
-PIECE_TO_ENCODED_STR: dict[PieceName, str] = gen_flipped_dict(ENCODED_STR_TO_PIECE)
+PIECE_TO_ENCODED_STR: dict[StrategoPieceName, str] = gen_flipped_dict(ENCODED_STR_TO_PIECE)
 
-def parse_piece_from_encoded_str(encoded_str: str) -> PieceName:
+def parse_piece_from_encoded_str(encoded_str: str) -> StrategoPieceName:
     """
     Encoding legend:
     * 'S' = Spy (1)

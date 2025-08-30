@@ -7,17 +7,12 @@ from pygame import Surface, Rect
 from pygame.event import Event
 from typing import Any
 
-from .stratego_types import (Board, StrategoMoveResult, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
-                             SPRITE_HEIGHT, Color, PieceName, get_full_color_name, parse_piece_from_encoded_str)
+from global_state import StrategoGlobalState
+
+from .stratego_types import (StrategoBoard, StrategoMoveResult, StrategoRenderedTile, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
+                             SPRITE_HEIGHT, StrategoColor, StrategoPieceName, get_full_color_name, parse_piece_from_encoded_str)
 
 from game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
-
-class RenderedTile:
-    def __init__(self, sprite_rect: Rect, str_encoding: str, board_location: Pair):
-        self.sprite_rect = sprite_rect
-        self.str_encoding = str_encoding
-        self.board_location = board_location
-
 
 def get_module_outer_path(script_file_path: str) -> str:
     """
@@ -61,7 +56,7 @@ def draw_hidden_slot(surface: Surface, location: Pair) -> Rect:
     return draw_sprite_on_surface(surface, empty_space_sprite, location)
 
 
-def draw_piece(surface: Surface, piece_name: PieceName, color: Color, location: Pair) -> Rect:
+def draw_piece(surface: Surface, piece_name: StrategoPieceName, color: StrategoColor, location: Pair) -> Rect:
     piece_sprite = pygame.image.load(f"{SPRITE_FOLDER}/{get_full_color_name(color)}_{piece_name}.png")
     return draw_sprite_on_surface(surface, piece_sprite, location)
 
@@ -72,13 +67,7 @@ def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
     return f"!move:{components_str}"
 
 
-def stratego_update(events: list[Event], surface: Surface, global_game_data: dict[str, Any]) -> str | None:
-    # Get state.
-    own_color = global_game_data['stratego_state']['own_color']
-    opponent_color = 'r' if own_color == 'b' else 'b'
-    opponent_username = global_game_data['stratego_state']['opponent_username']
-    turn = global_game_data['stratego_state']['turn']
-
+def stratego_update(events: list[Event], surface: Surface, global_game_data: StrategoGlobalState) -> str | None:
     # Set screen caption.
     pygame.display.set_caption(f"Stratego")
 
@@ -87,7 +76,7 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
 
     # TODO: Only for testing out move result detection.
     # TODO: Add a better indicator for the kind of move result.
-    move_result: StrategoMoveResult | None = global_game_data['stratego_state']['current_move_result']
+    move_result = global_game_data.current_move_result
     if move_result is not None:
         if move_result.kind == 'attack_success':
             surface.fill((0, 100, 0))
@@ -101,16 +90,14 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
     # Draw UI text.
     draw_text(surface, "Stratego", 100, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
 
-    player_info_string = f"{global_game_data['username']} ({own_color}) VS {opponent_username} ({opponent_color})"
+    player_info_string = f"{global_game_data.own_username} ({global_game_data.own_color}) VS {global_game_data.opp_username} ({global_game_data.opp_color})"
     draw_text(surface, player_info_string, 40, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
 
-    turn_info_string = f"Current Turn: ({turn})"
+    turn_info_string = f"Current Turn: ({global_game_data.turn})"
     draw_text(surface, turn_info_string, 40, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
 
-    # Get the board from the global state.
-    board: Board = global_game_data['stratego_state']['board']
 
-    rendered_tiles = render_board_tiles(surface, global_game_data, board)
+    rendered_tiles = render_board_tiles(surface, global_game_data)
 
     move_cmd: str | None = None
 
@@ -128,31 +115,32 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: dic
                     # would ruin the entire point of hiding the opponent's pieces.
                     print(rendered_tile.str_encoding)
 
-                    if global_game_data['stratego_state']['last_selected_piece'] is None:
+                    if global_game_data.last_selected_piece is None:
                         # Select the tile.
-                        global_game_data['stratego_state']['last_selected_piece'] = rendered_tile
+                        global_game_data.last_selected_piece = rendered_tile
 
                     else:
-                        from_pos = global_game_data['stratego_state']['last_selected_piece'].board_location
+                        from_pos = global_game_data.last_selected_piece.board_location
                         to_pos = rendered_tile.board_location
 
                         move_cmd = gen_move_cmd(from_pos, to_pos)
 
-                        global_game_data['stratego_state']['last_selected_piece'] = None
+                        # Un-select the tile.
+                        global_game_data.last_selected_piece = None
 
     return move_cmd
 
 
-def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], board: Board) -> list[RenderedTile]:
-    own_color: Color = global_game_data['stratego_state']['own_color']
-    move_result: StrategoMoveResult | None = global_game_data['stratego_state']['current_move_result']
+def render_board_tiles(surface: Surface, global_game_data: StrategoGlobalState) -> list[StrategoRenderedTile]:
+    own_color = global_game_data.own_color
+    move_result = global_game_data.current_move_result
 
-    rendered_tiles: list[RenderedTile] = []
+    rendered_tiles: list[StrategoRenderedTile] = []
 
     for r in range(ROWS):
         for c in range(COLS):
             flat_idx = row_col_to_flat_index(r, c, COLS)
-            encoded_element_str = board.elements[flat_idx]
+            encoded_element_str = global_game_data.board.elements[flat_idx]
 
             # For Pygame's coordinate system.
             if own_color == 'r':
@@ -185,7 +173,7 @@ def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], board
                 sprite = draw_lake_slot(surface, location)
 
             elif len(encoded_element_str) >= 2 and (should_draw_own_piece_outside_of_attack or should_draw_pieces_involved_in_attack):
-                color: Color = encoded_element_str[0] # type: ignore
+                color: StrategoColor = encoded_element_str[0] # type: ignore
                 encoded_piece_str = encoded_element_str[1] # just the piece encoding without the color
 
                 piece_name = parse_piece_from_encoded_str(encoded_piece_str)
@@ -199,6 +187,6 @@ def render_board_tiles(surface: Surface, global_game_data: dict[str, Any], board
             else:
                 sprite = draw_hidden_slot(surface, location)
 
-            rendered_tiles.append(RenderedTile(sprite, encoded_element_str, (r, c)))
+            rendered_tiles.append(StrategoRenderedTile(sprite, encoded_element_str, (r, c)))
 
     return rendered_tiles

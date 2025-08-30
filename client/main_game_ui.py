@@ -10,10 +10,11 @@ from typing import Literal
 import queue
 import threading
 
+from global_state import GlobalClientState, StrategoGlobalState, ValidState
 import socket_client
 from game_types import SCREEN_WIDTH, SCREEN_HEIGHT, row_col_to_flat_index
 import stratego.stratego_types as stratego_types
-from stratego.stratego_types import Board, ROWS, COLS, StrategoMoveResult
+from stratego.stratego_types import StrategoBoard, ROWS, COLS, StrategoMoveResult, assert_str_is_color
 import stratego.stratego_game as stratego_game
 
 #=======================Client conection====================#
@@ -24,31 +25,13 @@ SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(SOCK
 SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
 SOCKET_CLIENT_THREAD.start()
 
-# TODO: This global state object can be cleaned up into a proper class.
-# The Stratego state objects definitely need to be re-organized. It is awkward tha the username 
-# is in a different spot than the rest of the Stratego stuff and different than the `StrategoPlayerInfo` 
-# used by the `socket_client` module.
-GLOBALS = {
-    "username": "johndoe",
-    'state': "main_menu",
-    'stratego_state': None,
-}
-
-ValidState = Literal[
-    'main_menu', 
-    'loading_stratego_game',
-    'in_stratego_game', 
-    'finished_stratego_game', 
-    'in_wordle_game',
-    'loading_wordle_game', 
-    'finished_wordle_game',
-]
+GLOBAL_STATE = GlobalClientState(username="johndoe", game_state='main_menu')
 
 def change_game_state(new_state: ValidState):
     """
     Changes the game's state. Used to determine the screen that is being shown.
     """
-    GLOBALS['state'] = new_state
+    GLOBAL_STATE.game_state = new_state
 
 
 def start():
@@ -62,7 +45,7 @@ def start():
 
 
     def set_username(new_username):
-        GLOBALS['username'] = new_username
+        GLOBAL_STATE.username = new_username
 
     
     def show_game_select_menu():
@@ -84,7 +67,7 @@ def start():
         change_game_state('loading_stratego_game')
 
         SOCKET_CLIENT_QUEUE.put(
-            f"!want-play-game:stratego:{GLOBALS['username']}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
+            f"!want-play-game:stratego:{GLOBAL_STATE.username}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
         )
 
 
@@ -104,7 +87,7 @@ def start():
 
     # Se declaran los butones del menu y su funcion
     main_menu = pygame_menu.Menu('Stratego+Wordle', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
-    main_menu.add.text_input('Name: ', default=GLOBALS['username'], onchange=set_username)
+    main_menu.add.text_input('Name: ', default=GLOBAL_STATE.username, onchange=set_username)
     main_menu.add.button('Game Select', show_game_select_menu)
     main_menu.add.button('Settings', show_settings_menu)
     main_menu.add.button('Quit', pygame_menu.events.EXIT)
@@ -151,16 +134,11 @@ def start():
                 own_color = fields[1]
                 opponent_username = fields[2]
 
-                GLOBALS['stratego_state'] = {
-                    'own_color': own_color,
-                    'opponent_username': opponent_username,
-                    # Empty board; gets filled in each turn with info from the server.
-                    'board': Board(), 
-                    # The red player always goes first.
-                    'turn': 'r',
-                    'last_selected_piece': None,
-                    'current_move_result': None,
-                }
+                GLOBAL_STATE.stratego_state = StrategoGlobalState(
+                    own_color=assert_str_is_color(own_color),
+                    own_username=GLOBAL_STATE.username,
+                    opponent_username=opponent_username,
+                )
                 change_game_state('in_stratego_game')
 
             elif data.startswith("?turn-info"):
@@ -168,52 +146,53 @@ def start():
                 current_turn = fields[1]
                 board_repr = ':'.join(fields[2:])
 
+                assert GLOBAL_STATE.stratego_state, "Stratego state was None"
+
                 # Update the turn.
-                GLOBALS['stratego_state']['turn'] = current_turn
+                GLOBAL_STATE.stratego_state.turn = current_turn
 
                 # Reset the move result (it no longer needs to be shown, since the board is going 
                 # to be reset anyways due to the new turn).
-                GLOBALS['stratego_state']['current_move_result'] = None
+                GLOBAL_STATE.stratego_state.current_move_result = None
 
                 # Update the board with the data from the server.
-                board: Board = GLOBALS['stratego_state']['board']
+                board: StrategoBoard = GLOBAL_STATE.stratego_state.board
                 board.update_elements_with_socket_repr(board_repr)
 
-                # TEMP: Check current state.
-                print(GLOBALS)
+                # # TEMP: Check current state.
+                # print(GLOBAL_STATE)
 
-                print(f"=== BOARD ===")
+                # print(f"=== BOARD ===")
 
+                # # TODO: This is temporary.
+                # # However, similar logic will be added to the `stratego_display` module 
+                # # for displaying the board on the actual UI.
 
-                # TODO: This is temporary.
-                # However, similar logic will be added to the `stratego_display` module 
-                # for displaying the board on the actual UI.
-
-                # The ranges need to be lambdas since ranges (like all generators) are 
-                # mutable. If stored in a variable and used, they will be exhausted by the 
-                # time of the next loop iteration, causing unexpected behavior.
-                # This is resolved with the use of a lambda, which returns a new range 
-                # each time it's called.
-                if GLOBALS['stratego_state']['own_color'] == 'r':
-                    get_row_range = lambda: range(ROWS)
-                    get_col_range = lambda: range(COLS)
+                # # The ranges need to be lambdas since ranges (like all generators) are 
+                # # mutable. If stored in a variable and used, they will be exhausted by the 
+                # # time of the next loop iteration, causing unexpected behavior.
+                # # This is resolved with the use of a lambda, which returns a new range 
+                # # each time it's called.
+                # if GLOBALS['stratego_state']['own_color'] == 'r':
+                #     get_row_range = lambda: range(ROWS)
+                #     get_col_range = lambda: range(COLS)
                 
-                else:
-                    # Return reversed ranges to view the board at a 180 degree view.
-                    get_row_range = lambda: reversed(range(ROWS))
-                    get_col_range = lambda: reversed(range(COLS))
+                # else:
+                #     # Return reversed ranges to view the board at a 180 degree view.
+                #     get_row_range = lambda: reversed(range(ROWS))
+                #     get_col_range = lambda: reversed(range(COLS))
 
-                times = 0
-                for r in get_row_range():
-                    for c in get_col_range():
-                        flat_idx = row_col_to_flat_index(r, c, COLS)
-                        print(board.elements[flat_idx].ljust(3), end='')
+                # times = 0
+                # for r in get_row_range():
+                #     for c in get_col_range():
+                #         flat_idx = row_col_to_flat_index(r, c, COLS)
+                #         print(board.elements[flat_idx].ljust(3), end='')
 
-                        times += 1
+                #         times += 1
                     
-                    print()
+                #     print()
 
-                print(f"Printed {times} board elements")
+                # print(f"Printed {times} board elements")
 
 
             elif data.startswith("?move-result"):
@@ -229,7 +208,9 @@ def start():
 
                 print(f"Received the following move result: {move_result}")
 
-                GLOBALS['stratego_state']['current_move_result'] = move_result
+                assert GLOBAL_STATE.stratego_state, "Stratego state was None"
+
+                GLOBAL_STATE.stratego_state.current_move_result = move_result
             
 
             elif data.startswith("?game-over"):
@@ -268,7 +249,7 @@ def start():
             if event.type == pygame.QUIT:
                 exit()
 
-        game_state: ValidState = GLOBALS['state']
+        game_state: ValidState = GLOBAL_STATE.game_state
 
         if game_state == 'main_menu':
             main_menu.update(events)
@@ -277,8 +258,10 @@ def start():
                 arrow.draw(surface, main_menu.get_current().get_selected_widget())
 
         elif game_state == 'in_stratego_game':
+            assert GLOBAL_STATE.stratego_state, "Stratego state was None"
+
             # Display Stratego game window.
-            move_cmd = stratego_game.stratego_update(events, surface, GLOBALS)
+            move_cmd = stratego_game.stratego_update(events, surface, GLOBAL_STATE.stratego_state)
 
             if move_cmd is not None:
                 SOCKET_CLIENT_QUEUE.put(move_cmd)
