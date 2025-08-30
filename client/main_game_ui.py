@@ -159,41 +159,6 @@ def start():
                 board: StrategoBoard = GLOBAL_STATE.stratego_state.board
                 board.update_elements_with_socket_repr(board_repr)
 
-                # # TEMP: Check current state.
-                # print(GLOBAL_STATE)
-
-                # print(f"=== BOARD ===")
-
-                # # TODO: This is temporary.
-                # # However, similar logic will be added to the `stratego_display` module 
-                # # for displaying the board on the actual UI.
-
-                # # The ranges need to be lambdas since ranges (like all generators) are 
-                # # mutable. If stored in a variable and used, they will be exhausted by the 
-                # # time of the next loop iteration, causing unexpected behavior.
-                # # This is resolved with the use of a lambda, which returns a new range 
-                # # each time it's called.
-                # if GLOBALS['stratego_state']['own_color'] == 'r':
-                #     get_row_range = lambda: range(ROWS)
-                #     get_col_range = lambda: range(COLS)
-                
-                # else:
-                #     # Return reversed ranges to view the board at a 180 degree view.
-                #     get_row_range = lambda: reversed(range(ROWS))
-                #     get_col_range = lambda: reversed(range(COLS))
-
-                # times = 0
-                # for r in get_row_range():
-                #     for c in get_col_range():
-                #         flat_idx = row_col_to_flat_index(r, c, COLS)
-                #         print(board.elements[flat_idx].ljust(3), end='')
-
-                #         times += 1
-                    
-                #     print()
-
-                # print(f"Printed {times} board elements")
-
 
             elif data.startswith("?move-result"):
                 print(f"Received the following move result CMD: {data}")
