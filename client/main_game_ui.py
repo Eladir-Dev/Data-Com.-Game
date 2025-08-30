@@ -71,8 +71,8 @@ def start():
         )
 
 
-    def show_wordle_menu():
-        game_select_menu._open(wordle_menu)
+    def show_word_golf_menu():
+        game_select_menu._open(word_golf_menu)
 
 
     def host_game_menu():
@@ -86,7 +86,7 @@ def start():
     #===========================Logic===========================#
 
     # Se declaran los butones del menu y su funcion
-    main_menu = pygame_menu.Menu('Stratego+Wordle', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
+    main_menu = pygame_menu.Menu('Stratego+Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
     main_menu.add.text_input('Name: ', default=GLOBAL_STATE.username, onchange=set_username)
     main_menu.add.button('Game Select', show_game_select_menu)
     main_menu.add.button('Settings', show_settings_menu)
@@ -94,7 +94,7 @@ def start():
 
     game_select_menu = pygame_menu.Menu('Game Select', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     game_select_menu.add.button('Stratego', show_stratego_menu)
-    game_select_menu.add.button('Wordle', show_wordle_menu)
+    game_select_menu.add.button('Word Golf', show_word_golf_menu)
 
     stratego_menu = pygame_menu.Menu('Play Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     stratego_menu.add.button('Find Match', start_loading_stratego_game)
@@ -108,8 +108,8 @@ def start():
     stratego_game_over_menu.add.button('Go To Main Menu', lambda: change_game_state('main_menu'))
     stratego_game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
 
-    wordle_menu = pygame_menu.Menu('Play Wordle', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
-    wordle_menu.add.label('TODO')
+    word_golf_menu = pygame_menu.Menu('Play Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
+    word_golf_menu.add.label('TODO')
 
     # Se declara el sub menu
     settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
@@ -239,14 +239,14 @@ def start():
             stratego_game_over_menu.update(events)
             stratego_game_over_menu.draw(surface)
 
-        elif game_state == 'in_wordle_game':
-            print("ERROR: Wordle is not implemented yet")
+        elif game_state == 'in_word_golf_game':
+            print("ERROR: word_golf is not implemented yet")
 
-        elif game_state == 'loading_wordle_game':
-            print("ERROR: Wordle is not implemented yet")
+        elif game_state == 'loading_word_golf_game':
+            print("ERROR: word_golf is not implemented yet")
 
-        elif game_state == 'finished_wordle_game':
-            print("ERROR: Wordle is not implemented yet")
+        elif game_state == 'finished_word_golf_game':
+            print("ERROR: word_golf is not implemented yet")
 
         else:
             print(f"ERROR: unhandled game state '{game_state}'")

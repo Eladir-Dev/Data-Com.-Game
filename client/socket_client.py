@@ -36,8 +36,8 @@ def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
                     connect_stratego(server_command_queue, client_queue)
                     # Should there be a break here?
 
-                elif game == "wordle":
-                    print("ERROR: wordle is not implemented")
+                elif game == "word_golf":
+                    print("ERROR: word_golf is not implemented")
 
                 else:
                     print(f"ERROR: Unknown game: '{game}'")

@@ -7,9 +7,9 @@ ValidState = Literal[
     'loading_stratego_game',
     'in_stratego_game', 
     'finished_stratego_game', 
-    'in_wordle_game',
-    'loading_wordle_game', 
-    'finished_wordle_game',
+    'in_word_golf_game',
+    'loading_word_golf_game', 
+    'finished_word_golf_game',
 ]
 
 class StrategoGlobalState:
