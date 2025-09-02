@@ -29,9 +29,23 @@ class StrategoGlobalState:
         self.last_selected_piece: StrategoRenderedTile | None = None
 
         self.current_move_result: StrategoMoveResult | None = None
+
+
+class WordGolfGlobalState:
+    def __init__(self, own_username: str, opponent_username: str):
+        self.own_username = own_username
+        self.opp_username = opponent_username
+
+        self.own_points = 0
+        self.own_queued_word_amt = 0
+
+        self.opp_points = 0
+        self.opp_queued_word_amt = 0
+
     
 @dataclass
 class GlobalClientState:
     username: str
     game_state: ValidState
     stratego_state: StrategoGlobalState | None = None
+    word_golf_state: WordGolfGlobalState | None = None

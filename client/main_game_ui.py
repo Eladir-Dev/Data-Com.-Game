@@ -6,16 +6,17 @@
 import pygame
 import pygame_menu
 from pygame_menu import themes
-from typing import Literal
 import queue
 import threading
 
-from global_state import GlobalClientState, StrategoGlobalState, ValidState
+from global_state import GlobalClientState, StrategoGlobalState, ValidState, WordGolfGlobalState
 import socket_client
-from game_types import SCREEN_WIDTH, SCREEN_HEIGHT, row_col_to_flat_index
+from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import stratego.stratego_types as stratego_types
-from stratego.stratego_types import StrategoBoard, ROWS, COLS, StrategoMoveResult, assert_str_is_color
+from stratego.stratego_types import StrategoBoard, StrategoMoveResult, assert_str_is_color
 import stratego.stratego_game as stratego_game
+
+import word_golf.word_golf_game as word_golf_game
 
 #=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
@@ -153,15 +154,31 @@ def start():
 
             if data.startswith("?game-start"):
                 fields = data.split(':')
-                own_color = fields[1]
-                opponent_username = fields[2]
+                game = fields[1]
 
-                GLOBAL_STATE.stratego_state = StrategoGlobalState(
-                    own_color=assert_str_is_color(own_color),
-                    own_username=GLOBAL_STATE.username,
-                    opponent_username=opponent_username,
-                )
-                change_game_state('in_stratego_game')
+                if game == 'stratego':
+                    own_color = fields[2]
+                    opponent_username = fields[3]
+
+                    GLOBAL_STATE.stratego_state = StrategoGlobalState(
+                        own_color=assert_str_is_color(own_color),
+                        own_username=GLOBAL_STATE.username,
+                        opponent_username=opponent_username,
+                    )
+                    change_game_state('in_stratego_game')
+
+                elif game == 'word_golf':
+                    opponent_username = fields[2]
+
+                    GLOBAL_STATE.word_golf_state = WordGolfGlobalState(
+                        own_username=GLOBAL_STATE.username,
+                        opponent_username=opponent_username,
+                    )
+                    change_game_state('in_word_golf_game')
+
+                else:
+                    print(f"ERROR: unknown game: '{game}'")
+
 
             elif data.startswith("?turn-info"):
                 fields = data.split(':')
@@ -262,7 +279,9 @@ def start():
             stratego_game_over_menu.draw(surface)
 
         elif game_state == 'in_word_golf_game':
-            print("ERROR: word_golf game is not implemented yet")
+            assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
+
+            word_golf_game.word_golf_update(events, surface, GLOBAL_STATE.word_golf_state)
 
         elif game_state == 'loading_word_golf_game':
             loading_window_word_golf.update(events)
