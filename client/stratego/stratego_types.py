@@ -51,14 +51,13 @@ def assert_str_is_color(string: str) -> StrategoColor:
     return string # type: ignore
 
 
-class StrategoPlayerInfo:
+@dataclass
+class StrategoStartingPlayerInfo:
     """
-    The client-side type for the Player. 
+    Starting data from the client for a Stratego player.
     """
-
-    def __init__(self, username: str, starting_deck_str_repr: str):
-        self.username = username
-        self.starting_deck_repr = starting_deck_str_repr
+    username: str
+    starting_deck_repr: str
 
 
 class StrategoBoard:

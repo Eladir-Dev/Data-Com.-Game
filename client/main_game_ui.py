@@ -66,6 +66,7 @@ def start():
 
         change_game_state('loading_stratego_game')
 
+        # Send the user's username and starting deck to the socket client (which then forwards it to the server).
         SOCKET_CLIENT_QUEUE.put(
             f"!want-play-game:stratego:{GLOBAL_STATE.username}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
         )
@@ -75,13 +76,30 @@ def start():
         game_select_menu._open(word_golf_menu)
 
 
-    def host_game_menu():
+    def start_loading_word_wolf_game():
+        change_game_state('loading_word_golf_game')
+
+        # Send the user's username to the socket client (which then forwards it to the server).
+        SOCKET_CLIENT_QUEUE.put(
+            f"!want-play-game:word_golf:{GLOBAL_STATE.username}"
+        )
+
+
+    def host_stratego_game_menu():
         """
-        This method opens the host game menu
+        This method opens the (Stratego) host game menu.
         """
         # TODO hacer que funcione bien :)
         pass
-    
+
+
+    def host_word_golf_menu():
+        """
+        This method opens the (Word Golf) host game menu.
+        """
+        # TODO: everything
+        pass
+
 
     #===========================Logic===========================#
 
@@ -98,18 +116,22 @@ def start():
 
     stratego_menu = pygame_menu.Menu('Play Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     stratego_menu.add.button('Find Match', start_loading_stratego_game)
-    stratego_menu.add.button('Local Game', host_game_menu)
+    stratego_menu.add.button('Local Game', host_stratego_game_menu)
 
     loading_window_stratego = pygame_menu.Menu('Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     loading_window_stratego.add.label('Connecting...')
 
     stratego_game_over_menu = pygame_menu.Menu('Stratego Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
-    stratego_game_over_menu.add.label('...', 'stratego_game_over_label')
+    stratego_game_over_menu.add.label('PLACEHOLDER TEXT', 'stratego_game_over_label')
     stratego_game_over_menu.add.button('Go To Main Menu', lambda: change_game_state('main_menu'))
     stratego_game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
 
     word_golf_menu = pygame_menu.Menu('Play Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
-    word_golf_menu.add.label('TODO')
+    word_golf_menu.add.button('Find Game', start_loading_word_wolf_game)
+    word_golf_menu.add.button('Local Game', host_word_golf_menu)
+
+    loading_window_word_golf = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
+    loading_window_word_golf.add.label('Connecting...')
 
     # Se declara el sub menu
     settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
@@ -240,10 +262,11 @@ def start():
             stratego_game_over_menu.draw(surface)
 
         elif game_state == 'in_word_golf_game':
-            print("ERROR: word_golf is not implemented yet")
+            print("ERROR: word_golf game is not implemented yet")
 
         elif game_state == 'loading_word_golf_game':
-            print("ERROR: word_golf is not implemented yet")
+            loading_window_word_golf.update(events)
+            loading_window_word_golf.draw(surface)
 
         elif game_state == 'finished_word_golf_game':
             print("ERROR: word_golf is not implemented yet")

@@ -76,10 +76,33 @@ def move_player_to_stratego_queue(player: StrategoPlayer):
     time.sleep(WAITING_TIMEOUT_IN_SECS)
 
     # Logic to start the game
-    start_game(player1, player2)
+    start_stratego_game(player1, player2)
 
 
-def start_game(player_1: StrategoPlayer, player_2: StrategoPlayer):
+# def move_player_to_word_golf_queue(player: StrategoPlayer):
+#     with LOCK:
+#         WAITING_STRATEGO_PLAYERS.append(player)
+
+#      # Wait for an opponent to join.
+#     while len(WAITING_STRATEGO_PLAYERS) < 2:
+#         time.sleep(WAITING_TIMEOUT_IN_SECS) # Wait and check again
+    
+#     # Once a second player joins, start a new game.
+#     with LOCK:
+#         player1 = WAITING_STRATEGO_PLAYERS.pop()
+#         player2 = WAITING_STRATEGO_PLAYERS.pop()
+
+#         # Set player colors.
+#         player1.color = 'r'
+#         player2.color = 'b'
+    
+#     time.sleep(WAITING_TIMEOUT_IN_SECS)
+
+#     # Logic to start the game
+#     start_stratego_game(player1, player2)
+
+
+def start_stratego_game(player_1: StrategoPlayer, player_2: StrategoPlayer):
     print("LOG: Two players found. Starting game...")
 
     assert player_1.color, player_2.color
