@@ -14,10 +14,37 @@ class game_settings():
         self.theme.title = False  # Optional: hide title
         self.theme.widget_font_size = 25
 
-        # self.pices [
-        #     []
-        # ]
-        # self.deck
+        rows = 10
+        cols = 4
+        self.pices = [[0 for _ in range(cols)] for _ in range(rows)]
+        self.deck = [[0 for _ in range(cols)] for _ in range(rows)]
+        """
+            Encoding legend:
+            * 'S' = Spy (1)
+            * '1' = Marshal (1)
+            * 'G' = General (1)
+            * '2' = Coronel (2)
+            * '3' = Major (3)
+            * 'C' = Captain (4)
+            * 'L' = Lieutenant (4)
+            * '4' = Sargeant (4)
+            * '8' = Scout (8)
+            * '5' = Miner (5)
+            * 'B' = Bomb (6)
+            * 'F' = Flag (1)
+            """
+        unitAmountIdx = 0
+        # unit[piece, amount]
+        units = [('S', 1),('1', 1),('G', 1),('2', 2),('3', 3),('C', 4), ('L', 4),('4', 4),('8', 8),('5', 5),('B', 6),('F', 1)]
+        for col in range(cols): # creats the 2d array TODO todavia no esta terminado
+            for row in range(rows):
+                unit = units[unitAmountIdx]
+                amount = unit[1]
+                if amount <= 0:
+                    unitAmountIdx += 1
+                self.pices[col][row] = unit[0] # adds string to 2d array
+                amount = amount - 1
+        print(self.pices)
 
         # Create menu with left-side layout
         menu_hight = 600
