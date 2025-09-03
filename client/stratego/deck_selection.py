@@ -1,6 +1,8 @@
 import pygame
 import pygame_menu
 from .stratego_types import StrategoRenderedTile
+# from "/stratego_types.py"
+# class DeckSelection(pygame_menu.Menu):
 
 
 
