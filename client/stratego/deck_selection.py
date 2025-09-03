@@ -1,5 +1,6 @@
 import pygame
 import pygame_menu
+from .stratego_types import StrategoRenderedTile
 
 
 
@@ -10,6 +11,11 @@ class game_settings():
         self.theme.widget_alignment = pygame_menu.locals.ALIGN_LEFT
         self.theme.title = False  # Optional: hide title
         self.theme.widget_font_size = 25
+
+        # self.pices [
+        #     []
+        # ]
+        # self.deck
 
         # Create menu with left-side layout
         menu_hight = 600
@@ -38,23 +44,60 @@ class game_settings():
     def main(self):
         #self.__init__()# TODO revisar coo mejora y si todo esta bien
         game_settings = self.generate_screen()
-        # Main loop
-        while True:
-            events = pygame.event.get()
-            for event in events:
-                if event.type == pygame.QUIT:
-                    exit()
+        #Main loop
+        # while True:
+        #     events = pygame.event.get()
+        #     for event in events:
+        #         if event.type == pygame.QUIT:
+        #             exit()
+        #
+        #     surface.fill((50, 50, 50))  # Background
+        #
+        #     # You can draw other UI elements here (e.g., game canvas on the right)
+        #     pygame.draw.rect(surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
+        #
+        #     game_settings.menu.update(events)
+        #     game_settings.menu.draw(surface)
+        #     pygame.display.flip()
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
 
-            surface.fill((50, 50, 50))  # Background
+                print(mouse_pos)
 
-            # You can draw other UI elements here (e.g., game canvas on the right)
+                for rendered_tile in rendered_tiles:
+                    sprite_rect = rendered_tile.sprite_rect
+
+                    if sprite_rect.collidepoint(mouse_pos):
+                        # TODO: Do not print these out in an actual game, it
+                        # would ruin the entire point of hiding the opponent's pieces.
+                        print(rendered_tile.str_encoding)
+
+                        if global_game_data.last_selected_piece is None:
+                            # Select the tile.
+                            global_game_data.last_selected_piece = rendered_tile
+
+                        else:
+                            from_pos = global_game_data.last_selected_piece.board_location
+                            to_pos = rendered_tile.board_location
+
+                            move_cmd = gen_move_cmd(from_pos, to_pos)
+
+                            # Un-select the tile.
+                            global_game_data.last_selected_piece = None
+            #You can draw other UI elements here (e.g., game canvas on the right)
             pygame.draw.rect(surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
 
             game_settings.menu.update(events)
             game_settings.menu.draw(surface)
             pygame.display.flip()
 
-if __name__ == "__main__":
+        return move_cmd
+def main():
     pygame.init()
     surface = pygame.display.set_mode((900, 600))
     game_settings.main(self=game_settings())
+
+if __name__ == "__main__":
+   main()
