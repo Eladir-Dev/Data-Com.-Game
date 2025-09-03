@@ -1,5 +1,6 @@
 import pygame
 import pygame_menu
+import random
 from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
@@ -63,33 +64,133 @@ class game_settings():
         * 'B' = Bomb (6)
         * 'F' = Flag (1)
         """
-        unitAmountIdx = 0
-        # unit[piece, amount]
-        units = [('S', 1), ('1', 1), ('G', 1), ('2', 2), ('3', 3), ('C', 4), ('L', 4), ('4', 4), ('8', 8), ('5', 5),
-                 ('B', 6), ('F', 1)]
-        acum = 0
-        for col in range(cols):  # creats the 2d array TODO todavia no esta terminado
-            for row in range(rows):
-                unit = units[unitAmountIdx]
-                amount = unit[1]
-                if (amount - acum) <= 0:
-                    unitAmountIdx += 1
-                    acum = 0
-                    unit = units[unitAmountIdx]
+        limits = {
+            'S': 1,
+            '1': 1,
+            'G': 1,
+            '2': 2,
+            '3': 3,
+            'C': 4,
+            'L': 4,
+            '4': 4,
+            '8': 8,
+            '5': 5,
+            'B': 6,
+            'F': 1
+        }
 
-                    if debug:
-                        print(col, row)
-                    self.pieces[col][row] = unit[0]  # adds string to 2d array
-                    acum = acum + 1
+        # Create the deck (2D array)
+        deck = [['' for _ in range(10)] for _ in range(4)]
 
-                else:
-                    if debug:
-                        print(col, row)
-                    self.pieces[col][row] = unit[0]  # adds string to 2d array
-                    acum = acum + 1
+        # Flatten the deck for easier filling
+        flat_deck = [cell for row in deck for cell in row]
+
+        # Create a list of items to fill the deck based on limits
+        items_to_fill = []
+        for item, limit in limits.items():
+            items_to_fill.extend([item] * limit)
+
+        # Fill the deck
+        for i in range(len(flat_deck)):
+            if i < len(items_to_fill):
+                flat_deck[i] = items_to_fill[i]
+
+        # Convert the flat deck back to 2D
+        for i in range(4):
+            for j in range(10):
+                self.pieces[i][j] = flat_deck[i * 10 + j]
+        #
+        # unitAmountIdx = 0
+        # # unit[piece, amount]
+        # units = [('S', 1), ('1', 1), ('G', 1), ('2', 2), ('3', 3), ('C', 4), ('L', 4), ('4', 4), ('8', 8), ('5', 5),
+        #          ('B', 6), ('F', 1)]
+        # acum = 0
+        # for col in range(cols):  # creats the 2d array TODO todavia no esta terminado
+        #     for row in range(rows):
+        #         unit = units[unitAmountIdx]
+        #         amount = unit[1]
+        #         if (amount - acum) <= 0:
+        #             unitAmountIdx += 1
+        #             acum = 0
+        #             unit = units[unitAmountIdx]
+        #
+        #             if debug:
+        #                 print(col, row)
+        #             self.pieces[col][row] = unit[0]  # adds string to 2d array
+        #             acum = acum + 1
+        #
+        #         else:
+        #             if debug:
+        #                 print(col, row)
+        #             self.pieces[col][row] = unit[0]  # adds string to 2d array
+        #             acum = acum + 1
         if debug:
             for col in range(cols):
                 print(self.pieces[col])
+
+    def create_random_deck(self):
+        """
+          This method creats a random deck
+          Parameters:
+            Output:
+              deck (2D array)
+        """
+
+        # limits = {
+        #     's': 1,
+        #     '1': 8,
+        #     '2': 5,
+        #     '3': 4,
+        #     '4': 4,
+        #     '5': 4,
+        #     '6': 3,
+        #     '7': 2,
+        #     '8': 1,
+        #     '9': 1,
+        #     'b': 6,
+        #     'f': 1
+        # }
+
+        limits = {
+            'S': 1,
+            '1': 1,
+            'G': 1,
+            '2': 2,
+            '3': 3,
+            'C': 4,
+            'L': 4,
+            '4': 4,
+            '8': 8,
+            '5': 5,
+            'B': 6,
+            'F': 1
+        }
+
+        # Create the deck (2D array)
+        deck = [['' for _ in range(10)] for _ in range(4)]
+
+        # Flatten the deck for easier filling
+        flat_deck = [cell for row in deck for cell in row]
+
+        # Create a list of items to fill the deck based on limits
+        items_to_fill = []
+        for item, limit in limits.items():
+            items_to_fill.extend([item] * limit)
+
+        # Shuffle the items to randomize their placement
+        random.shuffle(items_to_fill)
+
+        # Fill the deck
+        for i in range(len(flat_deck)):
+            if i < len(items_to_fill):
+                flat_deck[i] = items_to_fill[i]
+
+        # Convert the flat deck back to 2D
+        for i in range(4):
+            for j in range(10):
+                deck[i][j] = flat_deck[i * 10 + j]
+
+        return deck
 
     def empty_pieces(self):
         """
@@ -101,7 +202,7 @@ class game_settings():
 
     def main(self):
         #self.__init__()# TODO revisar coo mejora y si todo esta bien
-        game_settings = self.generate_screen()
+        #game_settings = self.generate_screen()
         #Main loop
         # while True:
         #     events = pygame.event.get()
