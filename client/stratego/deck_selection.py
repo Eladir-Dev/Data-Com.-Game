@@ -196,7 +196,7 @@ class game_settings():
         """
         This method empties the array of pieces from were the player selects his deck
         """
-        for row in range(len(self.pices)):
+        for row in range(len(self.pieces)):
             for col in range(len(self.pieces[row])):
                 self.pieces[row][col] = ''
 
