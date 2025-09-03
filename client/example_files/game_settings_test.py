@@ -22,11 +22,11 @@ menu = pygame_menu.Menu(
 menu.set_relative_position(0, 10)
 # Add widgets with manual positioning
 menu.add.label('==Game Options==', float=True).translate(5, 35)
-Title_spacing = 60
+button_spacing = 60
 menu.add.text_input('Name: ', default='Player1', float=True).translate(20, 100)
-menu.add.button('Start Game', lambda: print('Start'), float=True).translate(20, 160)
-menu.add.selector('Type: ', [('Online', 1), ('Local', 2)], float=True).translate(20, 220)
-menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 280)
+menu.add.button('Start Game', lambda: print('Start'), float=True).translate(20, 100+button_spacing)
+menu.add.selector('Type: ', [('Online', 1), ('Local', 2)], float=True).translate(20, 100+button_spacing*2)
+menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100+button_spacing*3)
 menu.add.button('<- Return', pygame_menu.events.EXIT, float=True).translate(20, menu_hight-60)
 
 # Main loop
