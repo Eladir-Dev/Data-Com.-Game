@@ -1,4 +1,6 @@
 import socket
+from pathlib import Path
+import random
 
 from server_types import BUF_SIZE
 
@@ -12,6 +14,40 @@ class WordGolfGame:
         self.players = players
         
         self.is_running = True
+
+        chosen_words = self.choose_words_for_game()
+        for i in range(len(self.players)):
+            self.players[i].queued_words = chosen_words[5:] if i == 0 else chosen_words[:5]
+        
+
+    def choose_words_for_game(self) -> list[str]:
+        WORD_DB_PATH = Path(__file__).parent / "word.db.txt"
+        
+        with open(WORD_DB_PATH, "r") as f:
+            words = f.read().split('\n')
+
+        # Randomly choose 10 words.
+        chosen_words = random.sample(words, 10)
+        return chosen_words
+    
+
+    def gen_feedback(self, actual_word: str, guess: str) -> str:
+        feedback = []
+
+        for i in range(len(actual_word)):
+            # Correct letter guess.
+            if actual_word[i] == guess[i]:
+                feedback.append('O')
+            
+            # Letter from guess is in the actual word, but in a different position.
+            elif guess[i] in actual_word:
+                feedback.append('!')
+
+            # Letter from guess is not in the actual word.
+            else:
+                feedback.append('X')
+
+        return "".join(feedback)
 
     
     def run(self):
@@ -73,10 +109,17 @@ class WordGolfGame:
 
             if data.startswith("!guess"):
                 fields = data.split(':')
-                guess = fields[1]
+                guess = fields[1].upper()
+
+                actual_word = self.players[curr_player_idx].queued_words[-1]
+
+                # TODO: Send this only to the current player.
+                feedback = self.gen_feedback(actual_word, guess)
 
                 # TODO: actually process the guess
-                print(f"ERROR: handling guesses is not implemented yet; received guess '{guess}'")
+                print(f"ERROR: handling guesses is not implemented yet; received guess '{guess}'; actual word was '{actual_word}'")
+                print(f"Feedback: '{feedback}'")
+
                 return None
 
             else:
