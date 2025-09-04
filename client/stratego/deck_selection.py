@@ -1,14 +1,16 @@
 import pygame
+from pygame import Surface
+from pygame.event import Event
 import pygame_menu
 import random
 from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
 
+class GameSettings():
+    def __init__(self, surface: Surface):
+        self.surface = surface
 
-
-class game_settings():
-    def __init__(self):
         # Custom theme
         self.theme = pygame_menu.themes.THEME_DARK.copy()
         self.theme.widget_alignment = pygame_menu.locals.ALIGN_LEFT
@@ -40,10 +42,6 @@ class game_settings():
                                                                                               100 + button_spacing * 2)
         self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 3)
         self.menu.add.button('<- Return', pygame_menu.events.EXIT, float=True).translate(20, menu_hight - 60)
-
-
-    def generate_screen(self):
-        return game_settings()
 
     def fill_pieces(self, rows, cols,debug):
         """
@@ -201,6 +199,10 @@ class game_settings():
                 self.pieces[row][col] = ''
 
     def main(self):
+        while True:
+            events = pygame.event.get()
+            self.update(events)
+
         #self.__init__()# TODO revisar coo mejora y si todo esta bien
         #game_settings = self.generate_screen()
         #Main loop
@@ -218,45 +220,55 @@ class game_settings():
         #     game_settings.menu.update(events)
         #     game_settings.menu.draw(surface)
         #     pygame.display.flip()
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = event.pos
+        # events = pygame.event.get()
+        # for event in events:
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         mouse_pos = event.pos
 
-                print(mouse_pos)
+        #         print(mouse_pos)
 
-                for rendered_tile in rendered_tiles:
-                    sprite_rect = rendered_tile.sprite_rect
+        #         for rendered_tile in rendered_tiles:
+        #             sprite_rect = rendered_tile.sprite_rect
 
-                    if sprite_rect.collidepoint(mouse_pos):
-                        # TODO: Do not print these out in an actual game, it
-                        # would ruin the entire point of hiding the opponent's pieces.
-                        print(rendered_tile.str_encoding)
+        #             if sprite_rect.collidepoint(mouse_pos):
+        #                 # TODO: Do not print these out in an actual game, it
+        #                 # would ruin the entire point of hiding the opponent's pieces.
+        #                 print(rendered_tile.str_encoding)
 
-                        if global_game_data.last_selected_piece is None:
-                            # Select the tile.
-                            global_game_data.last_selected_piece = rendered_tile
+        #                 if global_game_data.last_selected_piece is None:
+        #                     # Select the tile.
+        #                     global_game_data.last_selected_piece = rendered_tile
 
-                        else:
-                            from_pos = global_game_data.last_selected_piece.board_location
-                            to_pos = rendered_tile.board_location
+        #                 else:
+        #                     from_pos = global_game_data.last_selected_piece.board_location
+        #                     to_pos = rendered_tile.board_location
 
-                            move_cmd = gen_move_cmd(from_pos, to_pos)
+        #                     move_cmd = gen_move_cmd(from_pos, to_pos)
 
-                            # Un-select the tile.
-                            global_game_data.last_selected_piece = None
+        #                     # Un-select the tile.
+        #                     global_game_data.last_selected_piece = None
             #You can draw other UI elements here (e.g., game canvas on the right)
-            pygame.draw.rect(surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
 
-            game_settings.menu.update(events)
-            game_settings.menu.draw(surface)
-            pygame.display.flip()
 
-        return move_cmd
+    def update(self, events: list[Event]):
+        """
+        Updates the UI.
+        """
+
+        # Draw the UI.
+        pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
+
+        self.menu.update(events)
+        self.menu.draw(self.surface)
+        pygame.display.flip()
+
+
 def main():
     pygame.init()
     surface = pygame.display.set_mode((900, 600))
-    game_settings.main(self=game_settings())
+
+    game_settings = GameSettings(surface)
+    game_settings.main()
 
 if __name__ == "__main__":
    main()
