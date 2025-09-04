@@ -134,6 +134,9 @@ def start_word_golf_game(player_1: WordGolfPlayer, player_2: WordGolfPlayer):
     player_1.conn.sendall(f"?game-start:word_golf:{player_2.username}".encode())
     player_2.conn.sendall(f"?game-start:word_golf:{player_1.username}".encode())
 
+    # Give the clients time to process the game's start.
+    time.sleep(0.5)
+
     print(f"LOG: {player_1.username} joined a Word golf game")
     print(f"LOG: {player_2.username} joined a Word golf game")
 
