@@ -150,7 +150,12 @@ def connect_word_golf(server_command_queue: Queue[str], client_queue: Queue[str]
         while client_running:
             try:
                 data = s.recv(BUF_SIZE).decode()
-                print(f"ERROR: received data from server: '{data}'")
+
+                if data.startswith("?update"):
+                    server_command_queue.put(data)
+
+                else:
+                    print(f"ERROR: received data from server: '{data}'")
 
                 # # Forward the turn info server command to the UI.
                 # if data.startswith("?turn-info"):
@@ -174,12 +179,10 @@ def connect_word_golf(server_command_queue: Queue[str], client_queue: Queue[str]
 
             while not client_queue.empty():
                 data = client_queue.get()
-                print(f"ERROR: received data from server: '{data}'")
 
-                # # Forward the move command to the server.
-                # if data.startswith('!move'):
-                #     print(f"LOG: trying to send move command: '{data}'")
-                #     s.sendall(data.encode())
+                if data.startswith("!guess"):
+                    print(f"LOG: trying to send guess command: '{data}'")
+                    s.sendall(data.encode())
 
-                # else:
-                #     print(f"ERROR: Unknown client message '{data}'")
+                else:
+                    print(f"ERROR: Unknown client message '{data}'")

@@ -36,6 +36,8 @@ class WordGolfGlobalState:
         self.own_username = own_username
         self.opp_username = opponent_username
 
+        self.typed_letters: list[str] = []
+
         self.own_points = 0
         self.own_queued_word_amt = 0
 

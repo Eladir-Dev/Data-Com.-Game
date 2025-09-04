@@ -71,7 +71,7 @@ class WordGolfGame:
             conn_to_handle = self.players[curr_player_idx].conn
             data = conn_to_handle.recv(BUF_SIZE).decode()
 
-            if data.startswith("?guess"):
+            if data.startswith("!guess"):
                 fields = data.split(':')
                 guess = fields[1]
 

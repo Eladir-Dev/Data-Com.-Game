@@ -215,6 +215,22 @@ def start():
                 assert GLOBAL_STATE.stratego_state, "Stratego state was None"
 
                 GLOBAL_STATE.stratego_state.current_move_result = move_result
+
+
+            elif data.startswith("?update"):
+                fields = data.split(':')
+                own_points = int(fields[1])
+                own_queued_word_amt = int(fields[2])
+                opp_points = int(fields[3])
+                opp_queued_word_amt = int(fields[4])
+
+                assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
+
+                # Sync the (client) global state with the server's state.
+                GLOBAL_STATE.word_golf_state.own_points = own_points
+                GLOBAL_STATE.word_golf_state.opp_points = opp_points
+                GLOBAL_STATE.word_golf_state.own_queued_word_amt = own_queued_word_amt
+                GLOBAL_STATE.word_golf_state.opp_queued_word_amt = opp_queued_word_amt
             
 
             elif data.startswith("?game-over"):
@@ -281,7 +297,10 @@ def start():
         elif game_state == 'in_word_golf_game':
             assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
 
-            word_golf_game.word_golf_update(events, surface, GLOBAL_STATE.word_golf_state)
+            guess_cmd = word_golf_game.word_golf_update(events, surface, GLOBAL_STATE.word_golf_state)
+
+            if guess_cmd is not None:
+                SOCKET_CLIENT_QUEUE.put(guess_cmd)
 
         elif game_state == 'loading_word_golf_game':
             loading_window_word_golf.update(events)
