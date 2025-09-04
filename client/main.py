@@ -7,8 +7,14 @@ def main():
     main_game_ui.start()
 
 if __name__ == "__main__":
+    args = sys.argv[1:]
 
-    if len(sys.argv) == 1:
+    if len(args) == 0:
         main()
-    elif sys.argv[1] == "deck":
+
+    # For testing out the custom deck selection functionality.
+    elif args[0] == "deck":
         deck_selection.main()
+
+    else:
+        print(f"ERROR: unknown command arguments: {' '.join(args)}")
