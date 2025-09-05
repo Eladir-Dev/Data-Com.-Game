@@ -5,7 +5,7 @@ This module is for displaying the Stratego board on a game window.
 import pygame
 from pygame import Surface, Rect
 from pygame.event import Event
-from typing import Any
+from pathlib import Path
 
 from global_state import StrategoGlobalState
 
@@ -13,32 +13,14 @@ from .stratego_types import (StrategoRenderedTile, ROWS, COLS, GRID_START_LOCATI
                              SPRITE_HEIGHT, StrategoColor, StrategoPieceName, get_full_color_name, parse_piece_from_encoded_str)
 
 from game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
-
-def get_module_outer_path(script_file_path: str) -> str:
-    """
-    Utility function for getting the outer path of the given script path 
-    (i.e. gets the directory that the file given by `__file__` is in). 
-    """
-    return '\\'.join(script_file_path.split('\\')[:-1])
+import drawing_utils
 
 
 def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair = (SPRITE_WIDTH, SPRITE_HEIGHT)) -> Rect:
-    scaled = pygame.transform.scale(sprite, target_dimensions)
-    sprite_rect = scaled.get_rect(center=location)
-    surface.blit(scaled, sprite_rect)
-    return sprite_rect
+    return drawing_utils.draw_sprite_on_surface(surface, sprite, location, target_dimensions)
 
 
-SPRITE_FOLDER = f"{get_module_outer_path(__file__)}/assets"
-
-
-def draw_text(surface: Surface, text: str, font_size: int, location: Pair, color: tuple[int, int, int]):
-    font = pygame.font.SysFont(None, font_size)
-    text_surface = font.render(text, True, color)
-
-    # Make `location` be the center.
-    text_rect = text_surface.get_rect(center=location)
-    surface.blit(text_surface, text_rect)
+SPRITE_FOLDER = Path(__file__).parent / "assets"
 
 
 def draw_empty_grid_slot(surface: Surface, location: Pair) -> Rect:
@@ -88,13 +70,13 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: Str
             surface.fill((0, 0, 0))
 
     # Draw UI text.
-    draw_text(surface, "Stratego", 100, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
+    drawing_utils.draw_text(surface, "Stratego", 100, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
 
     player_info_string = f"{global_game_data.own_username} ({global_game_data.own_color}) VS {global_game_data.opp_username} ({global_game_data.opp_color})"
-    draw_text(surface, player_info_string, 40, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+    drawing_utils.draw_text(surface, player_info_string, 40, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
 
     turn_info_string = f"Current Turn: ({global_game_data.turn})"
-    draw_text(surface, turn_info_string, 40, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+    drawing_utils.draw_text(surface, turn_info_string, 40, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
 
 
     rendered_tiles = render_board_tiles(surface, global_game_data)
