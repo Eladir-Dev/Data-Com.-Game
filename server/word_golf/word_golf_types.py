@@ -11,3 +11,7 @@ class WordGolfPlayer:
     # default arguments.
     queued_words: list[str] = field(default_factory=lambda: [])
 
+    already_guessed_words: set[str] = field(default_factory=lambda: set())
+
+    feedback_history: list[str] = field(default_factory=lambda: [])
+

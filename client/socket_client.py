@@ -151,11 +151,16 @@ def connect_word_golf(server_command_queue: Queue[str], client_queue: Queue[str]
             try:
                 data = s.recv(BUF_SIZE).decode()
 
+                # Forward server commands to the UI.
+
                 if data.startswith("?update"):
                     server_command_queue.put(data)
 
+                elif data.startswith("?feedback-history"):
+                    server_command_queue.put(data)
+
                 else:
-                    print(f"ERROR: received data from server: '{data}'")
+                    print(f"ERROR: received unknown data from server: '{data}'")
 
                 # # Forward the turn info server command to the UI.
                 # if data.startswith("?turn-info"):

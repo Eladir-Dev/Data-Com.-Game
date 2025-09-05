@@ -7,6 +7,12 @@ from server_types import BUF_SIZE
 from .word_golf_types import WordGolfPlayer
 
 class WordGolfGame:
+    # The feedback that a correct guess would generate.
+    CORRECT_FEEDBACK = "OOOOO"
+
+    # The maximum number of tries that a player has for guessing a word.
+    MAX_FEEDBACK_HIST_LEN = 6
+
     def __init__(self, players: list[WordGolfPlayer]):
         if len(players) != 2:
             raise Exception(f"Expected 2 Word Golf players, not {len(players)}")
@@ -48,6 +54,10 @@ class WordGolfGame:
                 feedback.append('X')
 
         return "".join(feedback)
+    
+
+    def gen_feedback_history_cmd_for_player(self, player: WordGolfPlayer) -> str:
+        return f"?feedback-history:{':'.join(player.feedback_history)}"
 
     
     def run(self):
@@ -111,14 +121,34 @@ class WordGolfGame:
                 fields = data.split(':')
                 guess = fields[1].upper()
 
+                if guess in self.players[curr_player_idx].already_guessed_words:
+                    print(f"LOG: Player #{curr_player_idx} has already tried guessing: '{guess}'")
+                    return None
+                
+                # Mark the guessed word as already guessed (for avoiding re-sending the same word).
+                self.players[curr_player_idx].already_guessed_words.add(guess)
+
+                # Get the actual word that the player needs to guess.
                 actual_word = self.players[curr_player_idx].queued_words[-1]
 
-                # TODO: Send this only to the current player.
+                print(f"LOG: received guess '{guess}'; actual word was '{actual_word}'")
+
                 feedback = self.gen_feedback(actual_word, guess)
 
-                # TODO: actually process the guess
-                print(f"ERROR: handling guesses is not implemented yet; received guess '{guess}'; actual word was '{actual_word}'")
-                print(f"Feedback: '{feedback}'")
+                if feedback != WordGolfGame.CORRECT_FEEDBACK:
+                    print(f"LOG: Player #{curr_player_idx} incorrectly guessed their word; +1 point")
+                    self.players[curr_player_idx].points += 1
+
+                # Save the feedback on the player's feedback history.
+                self.players[curr_player_idx].feedback_history.append(feedback)
+
+                # Send the feedback history only to the current player.
+                feedback_hist_cmd = self.gen_feedback_history_cmd_for_player(self.players[curr_player_idx])
+                conn_to_handle.sendall(feedback_hist_cmd.encode())
+
+                if len(self.players[curr_player_idx].feedback_history) == WordGolfGame.MAX_FEEDBACK_HIST_LEN:
+                    # TODO: Do something once the player can no longer make guesses for this word.
+                    print(f"LOG: Player #{curr_player_idx} ran out of guesses for '{actual_word}'")
 
                 return None
 

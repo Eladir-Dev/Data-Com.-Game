@@ -231,6 +231,20 @@ def start():
                 GLOBAL_STATE.word_golf_state.opp_points = opp_points
                 GLOBAL_STATE.word_golf_state.own_queued_word_amt = own_queued_word_amt
                 GLOBAL_STATE.word_golf_state.opp_queued_word_amt = opp_queued_word_amt
+
+
+            elif data.startswith("?feedback-history"):
+                fields = data.split(':')
+                feedback_hist = fields[1:]
+
+                assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
+
+                GLOBAL_STATE.word_golf_state.feedback_history = feedback_hist
+
+                # DEBUG: print the feedback history and current word.
+                for feedback in GLOBAL_STATE.word_golf_state.feedback_history:
+                    print(feedback)
+                print(GLOBAL_STATE.word_golf_state.typed_letters)
             
 
             elif data.startswith("?game-over"):

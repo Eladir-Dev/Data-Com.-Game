@@ -44,6 +44,8 @@ class WordGolfGlobalState:
         self.opp_points = 0
         self.opp_queued_word_amt = 0
 
+        self.feedback_history: list[str] = []
+
     
 @dataclass
 class GlobalClientState:
