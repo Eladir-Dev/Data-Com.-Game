@@ -9,7 +9,7 @@ from typing import Any
 
 from global_state import StrategoGlobalState
 
-from .stratego_types import (StrategoBoard, StrategoMoveResult, StrategoRenderedTile, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
+from .stratego_types import (StrategoRenderedTile, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
                              SPRITE_HEIGHT, StrategoColor, StrategoPieceName, get_full_color_name, parse_piece_from_encoded_str)
 
 from game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
@@ -24,7 +24,7 @@ def get_module_outer_path(script_file_path: str) -> str:
 
 def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair = (SPRITE_WIDTH, SPRITE_HEIGHT)) -> Rect:
     scaled = pygame.transform.scale(sprite, target_dimensions)
-    sprite_rect = scaled.get_rect(topleft=location)
+    sprite_rect = scaled.get_rect(center=location)
     surface.blit(scaled, sprite_rect)
     return sprite_rect
 

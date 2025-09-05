@@ -20,7 +20,7 @@ SPRITE_HEIGHT = 32
 # NOTE: The x coordinate of this tuple computes the starting coordinate such that 
 # the grid renders in the center of the screen.
 # The y coordinate is arbitrary, it just serves as padding.
-GRID_START_LOCATION = (SCREEN_WIDTH // 2 - (SPRITE_WIDTH * ROWS) // 2, 100)
+GRID_START_LOCATION = ((SPRITE_WIDTH // 2) + SCREEN_WIDTH // 2 - (SPRITE_WIDTH * ROWS) // 2, 100)
 
 StrategoColor = Literal['r', 'b']
 StrategoPieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant', 'major', 'marshal', 'miner', 'scout', 'sergeant', 'spy']
