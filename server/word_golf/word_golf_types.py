@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Literal
 from server_types import Connection
 
 @dataclass
@@ -15,3 +16,8 @@ class WordGolfPlayer:
 
     feedback_history: list[str] = field(default_factory=lambda: [])
 
+
+@dataclass
+class WordGolfOccurrence:
+    kind: Literal['wrong_guess', 'correct_guess', 'ran_out_of_guesses']
+    player_idx: int

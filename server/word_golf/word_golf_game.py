@@ -4,7 +4,7 @@ import random
 
 from server_types import BUF_SIZE
 
-from .word_golf_types import WordGolfPlayer
+from .word_golf_types import WordGolfPlayer, WordGolfOccurrence
 
 class WordGolfGame:
     # The feedback that a correct guess would generate.
@@ -104,15 +104,38 @@ class WordGolfGame:
                     # The index of the player that is not the "current" player.
                     other_idx = (curr_idx + 1) % 2
 
-                    # TODO: This handling method should return something.
+                    # NOTE: Since the occurrence provides a player index, these cases can be 
+                    # moved to another method.
+
                     # Based on what this returns, decide whether to update the client's state.
-                    self.handle_player_client_response(curr_idx)
+                    occurence = self.handle_player_client_response(curr_idx)
+
+                    if occurence is not None:
+                        if occurence.kind == 'wrong_guess':
+                            print(f"LOG: Player #{occurence.player_idx} guesses the wrong word (+1 point)")
+                            self.players[occurence.player_idx].points += 1
+
+                        # TODO: for the bottom 2 cases, swap out / remove the current queued word; no point in keeping the same one.
+                        # ALSO: reset things like the `.already_guessed_words` set and the feedback history.
+
+                        elif occurence.kind == 'correct_guess':
+                            print(f"LOG: Player #{occurence.player_idx} correctly guessed their word (-5 points)")
+
+                            # Remove points from the player. Clamps to 0 if the result is negative.
+                            curr_pts = self.players[occurence.player_idx].points
+                            self.players[occurence.player_idx].points = max(curr_pts - 5, 0)
+
+                        elif occurence.kind == 'ran_out_of_guesses':
+                            print(f"LOG: Player #{occurence.player_idx} ran out of guesses (+3 points)")
+                            self.players[occurence.player_idx].points += 3
+
+                        else:
+                            print(f"ERROR: unhandled occurence kind '{occurence.kind}'")
+
+                        update_needed = True
 
 
-    # TODO: What should this method return? It returns `str` in the happy-case as a placeholder 
-    # for now, but it should probably return a specialized type, like the handle client method 
-    # in Stratego does.
-    def handle_player_client_response(self, curr_player_idx: int) -> str | None:
+    def handle_player_client_response(self, curr_player_idx: int) -> WordGolfOccurrence | None:
         try:
             conn_to_handle = self.players[curr_player_idx].conn
             data = conn_to_handle.recv(BUF_SIZE).decode()
@@ -133,11 +156,14 @@ class WordGolfGame:
 
                 print(f"LOG: received guess '{guess}'; actual word was '{actual_word}'")
 
+                occurence: WordGolfOccurrence | None = None
+
                 feedback = self.gen_feedback(actual_word, guess)
 
                 if feedback != WordGolfGame.CORRECT_FEEDBACK:
-                    print(f"LOG: Player #{curr_player_idx} incorrectly guessed their word; +1 point")
-                    self.players[curr_player_idx].points += 1
+                    occurence = WordGolfOccurrence(kind='wrong_guess', player_idx=curr_player_idx)
+                else:
+                    occurence = WordGolfOccurrence(kind='correct_guess', player_idx=curr_player_idx)
 
                 # Save the feedback on the player's feedback history.
                 self.players[curr_player_idx].feedback_history.append(feedback)
@@ -147,10 +173,10 @@ class WordGolfGame:
                 conn_to_handle.sendall(feedback_hist_cmd.encode())
 
                 if len(self.players[curr_player_idx].feedback_history) == WordGolfGame.MAX_FEEDBACK_HIST_LEN:
-                    # TODO: Do something once the player can no longer make guesses for this word.
-                    print(f"LOG: Player #{curr_player_idx} ran out of guesses for '{actual_word}'")
+                    if occurence.kind != 'correct_guess':
+                        occurence = WordGolfOccurrence(kind='ran_out_of_guesses', player_idx=curr_player_idx)
 
-                return None
+                return occurence
 
             else:
                 print(f"ERROR: Invalid client response '{data}'")
