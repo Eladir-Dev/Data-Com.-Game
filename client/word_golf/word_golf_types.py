@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+WORD_LEN = 5
+
 @dataclass
 class WordGolfStartingPlayerInfo:
     """

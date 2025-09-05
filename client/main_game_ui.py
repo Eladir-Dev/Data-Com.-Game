@@ -241,10 +241,8 @@ def start():
 
                 GLOBAL_STATE.word_golf_state.feedback_history = feedback_hist
 
-                # DEBUG: print the feedback history and current word.
-                for feedback in GLOBAL_STATE.word_golf_state.feedback_history:
-                    print(feedback)
-                print(GLOBAL_STATE.word_golf_state.typed_letters)
+                # Clear the client-side typed letters once the player gets feedback from the server.
+                GLOBAL_STATE.word_golf_state.typed_letters = []
             
 
             elif data.startswith("?game-over"):
