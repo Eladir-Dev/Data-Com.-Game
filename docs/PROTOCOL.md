@@ -5,7 +5,8 @@ This document serves to explain the usage and syntax of the DCG-SWG protocol. Th
 There are two types of commands: client-bound and server-bound. Client-bound commands are sent by the server to the client and always start
 with the `?` character. Server-bound commands are always sent by the client to the server and always start with the `!` character. The commands are 
 sent as UTF-8 encoded strings. Commands start with their respective symbol along with the name of the command. Commands can also contain zero or more fields 
-which follow the command name. Fields are delimited by a `:` symbol.
+which follow the command name. Fields are delimited by a `:` symbol. In the specifications below, the `<>` and `{}` symbols are merely for denoting fields which 
+vary depending on the specific execution of the game.
 
 ## Command Format
 ### Client-bound
@@ -20,7 +21,7 @@ which follow the command name. Fields are delimited by a `:` symbol.
 
 #### Game Request Command
 ##### Format
-`!game:stratego:<starting_deck>`
+`!game:stratego:{starting_deck}`
 
 ##### Description
 Sent by the client to queue a Stratego game with the given starting deck.
@@ -51,7 +52,7 @@ Each element of the array is delimited by a `:` symbol and turned into a UTF-8 e
 
 #### Move Result Command
 ##### Format
-`"?move-result:{kind}:{row_atk}:{col_atk}:{row_def}:{col_def}`
+`?move-result:{kind}:{row_atk}:{col_atk}:{row_def}:{col_def}`
 
 ##### Description
 Sent by the server for letting the clients know the result of a move. In Stratego, different outcomes can occurr as a result 
@@ -113,12 +114,49 @@ Sent by the server at the start of a game to let the player know the opponent's 
 
 ---
 
-#### ... Command
+#### Update Command
 ##### Format
-`...`
+`?update:{own_points}:{own_queued_word_amt}:{opponent_points}:{opponent_queued_word_amt}`
 
 ##### Description
-...
+Send by the server to each player to synchronize the server's state with the clients'. Sends each player 
+the their number of points and queued words. The order depends on the receiving player. When this command is 
+sent to a particular client, the first two fields always correspond to their point and queued word amounts.
+
+---
+
+#### Feedback History Command
+##### Format
+`?feedback-history:{own_feedback_history}`
+
+##### Description
+Sent by the server to a particular client after they send a valid `!guess` command. Players in Word Golf are 
+each assigned list of words. Players need to guess the top-most word of their corresponding list. Players have 
+6 attempts at trying to guess their word. After each guess of the current word, the server generates a feedback string.
+
+* For example, if a player currently needs to solve the word `APPLE`, but they incorrectly guess `ANIME`, the server would generate the following feedback string: `OXXXO`. This is because both `A` and `E` are correctly guessed letters, but the rest of the letters are not.
+
+* Another example, a player needs to guess `PAINT`, but incorrectly guesses `APPLE`, the following feedback string would be generated: `!!XXX`. This is because the first two letters are present in the correct word, but in the incorrect position, the rest of the words are incorrect and not present in the correct word.
+
+* The feedback that is generated for a correct guess is `OOOOO` since all the letters are correct.
+
+* Summary:
+  - `O` correct letter in the correct position
+  - `!` correct letter but in the incorrect position
+  - `X` incorrect letter which is not even present in the correct word
+
+As the player makes guesses for a word, they accumulate a feedback history. A player's entire history for the current word gets re-sent after each 
+guess for a particular word. Once a player correctly guesses a word or runs out of guesses, the server assigns them a new word (out of the words they 
+have queued up) and their feedback history is reset.
+
+---
+
+#### Guess Command
+##### Format
+`!guess:{guessed_word}`
+
+##### Description
+Sent by the client to attempt to guess the word currently assigned to the player.
 
 ---
 
