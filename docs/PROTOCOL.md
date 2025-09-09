@@ -49,12 +49,31 @@ Each element of the array is delimited by a `:` symbol and turned into a UTF-8 e
 
 ---
 
-#### ... Command
+#### Move Result Command
 ##### Format
-`...`
+`"?move-result:{kind}:{row_atk}:{col_atk}:{row_def}:{col_def}`
 
 ##### Description
-...
+Sent by the server for letting the clients know the result of a move. In Stratego, different outcomes can occurr as a result 
+of moves:
+* A piece simply moves to an empty space (`kind = movement`).
+* A piece attacks an opponent piece and defeats it (`kind = attack_success`).
+* A piece attacks an opponent piece and gets defeated (`kind = attack_fail`).
+* A piece attacks another piece and both the attacking and defending pieces get defeated (`kind = tie`).
+
+This command also contains the position (row/column) of the attacking and defending pieces respectively. All this information 
+can be used by the client to convey to the player what happened during a movement through the use of UI, sound effects, etc.
+
+---
+
+#### Move Command
+##### Format
+`!move:{from_row}:{from_col}:{to_row}:{to_col}`
+
+##### Description
+Sent by the client to convey the intention to move the piece at the position (`from_row`, `from_col`) to the position (`to_row`, `to_col`). 
+The server and client use rows and columns for coordinates instead of x and y. If the client sends an invalid move (i.e. by trying to move an 
+opponent's piece) the server ignores the request and continues waiting for a valid move.
 
 ---
 
