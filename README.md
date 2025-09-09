@@ -16,6 +16,10 @@ El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.o
     2. Abrir al menos tres instancias del terminal en este directorio (1 para el servidor y 2 para el cliente).
     3. En un terminal, ir al directorio del servidor `cd server` y luego correrlo `python main.py`.
     4. En los otros dos terminales, ir al directorio del cliente `cd client` y correrlos `python main.py`.
+ 
+## Documentacion
+### Protocolo
+* [Enlace a documentacion del protocolo](docs/PROTOCOL.md).
 
 ## Ideas
 * Simple RPB (Puede ser complicado pensar en las mecanicas)
