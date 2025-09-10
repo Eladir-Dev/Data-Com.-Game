@@ -13,9 +13,11 @@ El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.o
 * OJO: El servidor tiene que estar corriendo para que funcione la aplicación.
 * Para probar la aplicación en un ambiente de prueba:
     1. Ir al directorio de `Data-Com.-Game`.
-    2. Abrir al menos tres instancias del terminal en este directorio (1 para el servidor y 2 para el cliente).
-    3. En un terminal, ir al directorio del servidor `cd server` y luego correrlo `python main.py`.
-    4. En los otros dos terminales, ir al directorio del cliente `cd client` y correrlos `python main.py`.
+    2. Asegurar de que tengas el paquete `uv` de Python instalado. Si no esta instalado, se puede instalar con `pip install uv`.
+    3. Abrir al menos tres instancias del terminal en este directorio (1 para el servidor y 2 para el cliente).
+    4. En un terminal, ir al directorio del servidor `cd server` y luego correrlo `uv run main.py`.
+    5. En los otros dos terminales, ir al directorio del cliente `cd client` y correrlos `uv run main.py`.
+    6. Una forma alternativa de correr el programa es mantenerse en el directorio de `Data-Com.-Game` y usar los comandos `uv run server/main.py` y `uv run client/main.py` para correr el servidor y el cliente respectivamente.
  
 ## Documentacion
 ### Protocolo
