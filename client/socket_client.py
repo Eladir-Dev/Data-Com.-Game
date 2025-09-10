@@ -6,11 +6,9 @@ import socket
 from queue import Queue
 from stratego.stratego_types import StrategoStartingPlayerInfo
 from word_golf.word_golf_types import WordGolfStartingPlayerInfo
+from typing import Callable
 
-# The server's hostname or IP address.
-# Since the server is being ran on the same machine, the loopback address is used.
-HOST = "127.0.0.1"  
-PORT = 49300        # The port used by the server
+PORT = 49300 # The port used by the server
 
 BUF_SIZE = 1024
 
@@ -25,15 +23,16 @@ def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
                 fields = client_msg.split(':')
                 game = fields[1]
                 username = fields[2]
+                server_host = fields[3]
 
                 if game == "stratego":
-                    starting_deck_repr = ':'.join(fields[3:]) # rejoin the deck
+                    starting_deck_repr = ':'.join(fields[4:]) # rejoin the deck
 
-                    connect_stratego(server_command_queue, client_queue, StrategoStartingPlayerInfo(username, starting_deck_repr))
+                    connect_stratego(server_host, server_command_queue, client_queue, StrategoStartingPlayerInfo(username, starting_deck_repr))
                     # Should there be a break here?
 
                 elif game == "word_golf":
-                    connect_word_golf(server_command_queue, client_queue, WordGolfStartingPlayerInfo(username))
+                    connect_word_golf(server_host, server_command_queue, client_queue, WordGolfStartingPlayerInfo(username))
                     # Should there be a break here?
 
                 else:
@@ -43,14 +42,14 @@ def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
                 print(f"ERROR: Unknown client message: '{client_msg}'")
 
 
-def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str], starting_player_info: StrategoStartingPlayerInfo):
+def connect_stratego(server_host: str, server_command_queue: Queue[str], client_queue: Queue[str], starting_player_info: StrategoStartingPlayerInfo):
     """
     Connects to the server. Sends commands from the server back 
     through the server command queue. Receives user messages from the client queue.
     """
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
+        s.connect((server_host, PORT))
 
         # Prevents the socket from blocking the entire client thread when reading.
         s.settimeout(1.0)
@@ -113,14 +112,14 @@ def connect_stratego(server_command_queue: Queue[str], client_queue: Queue[str],
                     print(f"ERROR: Unknown client message '{data}'")
 
 
-def connect_word_golf(server_command_queue: Queue[str], client_queue: Queue[str], starting_player_info: WordGolfStartingPlayerInfo):
+def connect_word_golf(server_host: str, server_command_queue: Queue[str], client_queue: Queue[str], starting_player_info: WordGolfStartingPlayerInfo):
     """
     Connects to the server. Sends commands from the server back 
     through the server command queue. Receives user messages from the client queue.
     """
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
+        s.connect((server_host, PORT))
 
         # Prevents the socket from blocking the entire client thread when reading.
         s.settimeout(1.0)

@@ -50,6 +50,7 @@ class WordGolfGlobalState:
 @dataclass
 class GlobalClientState:
     username: str
+    server_ip: str
     game_state: ValidState
     stratego_state: StrategoGlobalState | None = None
     word_golf_state: WordGolfGlobalState | None = None

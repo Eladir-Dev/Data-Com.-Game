@@ -18,6 +18,12 @@ import stratego.stratego_game as stratego_game
 
 import word_golf.word_golf_game as word_golf_game
 
+GLOBAL_STATE = GlobalClientState(
+    username="johndoe", 
+    server_ip="127.0.0.1", # localhost by default
+    game_state='main_menu',
+)
+
 #=======================Client conection====================#
 SOCKET_SERVER_CMD_QUEUE: queue.Queue[str] = queue.Queue()
 SOCKET_CLIENT_QUEUE: queue.Queue[str] = queue.Queue()
@@ -26,7 +32,7 @@ SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(SOCK
 SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
 SOCKET_CLIENT_THREAD.start()
 
-GLOBAL_STATE = GlobalClientState(username="johndoe", game_state='main_menu')
+
 
 def change_game_state(new_state: ValidState):
     """
@@ -45,10 +51,14 @@ def start():
         print(difficulty)
 
 
-    def set_username(new_username):
+    def set_username(new_username: str):
         GLOBAL_STATE.username = new_username
 
     
+    def set_server_ip(new_ip: str):
+        GLOBAL_STATE.server_ip = new_ip
+
+
     def show_game_select_menu():
         main_menu._open(game_select_menu)
 
@@ -69,7 +79,7 @@ def start():
 
         # Send the user's username and starting deck to the socket client (which then forwards it to the server).
         SOCKET_CLIENT_QUEUE.put(
-            f"!want-play-game:stratego:{GLOBAL_STATE.username}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
+            f"!want-play-game:stratego:{GLOBAL_STATE.username}:{GLOBAL_STATE.server_ip}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
         )
 
 
@@ -82,7 +92,7 @@ def start():
 
         # Send the user's username to the socket client (which then forwards it to the server).
         SOCKET_CLIENT_QUEUE.put(
-            f"!want-play-game:word_golf:{GLOBAL_STATE.username}"
+            f"!want-play-game:word_golf:{GLOBAL_STATE.username}:{GLOBAL_STATE.server_ip}"
         )
 
 
@@ -107,6 +117,7 @@ def start():
     # Se declaran los butones del menu y su funcion
     main_menu = pygame_menu.Menu('Stratego+Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
     main_menu.add.text_input('Name: ', default=GLOBAL_STATE.username, onchange=set_username)
+    main_menu.add.text_input('Server IP: ', default=GLOBAL_STATE.server_ip, onchange=set_server_ip)
     main_menu.add.button('Game Select', show_game_select_menu)
     main_menu.add.button('Settings', show_settings_menu)
     main_menu.add.button('Quit', pygame_menu.events.EXIT)
