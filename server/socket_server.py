@@ -147,7 +147,27 @@ def start_word_golf_game(player_1: WordGolfPlayer, player_2: WordGolfPlayer):
     game.run()
 
 
+def get_local_ip():
+    """
+    Returns the local IP address of the machine.
+    """
+    try:
+        # Create a socket and connect to an external server to get the local IP.
+        # This doesn't actually send data, it just establishes a route.
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+
+        return local_ip
+    
+    except Exception as e:
+        print(f"ERROR: Could not get local IP: {e}")
+        return "127.0.0.1"
+
+
 def run():
+    local_ip = get_local_ip()
+
     # AF_INET: socket family is IPv4
     # SOCK_STREAM: socket type is TCP (lossless)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -155,7 +175,7 @@ def run():
         s.listen()
         # This timeout is only for the accept calls (for connecting new clients).
         s.settimeout(2.0)
-        print(f"LOG: Server listening on {HOST}:{PORT}")
+        print(f"LOG: Server listening on {local_ip}:{PORT}")
 
         while True:
             try:
