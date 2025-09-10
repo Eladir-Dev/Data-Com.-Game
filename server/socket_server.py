@@ -160,6 +160,8 @@ def run():
         while True:
             try:
                 conn, addr = s.accept()
+                print(f"LOG: Handling connection from {addr}")
+
                 # Start a new thread for each client.
                 thread = threading.Thread(target=handle_client, args=(conn, addr))
                 thread.daemon = True
