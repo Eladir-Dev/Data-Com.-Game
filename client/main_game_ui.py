@@ -133,17 +133,17 @@ def start():
     loading_window_stratego = pygame_menu.Menu('Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     loading_window_stratego.add.label('Connecting...')
 
-    stratego_game_over_menu = pygame_menu.Menu('Stratego Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
-    stratego_game_over_menu.add.label('PLACEHOLDER TEXT', 'stratego_game_over_label')
-    stratego_game_over_menu.add.button('Go To Main Menu', lambda: change_game_state('main_menu'))
-    stratego_game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
-
     word_golf_menu = pygame_menu.Menu('Play Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     word_golf_menu.add.button('Find Game', start_loading_word_wolf_game)
     word_golf_menu.add.button('Local Game', host_word_golf_menu)
 
     loading_window_word_golf = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
     loading_window_word_golf.add.label('Connecting...')
+
+    game_over_menu = pygame_menu.Menu('Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
+    game_over_menu.add.label('PLACEHOLDER TEXT', 'game_over_label')
+    game_over_menu.add.button('Go To Main Menu', lambda: change_game_state('main_menu'))
+    game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
 
     # Se declara el sub menu
     settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
@@ -258,11 +258,21 @@ def start():
 
             elif data.startswith("?game-over"):
                 fields = data.split(':')
-                reason = fields[1]
+                game = fields[1]
+                reason = fields[2]
 
                 if reason == "winner-determined":
-                    winning_color = fields[2]
-                    game_over_message = f"The ({winning_color}) player has won!"
+                    if game == "stratego":
+                        winning_color = fields[3]
+                        game_over_message = f"The ({winning_color}) player has won!"
+
+                    elif game == "word_golf":
+                        winner_username = fields[3]
+                        game_over_message = f"Player '{winner_username}' has won!"
+
+                    else:
+                        print(f"ERROR: could not set game-over message; unknown game '{game}'")
+                        game_over_message = "ERROR: empty game over message"
 
                 elif reason == "abrupt-end":
                     game_over_message = "The game was abruptly ended."
@@ -271,11 +281,12 @@ def start():
                     print(f"ERROR: The game unexpectedly ended after server sent `{data}`.")
                     game_over_message = "MISSING GAME OVER MESSAGE"
 
-                label = stratego_game_over_menu.get_widget('stratego_game_over_label')
+                
+                label = game_over_menu.get_widget('game_over_label')
                 assert label
                 label.set_title(game_over_message)
 
-                change_game_state('finished_stratego_game')
+                change_game_state('finished_game')
 
             else:
                 print(f"ERROR: Unknown server command: '{data}'")
@@ -313,9 +324,9 @@ def start():
             loading_window_stratego.update(events)
             loading_window_stratego.draw(surface)
 
-        elif game_state == 'finished_stratego_game':
-            stratego_game_over_menu.update(events)
-            stratego_game_over_menu.draw(surface)
+        elif game_state == 'finished_game':
+            game_over_menu.update(events)
+            game_over_menu.draw(surface)
 
         elif game_state == 'in_word_golf_game':
             assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
@@ -328,9 +339,6 @@ def start():
         elif game_state == 'loading_word_golf_game':
             loading_window_word_golf.update(events)
             loading_window_word_golf.draw(surface)
-
-        elif game_state == 'finished_word_golf_game':
-            print("ERROR: word_golf is not implemented yet")
 
         else:
             print(f"ERROR: unhandled game state '{game_state}'")

@@ -183,11 +183,11 @@ class StrategoGame:
             try:
                 # There is a winner.
                 if self.result.winner is not None:
-                    player.conn.sendall(f"?game-over:winner-determined:{self.result.winner}".encode())
+                    player.conn.sendall(f"?game-over:stratego:winner-determined:{self.result.winner}".encode())
 
                 # The game abruptly ended before finishing normally.
                 elif self.result.abrupt_end:
-                    player.conn.sendall("?game-over:abrupt-end".encode())
+                    player.conn.sendall("?game-over:stratego:abrupt-end".encode())
 
                 else:
                     print("ERROR: Unknown win condition")

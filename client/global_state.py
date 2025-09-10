@@ -6,10 +6,9 @@ ValidState = Literal[
     'main_menu', 
     'loading_stratego_game',
     'in_stratego_game', 
-    'finished_stratego_game', 
     'in_word_golf_game',
     'loading_word_golf_game', 
-    'finished_word_golf_game',
+    'finished_game',
 ]
 
 class StrategoGlobalState:

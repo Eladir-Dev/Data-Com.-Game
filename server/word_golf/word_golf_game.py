@@ -4,7 +4,7 @@ import random
 
 from server_types import BUF_SIZE
 
-from .word_golf_types import WordGolfPlayer, WordGolfOccurrence
+from .word_golf_types import WordGolfPlayer, WordGolfOccurrence, WordGolfGameResult
 
 class WordGolfGame:
     # The feedback that a correct guess would generate.
@@ -24,6 +24,8 @@ class WordGolfGame:
         chosen_words = self.choose_words_for_game()
         for i in range(len(self.players)):
             self.players[i].queued_words = chosen_words[5:] if i == 0 else chosen_words[:5]
+
+        self.result: WordGolfGameResult | None = None
         
 
     def choose_words_for_game(self) -> list[str]:
@@ -69,11 +71,30 @@ class WordGolfGame:
 
         # End the game if a connection error occurs.
         except ConnectionResetError:
-            # self.result = StrategoGameResult(None, abrupt_end=True)
+            self.result = WordGolfGameResult(None, abrupt_end=True)
             pass
 
         # Game ended.
         print("LOG: Word Golf game ended")
+
+        for player in self.players:
+            # The result of the game must have been determined already.
+            assert self.result
+
+            try:
+                # There is a winner.
+                if self.result.winner_username is not None:
+                    player.conn.sendall(f"?game-over:word_golf:winner-determined:{self.result.winner_username}".encode())
+
+                # The game abruptly ended before finishing normally.
+                elif self.result.abrupt_end:
+                    player.conn.sendall("?game-over:word_golf:abrupt-end".encode())
+
+                else:
+                    print("ERROR: Unknown win condition")
+
+            # Do not bother trying to send a game over message if the client's socket is disconnected.
+            except ConnectionResetError: pass
 
 
     def run_main_game_loop(self):

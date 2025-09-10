@@ -158,6 +158,13 @@ def connect_word_golf(server_host: str, server_command_queue: Queue[str], client
                 elif data.startswith("?feedback-history"):
                     server_command_queue.put(data)
 
+                elif data.startswith("?game-over"):
+                    # Stop the client.
+                    client_running = False
+
+                    # Forward the game over command to the UI.
+                    server_command_queue.put(data)
+
                 else:
                     print(f"ERROR: received unknown data from server: '{data}'")
 

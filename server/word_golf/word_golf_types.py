@@ -21,3 +21,10 @@ class WordGolfPlayer:
 class WordGolfOccurrence:
     kind: Literal['wrong_guess', 'correct_guess', 'ran_out_of_guesses']
     player_idx: int
+
+
+@dataclass
+class WordGolfGameResult:
+    winner_username: str | None
+    abrupt_end: bool
+
