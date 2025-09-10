@@ -16,8 +16,8 @@ from word_golf.word_golf_game import WordGolfGame
 # Standard loopback interface address (localhost).
 # 127.0.0.1 makes it so that the server is only accesible from the same machine.
 # 0.0.0.0 allows connections from other machines.
-HOST = "127.0.0.1"  
-PORT = 3000        # Port to listen on (non-privileged ports are > 1023)
+HOST = "0.0.0.0"  
+PORT = 49300        # Port to listen on (non-privileged ports are > 1023)
 
 WAITING_TIMEOUT_IN_SECS = 1 
 

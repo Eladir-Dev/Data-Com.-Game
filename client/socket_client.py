@@ -10,7 +10,7 @@ from word_golf.word_golf_types import WordGolfStartingPlayerInfo
 # The server's hostname or IP address.
 # Since the server is being ran on the same machine, the loopback address is used.
 HOST = "127.0.0.1"  
-PORT = 3000        # The port used by the server
+PORT = 49300        # The port used by the server
 
 BUF_SIZE = 1024
 
