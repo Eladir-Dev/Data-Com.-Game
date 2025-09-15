@@ -8,6 +8,7 @@ import pygame_menu
 from pygame_menu import themes
 import queue
 import threading
+# from .stratego.deck_selection import *
 
 from global_state import GlobalClientState, StrategoGlobalState, ValidState, WordGolfGlobalState
 import socket_client
@@ -152,6 +153,8 @@ def start():
     # se declara la pantalla de carga
     loading = pygame_menu.Menu('Loading the Game...', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_DARK)
     loading.add.progress_bar("Progress", progressbar_id="1", default=0, width=200, )
+
+    # deck_selection_menu = GameSettings(surface, show_stratego_menu()) # TODO(Revisar porque no funciona)
 
     # se declara la flechita
     arrow = pygame_menu.widgets.LeftArrowSelection(arrow_size=(10, 15))
