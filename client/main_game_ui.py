@@ -8,7 +8,7 @@ import pygame_menu
 from pygame_menu import themes
 import queue
 import threading
-# from .stratego.deck_selection import *
+# from client.stratego.deck_selection import *
 
 from global_state import GlobalClientState, StrategoGlobalState, ValidState, WordGolfGlobalState
 import socket_client
