@@ -1,3 +1,6 @@
+# pyright: reportAttributeAccessIssue=false
+
+from typing import Callable
 import pygame
 from pygame import Surface
 from pygame.event import Event
@@ -7,8 +10,8 @@ from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
 
-class GameSettings():
-    def __init__(self, surface: Surface, back):
+class StrategoSettingsWindow():
+    def __init__(self, surface: Surface, go_to_prev_menu: Callable[[], None], go_to_start: Callable[[], None]):
         self.surface = surface
 
         # Custom theme
@@ -37,11 +40,11 @@ class GameSettings():
         self.menu.add.label('==Game Options==', float=True).translate(5, 35)
         button_spacing = 60
         self.menu.add.text_input('Name: ', default='Player1', float=True).translate(20, 100)
-        self.menu.add.button('Start Game', lambda: print('Start'), float=True).translate(20, 100 + button_spacing)
+        self.menu.add.button('Start Game', go_to_start, float=True).translate(20, 100 + button_spacing)
         # self.menu.add.selector('Type: ', [('Online', 1), ('Local', 2)], float=True).translate(20,
         #                                                                                       100 + button_spacing * 2)
         self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 2)
-        self.menu.add.button('<- Return', back, float=True).translate(20, menu_hight - 60)
+        self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
 
     def fill_pieces(self, rows, cols,debug):
         """
@@ -267,8 +270,8 @@ def main():
     pygame.init()
     surface = pygame.display.set_mode((900, 600))
 
-    game_settings = GameSettings(surface)
-    game_settings.main()
+    # game_settings = GameSettings(surface)
+    # game_settings.main()
 
 if __name__ == "__main__":
    main()

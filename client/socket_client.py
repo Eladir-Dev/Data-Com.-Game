@@ -6,7 +6,6 @@ import socket
 from queue import Queue
 from stratego.stratego_types import StrategoStartingPlayerInfo
 from word_golf.word_golf_types import WordGolfStartingPlayerInfo
-from typing import Callable
 
 PORT = 49300 # The port used by the server
 

@@ -9,6 +9,7 @@ ValidState = Literal[
     'in_word_golf_game',
     'loading_word_golf_game', 
     'finished_game',
+    'in_deck_selection_state'
 ]
 
 class StrategoGlobalState:

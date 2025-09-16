@@ -8,7 +8,7 @@ import pygame_menu
 from pygame_menu import themes
 import queue
 import threading
-from stratego.deck_selection import *
+from stratego.deck_selection import StrategoSettingsWindow
 
 from global_state import GlobalClientState, StrategoGlobalState, ValidState, WordGolfGlobalState
 import socket_client
@@ -68,8 +68,8 @@ def start():
         main_menu._open(settings_menu)
 
 
-    def show_stratego_menu():
-        game_select_menu._open(stratego_menu)
+    # def show_stratego_menu():
+    #     game_select_menu._open(stratego_menu)
 
 
     def start_loading_stratego_game():
@@ -113,6 +113,14 @@ def start():
         pass
 
 
+    def go_to_main_menu():
+        change_game_state('main_menu')
+
+
+    def show_deck_selection():
+        change_game_state("in_deck_selection_state")
+
+
     #===========================Logic===========================#
 
     # Se declaran los butones del menu y su funcion
@@ -124,7 +132,7 @@ def start():
     main_menu.add.button('Quit', pygame_menu.events.EXIT)
 
     game_select_menu = pygame_menu.Menu('Game Select', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
-    game_select_menu.add.button('Stratego', show_stratego_menu)
+    game_select_menu.add.button('Stratego', show_deck_selection)
     game_select_menu.add.button('Word Golf', show_word_golf_menu)
 
     stratego_menu = pygame_menu.Menu('Play Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
@@ -143,7 +151,7 @@ def start():
 
     game_over_menu = pygame_menu.Menu('Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
     game_over_menu.add.label('PLACEHOLDER TEXT', 'game_over_label')
-    game_over_menu.add.button('Go To Main Menu', lambda: change_game_state('main_menu'))
+    game_over_menu.add.button('Go To Main Menu', go_to_main_menu)
     game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
 
     # Se declara el sub menu
@@ -154,7 +162,11 @@ def start():
     loading = pygame_menu.Menu('Loading the Game...', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_DARK)
     loading.add.progress_bar("Progress", progressbar_id="1", default=0, width=200, )
 
-    # deck_selection_menu = GameSettings(surface, show_stratego_menu()) # TODO(Revisar porque no funciona)
+    deck_selection_menu = StrategoSettingsWindow(
+        surface, 
+        go_to_prev_menu=go_to_main_menu, 
+        go_to_start=start_loading_stratego_game
+    )
 
     # se declara la flechita
     arrow = pygame_menu.widgets.LeftArrowSelection(arrow_size=(10, 15))
@@ -313,6 +325,9 @@ def start():
             main_menu.draw(surface)
             if (main_menu.get_current().get_selected_widget()):
                 arrow.draw(surface, main_menu.get_current().get_selected_widget())
+
+        elif game_state == 'in_deck_selection_state':
+            deck_selection_menu.update(events)
 
         elif game_state == 'in_stratego_game':
             assert GLOBAL_STATE.stratego_state, "Stratego state was None"
