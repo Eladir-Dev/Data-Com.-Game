@@ -22,6 +22,8 @@ class WordGolfGame:
         
         self.is_running = True
 
+        self.already_solved_words: set[str] = set()
+
         chosen_words = self.choose_words_for_game()
         for i in range(len(self.players)):
             self.players[i].queued_words = chosen_words[5:] if i == 0 else chosen_words[:5]
@@ -66,6 +68,16 @@ class WordGolfGame:
     def send_feedback_history_to_player(self, player: WordGolfPlayer):
         # Send the feedback history only to the current player.
         feedback_hist_cmd = self.gen_feedback_history_cmd_for_player(player)
+        player.conn.sendall(feedback_hist_cmd.encode())
+
+
+    def gen_stashed_words_cmd_for_player(self, player: WordGolfPlayer) -> str:
+        return f"?stashed-words:{':'.join(player.stashed_words)}"
+    
+
+    def send_stashed_words_to_player(self, player: WordGolfPlayer):
+        # Send the feedback history only to the current player.
+        feedback_hist_cmd = self.gen_stashed_words_cmd_for_player(player)
         player.conn.sendall(feedback_hist_cmd.encode())
 
     
@@ -127,6 +139,10 @@ class WordGolfGame:
                 # Wait a small delay and then send the player's feedback history.
                 time.sleep(0.5)
                 self.send_feedback_history_to_player(self.players[curr_idx])
+
+                # Wait a small delay and then send the player's stashed words.
+                time.sleep(0.5)
+                self.send_stashed_words_to_player(self.players[curr_idx])
 
             # Receive data from both players until the game determines that client-state needs 
             # to be updated (by setting `update_needed = True`).
@@ -210,13 +226,13 @@ class WordGolfGame:
             curr_pts = self.players[occurrence.player_idx].points
             self.players[occurrence.player_idx].points = max(curr_pts - 5, 0)
 
-            self.switch_player_current_word(occurrence.player_idx)
+            self.switch_player_current_word(occurrence)
 
         elif occurrence.kind == 'ran_out_of_guesses':
             print(f"LOG: Player #{occurrence.player_idx} ran out of guesses (+3 points)")
             self.players[occurrence.player_idx].points += 3
 
-            self.switch_player_current_word(occurrence.player_idx)
+            self.switch_player_current_word(occurrence)
 
         else:
             print(f"ERROR: unhandled occurence kind '{occurrence.kind}'")
@@ -230,14 +246,23 @@ class WordGolfGame:
         curr_player.feedback_history = []
 
 
-    def switch_player_current_word(self, player_idx: int):
+    def switch_player_current_word(self, occurrence: WordGolfOccurrence):
+        player_idx = occurrence.player_idx
+
         self.reset_player_word_associated_data(player_idx)
 
         if len(self.players[player_idx].queued_words) > 1:
-            # TODO: Add this to the player's stash and mark it as 'already' solved so that it can't be stashed again.
             guessed_word = self.players[player_idx].queued_words.pop()
             print(f"LOG: Player '{self.players[player_idx].username}' is no longer guessing '{guessed_word}' now their word is '{self.players[player_idx].queued_words[-1]}'")
-            # ...
+            
+            if guessed_word not in self.already_solved_words:
+                self.already_solved_words.add(guessed_word)
+
+                # If a guessed word has not already been guessed before, 
+                # and the player has correctly guessed the word, then it is 
+                # added to their stash.
+                if occurrence.kind == 'correct_guess':
+                    self.players[player_idx].stashed_words.add(guessed_word)
 
         else:
             # This player outright wins.

@@ -16,6 +16,8 @@ class WordGolfPlayer:
 
     feedback_history: list[str] = field(default_factory=lambda: [])
 
+    stashed_words: set[str] = field(default_factory=lambda: set())
+
 
 @dataclass
 class WordGolfOccurrence:

@@ -274,7 +274,21 @@ def start():
 
                 # Clear the client-side typed letters once the player gets feedback from the server.
                 GLOBAL_STATE.word_golf_state.typed_letters = []
-            
+
+            elif data.startswith("?stashed-words"):
+                fields = data.split(':')
+                stashed_words = fields[1:]
+                
+                # Quirk with string split means that an empty word stash is parsed as [''].
+                # This `if` statement corrects this.
+                if len(stashed_words) == 1 and stashed_words[0] == '':
+                    stashed_words = []
+
+                assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
+
+                GLOBAL_STATE.word_golf_state.stashed_words = stashed_words
+
+                print(f"LOG: The stashed words are: {GLOBAL_STATE.word_golf_state.stashed_words}")
 
             elif data.startswith("?game-over"):
                 fields = data.split(':')

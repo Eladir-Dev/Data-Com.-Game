@@ -46,6 +46,8 @@ class WordGolfGlobalState:
 
         self.feedback_history: list[str] = []
 
+        self.stashed_words: list[str] = []
+
     
 @dataclass
 class GlobalClientState:
