@@ -1,6 +1,7 @@
 import socket
 from pathlib import Path
 import random
+import time
 
 from server_types import BUF_SIZE
 
@@ -61,6 +62,12 @@ class WordGolfGame:
     def gen_feedback_history_cmd_for_player(self, player: WordGolfPlayer) -> str:
         return f"?feedback-history:{':'.join(player.feedback_history)}"
 
+
+    def send_feedback_history_to_player(self, player: WordGolfPlayer):
+        # Send the feedback history only to the current player.
+        feedback_hist_cmd = self.gen_feedback_history_cmd_for_player(player)
+        player.conn.sendall(feedback_hist_cmd.encode())
+
     
     def run(self):
         """
@@ -71,7 +78,7 @@ class WordGolfGame:
 
         # End the game if a connection error occurs.
         except ConnectionResetError:
-            self.result = WordGolfGameResult(None, abrupt_end=True)
+            self.result = WordGolfGameResult(winner_username=None, abrupt_end=True)
             pass
 
         # Game ended.
@@ -117,6 +124,10 @@ class WordGolfGame:
 
                 self.players[curr_idx].conn.sendall(data.encode())
 
+                # Wait a small delay and then send the player's feedback history.
+                time.sleep(0.5)
+                self.send_feedback_history_to_player(self.players[curr_idx])
+
             # Receive data from both players until the game determines that client-state needs 
             # to be updated (by setting `update_needed = True`).
             update_needed = False
@@ -125,35 +136,19 @@ class WordGolfGame:
                     # The index of the player that is not the "current" player.
                     other_idx = (curr_idx + 1) % 2
 
-                    # NOTE: Since the occurrence provides a player index, these cases can be 
-                    # moved to another method.
-
                     # Based on what this returns, decide whether to update the client's state.
-                    occurence = self.handle_player_client_response(curr_idx)
+                    occurrence = self.handle_player_client_response(curr_idx)
 
-                    if occurence is not None:
-                        if occurence.kind == 'wrong_guess':
-                            print(f"LOG: Player #{occurence.player_idx} guesses the wrong word (+1 point)")
-                            self.players[occurence.player_idx].points += 1
-
-                        # TODO: for the bottom 2 cases, swap out / remove the current queued word; no point in keeping the same one.
-                        # ALSO: reset things like the `.already_guessed_words` set and the feedback history.
-
-                        elif occurence.kind == 'correct_guess':
-                            print(f"LOG: Player #{occurence.player_idx} correctly guessed their word (-5 points)")
-
-                            # Remove points from the player. Clamps to 0 if the result is negative.
-                            curr_pts = self.players[occurence.player_idx].points
-                            self.players[occurence.player_idx].points = max(curr_pts - 5, 0)
-
-                        elif occurence.kind == 'ran_out_of_guesses':
-                            print(f"LOG: Player #{occurence.player_idx} ran out of guesses (+3 points)")
-                            self.players[occurence.player_idx].points += 3
-
-                        else:
-                            print(f"ERROR: unhandled occurence kind '{occurence.kind}'")
-
+                    if occurrence is not None:
+                        self.manage_occurrence_after_player_action(occurrence)
                         update_needed = True
+
+                # Stop trying to read player data if the game stopped running.
+                if not self.is_running:
+                    # TODO: after this, the players don't receive updates.
+                    # ^^^ this is likely to cause problems so it's a good idea to send 
+                    # out one last update before ending the game
+                    break
 
 
     def handle_player_client_response(self, curr_player_idx: int) -> WordGolfOccurrence | None:
@@ -189,10 +184,6 @@ class WordGolfGame:
                 # Save the feedback on the player's feedback history.
                 self.players[curr_player_idx].feedback_history.append(feedback)
 
-                # Send the feedback history only to the current player.
-                feedback_hist_cmd = self.gen_feedback_history_cmd_for_player(self.players[curr_player_idx])
-                conn_to_handle.sendall(feedback_hist_cmd.encode())
-
                 if len(self.players[curr_player_idx].feedback_history) == WordGolfGame.MAX_FEEDBACK_HIST_LEN:
                     if occurence.kind != 'correct_guess':
                         occurence = WordGolfOccurrence(kind='ran_out_of_guesses', player_idx=curr_player_idx)
@@ -205,4 +196,59 @@ class WordGolfGame:
 
         except socket.timeout: 
             return None
+        
 
+    def manage_occurrence_after_player_action(self, occurrence: WordGolfOccurrence):
+        if occurrence.kind == 'wrong_guess':
+            print(f"LOG: Player #{occurrence.player_idx} guesses the wrong word (+1 point)")
+            self.players[occurrence.player_idx].points += 1
+
+        elif occurrence.kind == 'correct_guess':
+            print(f"LOG: Player #{occurrence.player_idx} correctly guessed their word (-5 points)")
+
+            # Remove points from the player. Clamps to 0 if the result is negative.
+            curr_pts = self.players[occurrence.player_idx].points
+            self.players[occurrence.player_idx].points = max(curr_pts - 5, 0)
+
+            self.switch_player_current_word(occurrence.player_idx)
+
+        elif occurrence.kind == 'ran_out_of_guesses':
+            print(f"LOG: Player #{occurrence.player_idx} ran out of guesses (+3 points)")
+            self.players[occurrence.player_idx].points += 3
+
+            self.switch_player_current_word(occurrence.player_idx)
+
+        else:
+            print(f"ERROR: unhandled occurence kind '{occurrence.kind}'")
+
+
+    def reset_player_word_associated_data(self, player_idx: int):
+        curr_player = self.players[player_idx]
+
+        # Reset the 'already guessed words' set and the feedback history.
+        curr_player.already_guessed_words = set()
+        curr_player.feedback_history = []
+
+
+    def switch_player_current_word(self, player_idx: int):
+        self.reset_player_word_associated_data(player_idx)
+
+        if len(self.players[player_idx].queued_words) > 1:
+            # TODO: Add this to the player's stash and mark it as 'already' solved so that it can't be stashed again.
+            guessed_word = self.players[player_idx].queued_words.pop()
+            print(f"LOG: Player '{self.players[player_idx].username}' is no longer guessing '{guessed_word}' now their word is '{self.players[player_idx].queued_words[-1]}'")
+            # ...
+
+        else:
+            # This player outright wins.
+            self.declare_winner(self.players[player_idx].username)
+
+
+    def declare_winner(self, winner_username: str):
+        """
+        Ends the game and declares a winner.
+        """
+        print(f"LOG: Player '{winner_username}' has won.")
+
+        self.is_running = False
+        self.result = WordGolfGameResult(winner_username, abrupt_end=False)

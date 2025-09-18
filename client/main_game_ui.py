@@ -262,6 +262,11 @@ def start():
             elif data.startswith("?feedback-history"):
                 fields = data.split(':')
                 feedback_hist = fields[1:]
+                
+                # Quirk with string split means that an empty feedback history is parsed as [''].
+                # This `if` statement corrects this.
+                if len(feedback_hist) == 1 and feedback_hist[0] == '':
+                    feedback_hist = []
 
                 assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
 
