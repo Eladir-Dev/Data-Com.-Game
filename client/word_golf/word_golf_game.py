@@ -3,19 +3,24 @@ from pygame.event import Event
 from pygame import Surface
 
 from game_types import SCREEN_WIDTH
-from .word_golf_types import WORD_LEN
+from .word_golf_types import WORD_LEN, MAX_FEEDBACK_HIST_SIZE
 from global_state import WordGolfGlobalState
 import drawing_utils
+
+SYMBOL_SIZE = 60
+MAIN_UI_WIDTH = SYMBOL_SIZE * WORD_LEN
+WORD_GOLF_MAIN_UI_START_POS = ((SCREEN_WIDTH - MAIN_UI_WIDTH) // 2, 100)
 
 def gen_guess_cmd(guess: str) -> str:
     return f"!guess:{guess}"
 
 
-def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
-    SYMBOL_SIZE = 30
-    MAIN_UI_WIDTH = SYMBOL_SIZE * WORD_LEN
-    WORD_GOLF_MAIN_UI_START_POS = ((SCREEN_WIDTH - MAIN_UI_WIDTH) // 2, 100)
+def draw_all_ui(surface: Surface, global_game_data: WordGolfGlobalState):
+    draw_feedback_and_typed_word_ui(surface, global_game_data)
+    draw_points_and_queued_word_ui(surface, global_game_data)
 
+
+def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
     feedback_amt = len(global_game_data.feedback_history)
 
     for i in range(feedback_amt):
@@ -71,6 +76,28 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
         )
     
 
+def draw_points_and_queued_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
+    # Draw the points and queued words UI after the main UI.
+    points_ui_start_location = (SCREEN_WIDTH // 2, WORD_GOLF_MAIN_UI_START_POS[1] + MAX_FEEDBACK_HIST_SIZE * SYMBOL_SIZE)
+    font_size = SYMBOL_SIZE * 3 // 4
+
+    drawing_utils.draw_text(
+        surface,
+        f"{global_game_data.own_username}: ({global_game_data.own_queued_word_amt} words queued) - ({global_game_data.own_points} pts)",
+        font_size,
+        points_ui_start_location,
+        color=(0, 0, 0),
+    )
+
+    drawing_utils.draw_text(
+        surface,
+        f"{global_game_data.opp_username} ({global_game_data.opp_queued_word_amt} words queued) ({global_game_data.opp_points} pts)",
+        font_size,
+        location=(points_ui_start_location[0], points_ui_start_location[1] + font_size),
+        color=(0, 0, 0),
+    )
+
+
 def word_golf_update(events: list[Event], surface: Surface, global_game_data: WordGolfGlobalState) -> str | None:
     debug_game_info_caption = f"{global_game_data.own_username} ({global_game_data.own_queued_word_amt} words queued) ({global_game_data.own_points} pts) VS {global_game_data.opp_username} ({global_game_data.opp_queued_word_amt} words queued) ({global_game_data.opp_points} pts)"
 
@@ -80,7 +107,7 @@ def word_golf_update(events: list[Event], surface: Surface, global_game_data: Wo
     # Clear the screen.
     surface.fill((100, 100, 100))
 
-    draw_feedback_and_typed_word_ui(surface, global_game_data)
+    draw_all_ui(surface, global_game_data)
 
     guess_cmd: str | None = None
 
