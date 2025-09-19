@@ -12,9 +12,9 @@ def gen_guess_cmd(guess: str) -> str:
 
 
 def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
-
-    WORD_GOLF_MAIN_UI_START_POS = (SCREEN_WIDTH // 2, 100)
     SYMBOL_SIZE = 30
+    MAIN_UI_WIDTH = SYMBOL_SIZE * WORD_LEN
+    WORD_GOLF_MAIN_UI_START_POS = ((SCREEN_WIDTH - MAIN_UI_WIDTH) // 2, 100)
 
     feedback_amt = len(global_game_data.feedback_history)
 
@@ -22,7 +22,7 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
         feedback = global_game_data.feedback_history[i]
 
         for j in range(0, len(feedback), 2):
-            x, y = j, i
+            x, y = j // 2, i
 
             kind, letter = feedback[j], feedback[j + 1]
 
@@ -39,12 +39,24 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
                 # Purple (unreachable).
                 color = (255, 0, 255)
 
+            draw_location = (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + y * SYMBOL_SIZE)
+
+            rect_size = SYMBOL_SIZE * 8 // 9
+
+            # left, top, width, height
+            rect_data = (draw_location[0] - rect_size // 2, draw_location[1] - rect_size // 2, rect_size, rect_size)
+            pygame.draw.rect(
+                surface,
+                color,
+                rect_data,
+            )
+
             drawing_utils.draw_text(
                 surface,
                 letter,
                 SYMBOL_SIZE,
-                (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + y * SYMBOL_SIZE),
-                color,
+                draw_location,
+                color=(0, 0, 0),
             )
 
     # Draw the typed letters.
