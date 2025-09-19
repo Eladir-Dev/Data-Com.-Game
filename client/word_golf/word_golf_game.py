@@ -13,34 +13,50 @@ def gen_guess_cmd(guess: str) -> str:
 
 def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
 
-    WORD_GOLF_UI_START_POS = (SCREEN_WIDTH // 2, 100)
+    WORD_GOLF_MAIN_UI_START_POS = (SCREEN_WIDTH // 2, 100)
+    SYMBOL_SIZE = 30
 
-    # Pad out the typed letters with spaces.
-    typed_letters_padded = list(global_game_data.typed_letters)
-    if len(typed_letters_padded) < WORD_LEN:
-        remaining_len = WORD_LEN - len(typed_letters_padded)
-        typed_letters_padded += [' '] * remaining_len
+    feedback_amt = len(global_game_data.feedback_history)
 
-    # Copy the feedback history and append the (padded) typed letters at the end.
-    drawing_symbols_grid = list(global_game_data.feedback_history)
-    drawing_symbols_grid.append("".join(typed_letters_padded))
+    for i in range(feedback_amt):
+        feedback = global_game_data.feedback_history[i]
 
-    for r in range(len(drawing_symbols_grid)):
-        for c in range(WORD_LEN):
-            # Transform the row/col coords into Pygame's x/y coords.
-            x, y = c, r
-            
-            symbol = drawing_symbols_grid[r][c]
+        for j in range(0, len(feedback), 2):
+            x, y = j, i
 
-            SYMBOL_SIZE = 30
+            kind, letter = feedback[j], feedback[j + 1]
+
+            if kind == 'O':
+                # Green.
+                color = (0, 255, 0)
+            elif kind == '!':
+                # Yellow.
+                color = (255, 255, 0)
+            elif kind == 'X':
+                # Red.
+                color = (255, 0, 0)
+            else:
+                # Purple (unreachable).
+                color = (255, 0, 255)
 
             drawing_utils.draw_text(
-                surface, 
-                symbol, 
-                SYMBOL_SIZE, 
-                (WORD_GOLF_UI_START_POS[0] + SYMBOL_SIZE * x, WORD_GOLF_UI_START_POS[1] + SYMBOL_SIZE * y),
-                (255, 255, 255),
+                surface,
+                letter,
+                SYMBOL_SIZE,
+                (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + y * SYMBOL_SIZE),
+                color,
             )
+
+    # Draw the typed letters.
+    for i in range(len(global_game_data.typed_letters)):
+        x = i
+        drawing_utils.draw_text(
+            surface, 
+            global_game_data.typed_letters[i].upper(), 
+            SYMBOL_SIZE, 
+            (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + feedback_amt * SYMBOL_SIZE), 
+            color=(0, 0, 0),
+        )
     
 
 def word_golf_update(events: list[Event], surface: Surface, global_game_data: WordGolfGlobalState) -> str | None:

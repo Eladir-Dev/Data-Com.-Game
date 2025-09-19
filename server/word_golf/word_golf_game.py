@@ -8,9 +8,6 @@ from server_types import BUF_SIZE
 from .word_golf_types import WordGolfPlayer, WordGolfOccurrence, WordGolfGameResult
 
 class WordGolfGame:
-    # The feedback that a correct guess would generate.
-    CORRECT_FEEDBACK = "OOOOO"
-
     # The maximum number of tries that a player has for guessing a word.
     MAX_FEEDBACK_HIST_LEN = 6
 
@@ -48,15 +45,15 @@ class WordGolfGame:
         for i in range(len(actual_word)):
             # Correct letter guess.
             if actual_word[i] == guess[i]:
-                feedback.append('O')
+                feedback.append(f'O{guess[i]}')
             
             # Letter from guess is in the actual word, but in a different position.
             elif guess[i] in actual_word:
-                feedback.append('!')
+                feedback.append(f'!{guess[i]}')
 
             # Letter from guess is not in the actual word.
             else:
-                feedback.append('X')
+                feedback.append(f'X{guess[i]}')
 
         return "".join(feedback)
     
@@ -192,10 +189,10 @@ class WordGolfGame:
 
                 feedback = self.gen_feedback(actual_word, guess)
 
-                if feedback != WordGolfGame.CORRECT_FEEDBACK:
-                    occurence = WordGolfOccurrence(kind='wrong_guess', player_idx=curr_player_idx)
-                else:
+                if actual_word == guess:
                     occurence = WordGolfOccurrence(kind='correct_guess', player_idx=curr_player_idx)
+                else:
+                    occurence = WordGolfOccurrence(kind='wrong_guess', player_idx=curr_player_idx)
 
                 # Save the feedback on the player's feedback history.
                 self.players[curr_player_idx].feedback_history.append(feedback)
