@@ -100,10 +100,10 @@ def temp_generate_placeholder_deck() -> list[str]:
         ['F', 'B', '3', 'B', '5', '8', 'L', '2', '8', '5'],
     ]
     # Mirror the deck (row-wise) before flattening it so that the top rows face away from the player, instead of towards them.
-    return _flatten_2d_array(deck[::-1])
+    return flatten_2d_array(deck[::-1])
 
 
-def _flatten_2d_array(array: list[list[str]]) -> list[str]:
+def flatten_2d_array(array: list[list[str]]) -> list[str]:
     ls = []
     for row in array:
         ls.extend(row)

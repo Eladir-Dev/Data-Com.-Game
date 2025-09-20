@@ -54,5 +54,10 @@ class GlobalClientState:
     username: str
     server_ip: str
     game_state: ValidState
+    
+    # Holds data related to the Stratego and Word Golf games once connected to the server.
     stratego_state: StrategoGlobalState | None = None
     word_golf_state: WordGolfGlobalState | None = None
+
+    # Socket-representation of the starting deck.
+    stratego_starting_deck_repr: str | None = None

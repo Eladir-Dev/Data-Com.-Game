@@ -12,9 +12,15 @@ from . import stratego_types
 from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
+from global_state import GlobalClientState
 
 class StrategoSettingsWindow():
-    def __init__(self, surface: Surface, go_to_prev_menu: Callable[[], None], go_to_start: Callable[[], None], playerData: stratego_types.StrategoStartingPlayerInfo):
+    def __init__(self, 
+        surface: Surface, 
+        go_to_prev_menu: Callable[[], None], 
+        go_to_start: Callable[[], None], 
+        player_data: GlobalClientState,
+    ):
         self.surface = surface
 
         # Custom theme
@@ -25,7 +31,7 @@ class StrategoSettingsWindow():
 
         rows = 10
         cols = 4
-        self.username = playerData.username
+        self.username = player_data.username
         self.pieces = [['' for _ in range(rows)] for _ in range(cols)]
         self.deck = [['' for _ in range(rows)] for _ in range(cols)]
         self.fill_pieces(rows, cols, True)
@@ -45,7 +51,7 @@ class StrategoSettingsWindow():
         button_spacing = 60
         self.menu.add.text_input('Name: ', default=self.username, float=True).translate(20, 100)
         self.menu.add.button('Start Game', go_to_start, float=True).translate(20, 100 + button_spacing)
-        self.menu.add.button('Random Deck', self.set_rand_deck(), float=True).translate(20, 100 + button_spacing * 2)
+        self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
         self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 3)
         self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
 
@@ -196,10 +202,10 @@ class StrategoSettingsWindow():
 
         return deck
 
-    def set_rand_deck(self,playerData: stratego_types.StrategoStartingPlayerInfo):
+    def set_rand_deck(self, global_data: GlobalClientState):
         self.deck = self.create_random_deck()
-        flat_arr = stratego_types._flatten_2d_array(self.deck)
-        playerData.starting_deck_repr = stratego_types._flat_array_to_message_repr(flat_arr)
+        flattened_deck = stratego_types.flatten_2d_array(self.deck)
+        global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)
 
 
     def empty_pieces(self):

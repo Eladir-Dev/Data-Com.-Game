@@ -14,7 +14,6 @@ from global_state import GlobalClientState, StrategoGlobalState, ValidState, Wor
 import socket_client
 from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import stratego.stratego_types as stratego_types
-from stratego.stratego_types import StrategoStartingPlayerInfo
 from stratego.stratego_types import StrategoBoard, StrategoMoveResult, assert_str_is_color
 import stratego.stratego_game as stratego_game
 
@@ -74,14 +73,14 @@ def start():
 
 
     def start_loading_stratego_game():
-        # TODO: Send an actual deck customized by the player.
-        placeholder_deck = stratego_types.StrategoStartingPlayerInfo.starting_deck_repr
+        deck = GLOBAL_STATE.stratego_starting_deck_repr
+        assert deck, "Stratego starting deck has not been set"
 
         change_game_state('loading_stratego_game')
 
         # Send the user's username and starting deck to the socket client (which then forwards it to the server).
         SOCKET_CLIENT_QUEUE.put(
-            f"!want-play-game:stratego:{GLOBAL_STATE.username}:{GLOBAL_STATE.server_ip}:{stratego_types.deck_to_socket_message_repr(placeholder_deck)}"
+            f"!want-play-game:stratego:{GLOBAL_STATE.username}:{GLOBAL_STATE.server_ip}:{deck}"
         )
 
 
@@ -167,7 +166,7 @@ def start():
         surface, 
         go_to_prev_menu=go_to_main_menu, 
         go_to_start=start_loading_stratego_game,
-        playerData=StrategoStartingPlayerInfo
+        player_data=GLOBAL_STATE,
     )
 
     # se declara la flechita
