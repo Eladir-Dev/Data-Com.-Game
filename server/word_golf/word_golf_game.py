@@ -77,6 +77,13 @@ class WordGolfGame:
         feedback_hist_cmd = self.gen_stashed_words_cmd_for_player(player)
         player.conn.sendall(feedback_hist_cmd.encode())
 
+
+    def get_player_opponent_idx(self, player_idx: int) -> int:
+        """
+        Returns the index of the opposing player i.e. returns 1 if given 0 and 0 if given 1.
+        """
+        return (player_idx + 1) % 2
+
     
     def run(self):
         """
@@ -147,7 +154,7 @@ class WordGolfGame:
             while not update_needed:
                 for curr_idx in range(len(self.players)):
                     # The index of the player that is not the "current" player.
-                    other_idx = (curr_idx + 1) % 2
+                    other_idx = self.get_player_opponent_idx(curr_idx)
 
                     # Based on what this returns, decide whether to update the client's state.
                     occurrence = self.handle_player_client_response(curr_idx)
@@ -202,6 +209,25 @@ class WordGolfGame:
                         occurence = WordGolfOccurrence(kind='ran_out_of_guesses', player_idx=curr_player_idx)
 
                 return occurence
+            
+            elif data.startswith("!send-stashed-word"):
+                fields = data.split(':')
+                stashed_word_to_send = fields[1]
+
+                # Player is trying to send a word that they do not have stashed.
+                if stashed_word_to_send not in self.players[curr_player_idx].stashed_words:
+                    print(f"LOG: Player #{curr_player_idx} is trying to send word '{stashed_word_to_send}' that they do not have stashed.")
+                    return None
+                
+                # Remove the word from the stash.
+                self.players[curr_player_idx].stashed_words.remove(stashed_word_to_send)
+
+                occurence = WordGolfOccurrence(
+                    kind='sending_stashed_word',
+                    player_idx=curr_player_idx,
+                    stashed_word=stashed_word_to_send,
+                )
+                return occurence
 
             else:
                 print(f"ERROR: Invalid client response '{data}'")
@@ -230,6 +256,15 @@ class WordGolfGame:
             self.players[occurrence.player_idx].points += 3
 
             self.switch_player_current_word(occurrence)
+
+        elif occurrence.kind == 'sending_stashed_word':
+            assert occurrence.stashed_word, "Logic error, stashed word should not have been None."
+
+            print(f"LOG: Player #{occurrence.player_idx} sent stashed word '{occurrence.stashed_word}'")
+            
+            # Change the opponent's current word.
+            opponent_idx = self.get_player_opponent_idx(occurrence.player_idx)
+            self.players[opponent_idx].queued_words.append(occurrence.stashed_word)
 
         else:
             print(f"ERROR: unhandled occurence kind '{occurrence.kind}'")

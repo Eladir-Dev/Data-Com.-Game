@@ -21,8 +21,9 @@ class WordGolfPlayer:
 
 @dataclass
 class WordGolfOccurrence:
-    kind: Literal['wrong_guess', 'correct_guess', 'ran_out_of_guesses']
+    kind: Literal['wrong_guess', 'correct_guess', 'ran_out_of_guesses', 'sending_stashed_word']
     player_idx: int
+    stashed_word: str | None = None
 
 
 @dataclass

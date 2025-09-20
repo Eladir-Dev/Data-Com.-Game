@@ -2,23 +2,29 @@ import pygame
 from pygame.event import Event
 from pygame import Surface
 
-from game_types import SCREEN_WIDTH
-from .word_golf_types import WORD_LEN, MAX_FEEDBACK_HIST_SIZE, Color
+from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
+from .word_golf_types import WORD_LEN, MAX_FEEDBACK_HIST_SIZE, Color, RenderedStashedWord, WordGolfUpdateResult
 from global_state import WordGolfGlobalState
 import drawing_utils
 
 SYMBOL_SIZE = 60
 MAIN_UI_WIDTH = SYMBOL_SIZE * WORD_LEN
-WORD_GOLF_MAIN_UI_START_POS = ((SCREEN_WIDTH - MAIN_UI_WIDTH) // 2, 100)
+WORD_GOLF_MAIN_UI_START_POS = ((SCREEN_WIDTH - MAIN_UI_WIDTH) // 2, 40)
 
 def gen_guess_cmd(guess: str) -> str:
     return f"!guess:{guess}"
 
 
-def draw_all_ui(surface: Surface, global_game_data: WordGolfGlobalState):
+def gen_stashed_word_cmd(stashed_word: str) -> str:
+    return f"!send-stashed-word:{stashed_word}"
+
+
+def draw_all_ui(surface: Surface, global_game_data: WordGolfGlobalState) -> list[RenderedStashedWord]:
     draw_feedback_and_typed_word_ui(surface, global_game_data)
     draw_points_and_queued_word_ui(surface, global_game_data)
-    draw_stashed_word_ui(surface, global_game_data)
+    rendered_stashed_words = draw_stashed_word_ui(surface, global_game_data)
+
+    return rendered_stashed_words
 
 
 def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
@@ -95,34 +101,45 @@ def draw_points_and_queued_word_ui(surface: Surface, global_game_data: WordGolfG
     )
 
 
-def draw_stashed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
+def draw_stashed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState) -> list[RenderedStashedWord]:
     # Draw the stashed words UI after the points UI.
+    font_size = SYMBOL_SIZE * 3 // 5
+    points_ui_start_location = (0, SCREEN_HEIGHT - font_size)
 
-    # TODO: This is a really hacky way of finding out where the last UI ended. It might be 
-    # better to just use the bottom of the screen as a reference point for drawing.
-    last_ui_y_start_coord = WORD_GOLF_MAIN_UI_START_POS[1] + MAX_FEEDBACK_HIST_SIZE * SYMBOL_SIZE
-    font_size = SYMBOL_SIZE * 3 // 4
-    points_ui_start_location = (SCREEN_WIDTH // 2, last_ui_y_start_coord + 2 * font_size)
+    rendered_stashed_words: list[RenderedStashedWord] = []
 
-    drawing_utils.draw_text(
-        surface,
-        f"{global_game_data.stashed_words}",
-        font_size,
-        points_ui_start_location,
-        Color.WHITE,
-    )
+    for i in range(len(global_game_data.stashed_words)):
+        x = i
+        word = global_game_data.stashed_words[i]
+        
+        word_offset = (x + 1) * font_size * len(word) // 2
+
+        text_rect = drawing_utils.draw_text(
+            surface,
+            word,
+            font_size,
+            (points_ui_start_location[0] + word_offset, points_ui_start_location[1]),
+            Color.WHITE,
+        )
+        rendered_stashed_words.append(RenderedStashedWord(
+            rect=text_rect,
+            word=word,
+        ))
+
+    return rendered_stashed_words
 
 
-def word_golf_update(events: list[Event], surface: Surface, global_game_data: WordGolfGlobalState) -> str | None:
+def word_golf_update(events: list[Event], surface: Surface, global_game_data: WordGolfGlobalState) -> WordGolfUpdateResult:
     # Set screen caption.
     pygame.display.set_caption(f"Word Golf")
 
     # Clear the screen.
     surface.fill(Color.BLACK)
 
-    draw_all_ui(surface, global_game_data)
+    rendered_stashed_words = draw_all_ui(surface, global_game_data)
 
     guess_cmd: str | None = None
+    stashed_word_cmd: str | None = None
 
     for event in events:
         if event.type == pygame.KEYDOWN:
@@ -137,5 +154,18 @@ def word_golf_update(events: list[Event], surface: Surface, global_game_data: Wo
                 if 'a' <= event.unicode <= 'z' and len(global_game_data.typed_letters) < WORD_LEN:
                     global_game_data.typed_letters.append(event.unicode)
 
-    return guess_cmd
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = event.pos
+            
+            for rendered_stashed_word in rendered_stashed_words:
+                word_rect = rendered_stashed_word.rect
+
+                if word_rect.collidepoint(mouse_pos):
+                    # print(rendered_stashed_word.word)
+                    stashed_word_cmd = gen_stashed_word_cmd(rendered_stashed_word.word)
+
+    return WordGolfUpdateResult(
+        guess_cmd=guess_cmd,
+        stashed_word_cmd=stashed_word_cmd,
+    )
             

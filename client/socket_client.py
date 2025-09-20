@@ -170,24 +170,6 @@ def connect_word_golf(server_host: str, server_command_queue: Queue[str], client
                 else:
                     print(f"ERROR: received unknown data from server: '{data}'")
 
-                # # Forward the turn info server command to the UI.
-                # if data.startswith("?turn-info"):
-                #     server_command_queue.put(data)
-
-                # # Forward move result commands to the UI.
-                # elif data.startswith("?move-result"):
-                #     server_command_queue.put(data)
-
-                # elif data.startswith("?game-over"):
-                #     # Stop the client.
-                #     client_running = False
-
-                #     # Forward the game over command to the UI.
-                #     server_command_queue.put(data)
-
-                # else:
-                    # print(f"CLIENT ERROR: Unknown server command '{data}'")
-
             except socket.timeout: pass
 
             while not client_queue.empty():
@@ -195,6 +177,10 @@ def connect_word_golf(server_host: str, server_command_queue: Queue[str], client
 
                 if data.startswith("!guess"):
                     print(f"LOG: trying to send guess command: '{data}'")
+                    s.sendall(data.encode())
+
+                elif data.startswith("!send-stashed-word"):
+                    print(f"LOG: trying to send stashed word command: '{data}'")
                     s.sendall(data.encode())
 
                 else:

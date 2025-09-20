@@ -369,10 +369,16 @@ def start():
         elif game_state == 'in_word_golf_game':
             assert GLOBAL_STATE.word_golf_state, "Word Golf state was None"
 
-            guess_cmd = word_golf_game.word_golf_update(events, surface, GLOBAL_STATE.word_golf_state)
+            update_result = word_golf_game.word_golf_update(events, surface, GLOBAL_STATE.word_golf_state)
 
-            if guess_cmd is not None:
-                SOCKET_CLIENT_QUEUE.put(guess_cmd)
+            if update_result.guess_cmd is not None:
+                SOCKET_CLIENT_QUEUE.put(update_result.guess_cmd)
+
+            # NOTE: This uses `elif` instead of another `if` to avoid possibly sending them at the same time.
+            # Sending both at the same time might overload the server.
+            # The chances that both a guess CMD and a stashed word CMD are sent at the same frame are low anyways.
+            elif update_result.stashed_word_cmd is not None:
+                SOCKET_CLIENT_QUEUE.put(update_result.stashed_word_cmd)
 
         elif game_state == 'loading_word_golf_game':
             loading_window_word_golf.update(events)

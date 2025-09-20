@@ -9,8 +9,9 @@ def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, ta
     return sprite_rect
 
 
-def draw_text(surface: Surface, text: str, font_size: int, location: Pair, color: tuple[int, int, int]):
+def draw_text(surface: Surface, text: str, font_size: int, location: Pair, color: tuple[int, int, int]) -> Rect:
     font = pygame.font.SysFont(None, font_size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect(center=location)
     surface.blit(text_surface, text_rect)
+    return text_rect
