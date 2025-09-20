@@ -14,6 +14,7 @@ from global_state import GlobalClientState, StrategoGlobalState, ValidState, Wor
 import socket_client
 from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import stratego.stratego_types as stratego_types
+from stratego.stratego_types import StrategoStartingPlayerInfo
 from stratego.stratego_types import StrategoBoard, StrategoMoveResult, assert_str_is_color
 import stratego.stratego_game as stratego_game
 
@@ -74,7 +75,7 @@ def start():
 
     def start_loading_stratego_game():
         # TODO: Send an actual deck customized by the player.
-        placeholder_deck = stratego_types.temp_generate_placeholder_deck()
+        placeholder_deck = stratego_types.StrategoStartingPlayerInfo.starting_deck_repr
 
         change_game_state('loading_stratego_game')
 
@@ -165,7 +166,8 @@ def start():
     deck_selection_menu = StrategoSettingsWindow(
         surface, 
         go_to_prev_menu=go_to_main_menu, 
-        go_to_start=start_loading_stratego_game
+        go_to_start=start_loading_stratego_game,
+        playerData=StrategoStartingPlayerInfo
     )
 
     # se declara la flechita

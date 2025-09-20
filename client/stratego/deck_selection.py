@@ -6,12 +6,15 @@ from pygame import Surface
 from pygame.event import Event
 import pygame_menu
 import random
+#import stratego_types as stratego_types
+from . import stratego_types
+#from stratego_types import *
 from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
 
 class StrategoSettingsWindow():
-    def __init__(self, surface: Surface, go_to_prev_menu: Callable[[], None], go_to_start: Callable[[], None]):
+    def __init__(self, surface: Surface, go_to_prev_menu: Callable[[], None], go_to_start: Callable[[], None], playerData: stratego_types.StrategoStartingPlayerInfo):
         self.surface = surface
 
         # Custom theme
@@ -22,6 +25,7 @@ class StrategoSettingsWindow():
 
         rows = 10
         cols = 4
+        self.username = playerData.username
         self.pieces = [['' for _ in range(rows)] for _ in range(cols)]
         self.deck = [['' for _ in range(rows)] for _ in range(cols)]
         self.fill_pieces(rows, cols, True)
@@ -39,11 +43,10 @@ class StrategoSettingsWindow():
         # Add widgets with manual positioning
         self.menu.add.label('==Game Options==', float=True).translate(5, 35)
         button_spacing = 60
-        self.menu.add.text_input('Name: ', default='Player1', float=True).translate(20, 100)
+        self.menu.add.text_input('Name: ', default=self.username, float=True).translate(20, 100)
         self.menu.add.button('Start Game', go_to_start, float=True).translate(20, 100 + button_spacing)
-        # self.menu.add.selector('Type: ', [('Online', 1), ('Local', 2)], float=True).translate(20,
-        #                                                                                       100 + button_spacing * 2)
-        self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 2)
+        self.menu.add.button('Random Deck', self.set_rand_deck(), float=True).translate(20, 100 + button_spacing * 2)
+        self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 3)
         self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
 
     def fill_pieces(self, rows, cols,debug):
@@ -192,6 +195,12 @@ class StrategoSettingsWindow():
                 deck[i][j] = flat_deck[i * 10 + j]
 
         return deck
+
+    def set_rand_deck(self,playerData: stratego_types.StrategoStartingPlayerInfo):
+        self.deck = self.create_random_deck()
+        flat_arr = stratego_types._flatten_2d_array(self.deck)
+        playerData.starting_deck_repr = stratego_types._flat_array_to_message_repr(flat_arr)
+
 
     def empty_pieces(self):
         """
