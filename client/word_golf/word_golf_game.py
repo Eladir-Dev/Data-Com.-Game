@@ -18,6 +18,7 @@ def gen_guess_cmd(guess: str) -> str:
 def draw_all_ui(surface: Surface, global_game_data: WordGolfGlobalState):
     draw_feedback_and_typed_word_ui(surface, global_game_data)
     draw_points_and_queued_word_ui(surface, global_game_data)
+    draw_stashed_word_ui(surface, global_game_data)
 
 
 def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
@@ -91,6 +92,24 @@ def draw_points_and_queued_word_ui(surface: Surface, global_game_data: WordGolfG
         font_size,
         location=(points_ui_start_location[0], points_ui_start_location[1] + font_size),
         color=Color.WHITE,
+    )
+
+
+def draw_stashed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
+    # Draw the stashed words UI after the points UI.
+
+    # TODO: This is a really hacky way of finding out where the last UI ended. It might be 
+    # better to just use the bottom of the screen as a reference point for drawing.
+    last_ui_y_start_coord = WORD_GOLF_MAIN_UI_START_POS[1] + MAX_FEEDBACK_HIST_SIZE * SYMBOL_SIZE
+    font_size = SYMBOL_SIZE * 3 // 4
+    points_ui_start_location = (SCREEN_WIDTH // 2, last_ui_y_start_coord + 2 * font_size)
+
+    drawing_utils.draw_text(
+        surface,
+        f"{global_game_data.stashed_words}",
+        font_size,
+        points_ui_start_location,
+        Color.WHITE,
     )
 
 
