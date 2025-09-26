@@ -6,6 +6,9 @@ from pygame import Surface
 from pygame.event import Event
 import pygame_menu
 import random
+
+from pygame_menu.widgets.core import Selection
+
 #import stratego_types as stratego_types
 from . import stratego_types
 #from stratego_types import *
@@ -13,6 +16,37 @@ from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
 from global_state import GlobalClientState
+
+class RedHighlight(Selection):
+    """
+    Selection widget for when start game is selected and there is no deck selected.
+    """
+    def __init__(self):
+        super().__init__(margin_left=0, margin_right=0, margin_top=0, margin_bottom=0)
+
+    def draw(self, surface, widget):
+        # Get widget position and size
+        rect = widget.get_rect()
+        rect.inflate_ip(10, 10)  # Optional: expand the rectangle slightly
+
+        # Draw red border
+        pygame.draw.rect(surface, (255, 0, 0), rect, 3)  # RGB red, thickness 3
+
+class GreenHighlight(Selection):
+    """
+    Selection widget for when start game is selected and there is no deck selected.
+    """
+    def __init__(self):
+        super().__init__(margin_left=0, margin_right=0, margin_top=0, margin_bottom=0)
+
+    def draw(self, surface, widget):
+        # Get widget position and size
+        rect = widget.get_rect()
+        rect.inflate_ip(10, 10)  # Optional: expand the rectangle slightly
+
+        # Draw red border
+        pygame.draw.rect(surface, (0, 255, 0), rect, 3)  # RGB red, thickness 3
+        pygame.draw.rect(surface, (144, 238, 144), rect, 1)  # Light green fill (RGB for light green)
 
 class StrategoSettingsWindow():
     def __init__(self, 
@@ -22,13 +56,15 @@ class StrategoSettingsWindow():
         player_data: GlobalClientState,
     ):
         self.surface = surface
+        # Methods
+        self.go_to_start = go_to_start
 
-        # Custom theme
+        #======================Custom theme======================#
         self.theme = pygame_menu.themes.THEME_DARK.copy()
         self.theme.widget_alignment = pygame_menu.locals.ALIGN_LEFT
         self.theme.title = False  # Optional: hide title
         self.theme.widget_font_size = 25
-
+        # ======================Deck data=========================#
         rows = 10
         cols = 4
         self.username = player_data.username
@@ -50,10 +86,32 @@ class StrategoSettingsWindow():
         self.menu.add.label('==Game Options==', float=True).translate(5, 35)
         button_spacing = 60
         self.menu.add.text_input('Name: ', default=self.username, float=True).translate(20, 100)
-        self.menu.add.button('Start Game', go_to_start, float=True).translate(20, 100 + button_spacing)
+        self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
         self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
         self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 3)
         self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
+
+        #red highlight for start_button
+        red_selection = RedHighlight()
+        self.start_button.set_selection_effect(red_selection)
+
+
+    def deck_full(self):
+        """
+        This method verifies if the deck is full.
+        """
+        for row in range(len(self.deck)):
+            for col in range(len(self.deck[row])):
+                if self.deck[row][col] == '':
+                    return False
+        return True
+
+    def start_game(self):
+        """
+        This method starts the game.
+        """
+        if self.deck_full():
+            self.go_to_start()
 
     def fill_pieces(self, rows, cols,debug):
         """
@@ -203,7 +261,11 @@ class StrategoSettingsWindow():
         return deck
 
     def set_rand_deck(self, global_data: GlobalClientState):
+        """
+        This method sets the random deck.
+        """
         self.deck = self.create_random_deck()
+        self.empty_pieces()
         flattened_deck = stratego_types.flatten_2d_array(self.deck)
         global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)
 
@@ -272,13 +334,18 @@ class StrategoSettingsWindow():
         """
         Updates the UI.
         """
-
         # Draw the UI.
         pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
+
+        if self.deck_full():
+            green_selection = GreenHighlight()
+            self.start_button.set_selection_effect(green_selection)
 
         self.menu.update(events)
         self.menu.draw(self.surface)
         pygame.display.flip()
+
+
 
 
 def main():
