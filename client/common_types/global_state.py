@@ -51,16 +51,44 @@ class WordGolfGlobalState:
     
 @dataclass
 class GlobalClientState:
+    """
+    The global client state of the application. Holds game specific 
+    client data in the :py:attr:`stratego_state` and :py:attr:`word_golf_state` attributes.
+    """
+
     username: str
+    """
+    The username of the player set in the generic main UI.
+    """
     server_ip: str
+    """
+    The host name set by the player in the generic main UI.
+    """
     game_state: ValidState
+    """
+    The current state of the application. Used mainly for determining 
+    what screen should currently be displayed.
+    """
     
     # Holds data related to the Stratego and Word Golf games once connected to the server.
     stratego_state: StrategoGlobalState | None = None
+    """
+    Holds Stratego-specific game data.
+    """
     word_golf_state: WordGolfGlobalState | None = None
+    """
+    Holds Word Golf-specific game data.
+    """
 
     # Socket-representation of the starting deck.
     stratego_starting_deck_repr: str | None = None
+    """
+    Holds the socket-friendly representation of the starting deck that needs to be 
+    set by the player (client) before trying to join a Stratego game on the server.
+    """
 
     # Game-over message.
     game_over_message: str | None = None
+    """
+    A game-agnostic game over message that needs to be set after a game finishes.
+    """

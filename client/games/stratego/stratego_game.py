@@ -24,32 +24,50 @@ SPRITE_FOLDER = Path(__file__).parent / "assets"
 
 
 def draw_empty_grid_slot(surface: Surface, location: Pair) -> Rect:
+    """
+    Draws an empty grid slot at :py:attr:`location`.
+    """
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/empty_space.png")
     return draw_sprite_on_surface(surface, empty_space_sprite, location)
 
 
 def draw_lake_slot(surface: Surface, location: Pair) -> Rect:
+    """
+    Draws a lake slot at :py:attr:`location`.
+    """
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/lake.png")
     return draw_sprite_on_surface(surface, empty_space_sprite, location)
 
 
 def draw_hidden_slot(surface: Surface, location: Pair) -> Rect:
+    """
+    Draws a hidden slot at :py:attr:`location`.
+    """
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/hidden.png")
     return draw_sprite_on_surface(surface, empty_space_sprite, location)
 
 
 def draw_piece(surface: Surface, piece_name: StrategoPieceName, color: StrategoColor, location: Pair) -> Rect:
+    """
+    Draws the sprite corresponding with :py:attr:`piece_name` at :py:attr:`location`.
+    """
     piece_sprite = pygame.image.load(f"{SPRITE_FOLDER}/{get_full_color_name(color)}_{piece_name}.png")
     return draw_sprite_on_surface(surface, piece_sprite, location)
 
 
 def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
+    """
+    Generates a socket-friendly move command using the given start and end positions.
+    """
     components = [from_pos[0], from_pos[1], to_pos[0], to_pos[1]]
     components_str = ':'.join(str(c) for c in components)
     return f"!move:{components_str}"
 
 
 def stratego_update(events: list[Event], surface: Surface, global_game_data: StrategoGlobalState) -> str | None:
+    """
+    Updates the screen during a Stratego game.
+    """
     # Set screen caption.
     pygame.display.set_caption(f"Stratego")
 
@@ -114,6 +132,10 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: Str
 
 
 def render_board_tiles(surface: Surface, global_game_data: StrategoGlobalState) -> list[StrategoRenderedTile]:
+    """
+    Renders the board tiles in :py:attr:`global_game_data.board` from the server and returns them in 
+    such a way so that they can be clicked and selected.
+    """
     own_color = global_game_data.own_color
     move_result = global_game_data.current_move_result
 

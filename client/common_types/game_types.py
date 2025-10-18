@@ -4,11 +4,19 @@ This module is for types and constants that are shared between games (client-sid
 
 # Dimensions in common for all games.
 SCREEN_WIDTH = 900
+"""
+Width for the game screen.
+"""
 SCREEN_HEIGHT = 600
+"""
+Height for the game screen.
+"""
 
 # Utility type for games.
 Pair = tuple[int, int]
-
+"""
+Utility type for a position in the game screen.
+"""
 
 # == Utility functions ==
 def row_col_to_flat_index(r: int, c: int, logical_cols: int) -> int:

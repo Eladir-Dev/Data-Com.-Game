@@ -7,14 +7,29 @@ from common_types.game_types import SCREEN_WIDTH, Pair, gen_flipped_dict
 
 # The dimensions of a Stratego board.
 ROWS = 10
+"""
+The number of rows on a Stratego board.
+"""
+
 COLS = 10
+"""
+The number of columns on a Stratego board.
+"""
 
-# The number of rows on a player's starting Stratego deck.
 DECK_ROWS = 4
+"""
+The number of rows on a player's starting Stratego deck.
+"""
 
-# The size of a Stratego piece's sprite.
 SPRITE_WIDTH = 32
+"""
+The width of a Stratego piece's sprite.
+"""
+
 SPRITE_HEIGHT = 32
+"""
+The height of a Stratego piece's sprite.
+"""
 
 # The starting point of the Stratego grid's rendering.
 # NOTE: The x coordinate of this tuple computes the starting coordinate such that 
@@ -23,15 +38,29 @@ SPRITE_HEIGHT = 32
 GRID_START_LOCATION = ((SPRITE_WIDTH // 2) + SCREEN_WIDTH // 2 - (SPRITE_WIDTH * ROWS) // 2, 100)
 
 StrategoColor = Literal['r', 'b']
+"""
+The color of a Stratego player or piece.
+"""
+
 StrategoPieceName = Literal['bomb', 'captain', 'coronel', 'flag', 'general', 'lieutenant', 'major', 'marshal', 'miner', 'scout', 'sergeant', 'spy']
+"""
+The name of a Stratego piece.
+"""
 
 @dataclass
 class StrategoMoveResult:
+    """
+    The result after a move. Determines the kind of attack that occured, 
+    and the positions of the involved pieces.
+    """
     kind: Literal['movement', 'attack_success', 'attack_fail', 'tie']
     attacking_pos: Pair
     defending_pos: Pair
 
 def get_full_color_name(color: StrategoColor) -> str:
+    """
+    Gets the full English name of the color.
+    """
     if color == 'r':
         return "red"
     elif color == 'b':
@@ -40,11 +69,18 @@ def get_full_color_name(color: StrategoColor) -> str:
         # Unreachable.
         raise Exception(f"unexpected color: {color}")
     
+
 def toggle_color(color: StrategoColor) -> StrategoColor:
+    """
+    Toggles the given color.
+    """
     return 'r' if color == 'b' else 'b'
 
 
 def assert_str_is_color(string: str) -> StrategoColor:
+    """
+    Asserts that the given string is a valid :py:class:`games.stratego.stratego_types.StrategoColor`.
+    """
     if string not in {'r', 'b'}:
         raise ValueError(f"String '{string}' is not a valid color")
     
@@ -54,7 +90,9 @@ def assert_str_is_color(string: str) -> StrategoColor:
 @dataclass
 class StrategoStartingPlayerInfo:
     """
-    Starting data from the client for a Stratego player.
+    Starting data from the client for a Stratego player. This should not be 
+    confused with the data held in the global client state which is what should be 
+    used for updating the UI.
     """
     username: str
     starting_deck_repr: str
@@ -86,6 +124,9 @@ class StrategoBoard:
 
 
 class StrategoRenderedTile:
+    """
+    Used for detecting when a tile is clicked after it is rendered on the screen.
+    """
     def __init__(self, sprite_rect: Rect, str_encoding: str, board_location: Pair):
         self.sprite_rect = sprite_rect
         self.str_encoding = str_encoding
@@ -111,7 +152,10 @@ def flatten_2d_array(array: list[list[str]]) -> list[str]:
     return ls
 
 
-def deck_to_socket_message_repr(deck: list[str]):
+def deck_to_socket_message_repr(deck: list[str]) -> str:
+    """
+    Turns the given flatted deck into the socket-friendly format.
+    """
     return _flat_array_to_message_repr(deck)
 
 
