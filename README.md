@@ -23,6 +23,16 @@ El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.o
 ### Protocolo
 * [Enlace a documentacion del protocolo](docs/PROTOCOL.md).
 
+### Documentation de cliente
+Para construir la documentation, hay que estar en el directorio de `client` (se puede usar `cd client`) y luego corriendo 
+el batch file `docs/build_docs.bat`. Luego se puede ver la documentation en el achivo HTML en `docs/_build/html/html/index.html`.
+
+```sh
+cd client
+./docs/build_docs.bat
+./docs/_build/html/html/index.html
+```
+
 ## Ideas
 * Simple RPB (Puede ser complicado pensar en las mecanicas)
 * Juego de cartas
