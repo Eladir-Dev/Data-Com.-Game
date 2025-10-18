@@ -7,12 +7,9 @@ class ServerCommandParser:
         self, 
         client_state: GlobalClientState,
         change_game_state: Callable[[ValidState], None],
-        set_game_over_text_on_game_over: Callable[[str], None]
     ):
         self.client_state = client_state
         self.change_game_state = change_game_state
-
-        self.set_game_over_text_on_game_over = set_game_over_text_on_game_over
 
 
     def parse_server_command(self, data: str):
@@ -153,7 +150,7 @@ class ServerCommandParser:
                 print(f"ERROR: The game unexpectedly ended after server sent `{data}`.")
                 game_over_message = "MISSING GAME OVER MESSAGE"
 
-            self.set_game_over_text_on_game_over(game_over_message)
+            self.client_state.game_over_message = game_over_message
             self.change_game_state('finished_game')
 
         else:

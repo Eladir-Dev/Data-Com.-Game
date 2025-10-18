@@ -61,3 +61,6 @@ class GlobalClientState:
 
     # Socket-representation of the starting deck.
     stratego_starting_deck_repr: str | None = None
+
+    # Game-over message.
+    game_over_message: str | None = None

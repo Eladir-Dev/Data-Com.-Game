@@ -46,7 +46,6 @@ class MainGameUI:
         self.server_cmd_parser = ServerCommandParser(
             client_state=self.client_state,
             change_game_state=self.change_game_state,
-            set_game_over_text_on_game_over=lambda msg: self.sub_menus.set_game_over_message(msg),
         )
 
 
@@ -100,6 +99,10 @@ class MainGameUI:
                 self.sub_menus.loading_window_stratego.draw(self.surface)
 
             elif game_state == 'finished_game':
+                game_over_msg = self.client_state.game_over_message
+                assert game_over_msg, "Game Over Message was None"
+                self.sub_menus.set_game_over_message(game_over_msg)
+
                 self.sub_menus.game_over_menu.update(events)
                 self.sub_menus.game_over_menu.draw(self.surface)
 
