@@ -52,7 +52,7 @@ class ServerCommandParser:
             assert self.client_state.stratego_state, "Stratego state was None"
 
             # Update the turn.
-            self.client_state.stratego_state.turn = current_turn # type: ignore
+            self.client_state.stratego_state.turn = assert_str_is_color(current_turn)
 
             # Reset the move result (it no longer needs to be shown, since the board is going 
             # to be reset anyways due to the new turn).
