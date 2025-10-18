@@ -1,10 +1,12 @@
-import main_game_ui
 import sys
+from main_game_ui import MainGameUI
 from stratego import deck_selection
 
 
 def main():
-    main_game_ui.start()
+    main_ui = MainGameUI()
+    main_ui.start()
+
 
 if __name__ == "__main__":
     args = sys.argv[1:]
