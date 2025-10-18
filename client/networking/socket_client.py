@@ -4,8 +4,8 @@ Do not run this file directly. Instead call it as a library (e.g. `import socket
 
 import socket
 from queue import Queue
-from stratego.stratego_types import StrategoStartingPlayerInfo
-from word_golf.word_golf_types import WordGolfStartingPlayerInfo
+from games.stratego.stratego_types import StrategoStartingPlayerInfo
+from games.word_golf.word_golf_types import WordGolfStartingPlayerInfo
 
 PORT = 49300 # The port used by the server
 

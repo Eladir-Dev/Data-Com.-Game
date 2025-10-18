@@ -7,8 +7,8 @@ import pygame
 import pygame_menu
 from pygame_menu import themes
 
-from global_state import GlobalClientState, ValidState
-from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
+from common_types.global_state import GlobalClientState, ValidState
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from typing import Callable
 
 class MainGameSubMenus:

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal
-from stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
+from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
 
 ValidState = Literal[
     'main_menu', 

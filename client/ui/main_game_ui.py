@@ -1,15 +1,14 @@
 import pygame
 import queue
 import threading
-from stratego.deck_selection import StrategoSettingsWindow
-from global_state import GlobalClientState, ValidState
-import socket_client
-from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
-import stratego.stratego_game as stratego_game
-import word_golf.word_golf_game as word_golf_game
-
-from main_game_ui_sub_menus import MainGameSubMenus
-from server_cmd_parser import ServerCommandParser
+from games.stratego.deck_selection import StrategoSettingsWindow
+from common_types.global_state import GlobalClientState, ValidState
+import networking.socket_client as socket_client
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
+import games.stratego.stratego_game as stratego_game
+import games.word_golf.word_golf_game as word_golf_game
+from ui.main_game_ui_sub_menus import MainGameSubMenus
+from networking.server_cmd_parser import ServerCommandParser
 
 class MainGameUI:
     def __init__(self):

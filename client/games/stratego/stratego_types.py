@@ -3,7 +3,7 @@ from typing import Literal
 
 from pygame import Rect
 
-from game_types import SCREEN_WIDTH, Pair, gen_flipped_dict
+from common_types.game_types import SCREEN_WIDTH, Pair, gen_flipped_dict
 
 # The dimensions of a Stratego board.
 ROWS = 10

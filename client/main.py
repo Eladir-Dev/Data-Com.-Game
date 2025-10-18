@@ -1,6 +1,6 @@
 import sys
-from main_game_ui import MainGameUI
-from stratego import deck_selection
+from ui.main_game_ui import MainGameUI
+from games.stratego import deck_selection
 
 
 def main():

@@ -1,6 +1,6 @@
 import pygame
 from pygame import Surface, Rect
-from game_types import Pair
+from common_types.game_types import Pair
 
 def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair) -> Rect:
     scaled = pygame.transform.scale(sprite, target_dimensions)

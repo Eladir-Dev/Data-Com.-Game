@@ -2,10 +2,10 @@ import pygame
 from pygame.event import Event
 from pygame import Surface
 
-from game_types import SCREEN_WIDTH, SCREEN_HEIGHT
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from .word_golf_types import WORD_LEN, MAX_FEEDBACK_HIST_SIZE, Color, RenderedStashedWord, WordGolfUpdateResult
-from global_state import WordGolfGlobalState
-import drawing_utils
+from common_types.global_state import WordGolfGlobalState
+import ui.drawing_utils as drawing_utils
 
 SYMBOL_SIZE = 60
 MAIN_UI_WIDTH = SYMBOL_SIZE * WORD_LEN

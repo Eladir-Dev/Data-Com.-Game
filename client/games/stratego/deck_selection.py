@@ -15,7 +15,7 @@ from . import stratego_types
 from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
-from global_state import GlobalClientState
+from common_types.global_state import GlobalClientState
 
 class RedHighlight(Selection):
     """
