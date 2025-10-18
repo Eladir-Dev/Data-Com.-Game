@@ -99,3 +99,10 @@ class MainGameSubMenus:
 
     def show_word_golf_menu(self):
         self.game_select_menu._open(self.word_golf_menu)
+
+
+    def set_game_over_message(self, game_over_message: str):
+        label = self.game_over_menu.get_widget('game_over_label')
+        assert label
+        label.set_title(game_over_message)
+
