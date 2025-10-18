@@ -10,7 +10,6 @@ SCREEN_HEIGHT = 600
 Pair = tuple[int, int]
 
 
-
 # == Utility functions ==
 def row_col_to_flat_index(r: int, c: int, logical_cols: int) -> int:
     """
@@ -20,11 +19,7 @@ def row_col_to_flat_index(r: int, c: int, logical_cols: int) -> int:
     return r * logical_cols + c
 
 
-from typing import TypeVar
-
-K = TypeVar('K')
-V = TypeVar('V')
-def gen_flipped_dict(dict_: dict[K, V]) -> dict[V, K]:
+def gen_flipped_dict[K, V](dict_: dict[K, V]) -> dict[V, K]:
     """
     Flips the given dictionary, such that the keys are now the values 
     and the values are now the keys. Note: this function assumes that all the values are unique, 
