@@ -8,7 +8,7 @@ from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import games.stratego.stratego_game as stratego_game
 import games.word_golf.word_golf_game as word_golf_game
 from ui.main_game_ui_sub_menus import MainGameSubMenus
-from networking.server_cmd_parser import ServerCommandParser
+from networking.server_cmd_interpreter import ServerCommandInterpreter
 
 class MainGameUI:
     def __init__(self):
@@ -42,7 +42,7 @@ class MainGameUI:
             start_loading_word_wolf_game=self.start_loading_word_wolf_game,
         )
 
-        self.server_cmd_parser = ServerCommandParser(
+        self.server_cmd_parser = ServerCommandInterpreter(
             client_state=self.client_state,
             change_game_state=self.change_game_state,
         )

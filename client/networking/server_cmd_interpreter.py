@@ -2,7 +2,7 @@ from common_types.global_state import GlobalClientState, StrategoGlobalState, Wo
 from typing import Callable
 from games.stratego.stratego_types import StrategoBoard, StrategoMoveResult, assert_str_is_color
 
-class ServerCommandParser:
+class ServerCommandInterpreter:
     def __init__(
         self, 
         client_state: GlobalClientState,
