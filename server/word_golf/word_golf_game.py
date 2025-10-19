@@ -291,7 +291,9 @@ class WordGolfGame:
             
             # Change the opponent's current word.
             opponent_idx = self.get_player_opponent_idx(occurrence.player_idx)
-            self.players[opponent_idx].queued_words.append(occurrence.stashed_word)
+
+            # Add the stashed word to the start of the queue.
+            self.players[opponent_idx].queued_words.insert(0, occurrence.stashed_word)
 
         else:
             print(f"ERROR: unhandled occurence kind '{occurrence.kind}'")
