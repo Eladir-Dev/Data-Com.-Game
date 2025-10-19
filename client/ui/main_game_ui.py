@@ -42,7 +42,7 @@ class MainGameUI:
             start_loading_word_wolf_game=self.start_loading_word_wolf_game,
         )
 
-        self.server_cmd_parser = ServerCommandInterpreter(
+        self.server_cmd_interpreter = ServerCommandInterpreter(
             client_state=self.client_state,
             change_game_state=self.change_game_state,
         )
@@ -59,7 +59,7 @@ class MainGameUI:
         while True:
             while not self.server_cmd_queue.empty():
                 data = self.server_cmd_queue.get()
-                self.server_cmd_parser.parse_server_command(data)
+                self.server_cmd_interpreter.interpret_server_command(data)
 
             events = pygame.event.get()
             for event in events:

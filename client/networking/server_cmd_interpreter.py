@@ -19,7 +19,7 @@ class ServerCommandInterpreter:
         self.change_game_state = change_game_state
 
 
-    def parse_server_command(self, data: str):
+    def interpret_server_command(self, data: str):
         if data.startswith("?game-start"):
             fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
             game = fields[1]
