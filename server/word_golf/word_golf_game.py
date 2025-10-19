@@ -134,8 +134,10 @@ class WordGolfGame:
                 elif self.result.abrupt_end:
                     player.conn.sendall("?game-over:word_golf:abrupt-end".encode())
 
+                # Since the winner is None, but there wasn't an abrupt end, that means that 
+                # there was a tie.
                 else:
-                    print("ERROR: Unknown win condition")
+                    player.conn.sendall("?game-over:word_golf:tie".encode())
 
             # Do not bother trying to send a game over message if the client's socket is disconnected.
             except ConnectionResetError: pass
@@ -317,16 +319,43 @@ class WordGolfGame:
                 if occurrence.kind == 'correct_guess':
                     self.players[player_idx].stashed_words.add(guessed_word)
 
+        # The current player has run out of queued words.
         else:
-            # This player outright wins.
-            self.declare_winner(self.players[player_idx].username)
+            self.on_player_ran_out_of_words(player_idx)
 
 
-    def declare_winner(self, winner_username: str):
+    def on_player_ran_out_of_words(self, player_idx: int):
+        FIRST_FINISH_BONUS = 5
+
+        curr_pts = self.players[player_idx].points
+        curr_pts = max(0, curr_pts - FIRST_FINISH_BONUS)
+        self.players[player_idx].points = curr_pts
+
+        other_idx = self.get_player_opponent_idx(player_idx)
+
+        # The player with the least amount of points wins. 
+        # Otherwise there is a tie.
+        if self.players[player_idx].points < self.players[other_idx].points:
+            self.declare_winner(player_idx)
+
+        elif self.players[player_idx].points > self.players[other_idx].points:
+            self.declare_winner(other_idx)
+
+        else:
+            self.declare_tie()
+
+
+    def declare_winner(self, player_idx: int):
         """
         Ends the game and declares a winner.
         """
+        winner_username = self.players[player_idx].username
         print(f"LOG: Player '{winner_username}' has won.")
 
         self.is_running = False
         self.result = WordGolfGameResult(winner_username, abrupt_end=False)
+
+
+    def declare_tie(self):
+        self.is_running = False
+        self.result = WordGolfGameResult(winner_username=None, abrupt_end=False)

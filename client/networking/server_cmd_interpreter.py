@@ -201,6 +201,9 @@ class ServerCommandInterpreter:
 
         elif reason == "abrupt-end":
             return "The game was abruptly ended."
+        
+        elif reason == "tie":
+            return "No winner could be determined as there was a tie."
 
         else:
             print(f"ERROR: The game unexpectedly ended after server sent `{''.join(all_received_fields)}`.")
