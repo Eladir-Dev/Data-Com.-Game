@@ -5,6 +5,11 @@ from games.stratego.stratego_types import StrategoBoard, StrategoColor, Stratego
 import networking.validator as validator
 
 class ServerCommandInterpreter:
+    """
+    This class parses and interprets server commands. Modifies the given :py:attr:`client_state` object 
+    and/or calls the given :py:attr:`change_game_state` callback depending on the received command. Raises 
+    :py:class:`ValueError` when an invalid command is encountered.
+    """
     def __init__(
         self, 
         client_state: GlobalClientState,
