@@ -42,13 +42,34 @@ class WordGolfGame:
     def gen_feedback(self, actual_word: str, guess: str) -> str:
         feedback = []
 
+        # These dictionaries are for implementing the 
+        # heuristics for marking an out of place letter as 
+        # wrong. 
+        # i.e. if the actual word is "HONEY" and the guess is "LINEN", then 
+        # the second 'N' has a feedback of X even though its in the word.
+        actual_letter_freq = {}
+        correct_guess_amt = {}
+
+        for i in range(len(actual_word)):
+            actual_letter_freq.setdefault(actual_word[i], 0)
+            # This is to make sure that `correct_guess_amt` has entries for 
+            # all the letters in the actual word.
+            correct_guess_amt.setdefault(actual_word[i], 0)
+            actual_letter_freq[actual_word[i]] += 1
+            
+            if guess[i] == actual_word[i]:
+                correct_guess_amt[guess[i]] += 1
+
         for i in range(len(actual_word)):
             # Correct letter guess.
             if actual_word[i] == guess[i]:
                 feedback.append(f'O{guess[i]}')
             
             # Letter from guess is in the actual word, but in a different position.
-            elif guess[i] in actual_word:
+            # AND that there are still remaining "unguessed" occurrences of the letter 
+            # left. 
+            # NOTE: We need to query with `guess[i]` instead of `actual_word[i]`.
+            elif guess[i] in actual_word and correct_guess_amt[guess[i]] < actual_letter_freq[guess[i]]:
                 feedback.append(f'!{guess[i]}')
 
             # Letter from guess is not in the actual word.
