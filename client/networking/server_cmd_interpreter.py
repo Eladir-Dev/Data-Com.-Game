@@ -101,7 +101,7 @@ class ServerCommandInterpreter:
 
 
         elif data.startswith("?game-over"):
-            fields = validator.assert_field_amount_valid(data.split(':'), 3)
+            fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
             game = fields[1]
             reason = fields[2]
 

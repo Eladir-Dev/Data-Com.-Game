@@ -10,6 +10,7 @@ from .word_golf_types import WordGolfPlayer, WordGolfOccurrence, WordGolfGameRes
 class WordGolfGame:
     # The maximum number of tries that a player has for guessing a word.
     MAX_FEEDBACK_HIST_LEN = 6
+    QUEUED_WORD_AMT = 10
 
     def __init__(self, players: list[WordGolfPlayer]):
         if len(players) != 2:
@@ -23,7 +24,10 @@ class WordGolfGame:
 
         chosen_words = self.choose_words_for_game()
         for i in range(len(self.players)):
-            self.players[i].queued_words = chosen_words[5:] if i == 0 else chosen_words[:5]
+            self.players[i].queued_words = (
+                chosen_words[WordGolfGame.QUEUED_WORD_AMT // 2:] if i == 0  # first half
+                else chosen_words[:WordGolfGame.QUEUED_WORD_AMT // 2]       # second half
+            )
 
         self.result: WordGolfGameResult | None = None
         
@@ -35,7 +39,7 @@ class WordGolfGame:
             words = f.read().split('\n')
 
         # Randomly choose 10 words.
-        chosen_words = random.sample(words, 10)
+        chosen_words = random.sample(words, WordGolfGame.QUEUED_WORD_AMT)
         return chosen_words
     
 
