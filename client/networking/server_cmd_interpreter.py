@@ -180,6 +180,11 @@ class ServerCommandInterpreter:
         self.client_state.word_golf_state.own_queued_word_amt = own_queued_word_amt
         self.client_state.word_golf_state.opp_queued_word_amt = opp_queued_word_amt
 
+        # Clear the alerts.
+        # NOTE: This so that alerts that are no longer relevant don't clutter the UI, 
+        # but if a better UI solution is found, the alerts wouldn't need to be cleared every general update.
+        self.client_state.word_golf_state.received_alerts = []
+
 
     def receive_word_golf_feedback_history(self, feedback_hist: list[str]):
         assert self.client_state.word_golf_state, "Word Golf state was None"
