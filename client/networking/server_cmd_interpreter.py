@@ -100,6 +100,19 @@ class ServerCommandInterpreter:
             self.update_own_word_golf_stashed_words(stashed_words)
 
 
+        elif data.startswith("?alert"):
+            fields = validator.assert_field_min_amount_valid(data.split(':'), 2)
+            alert_fields = fields[1:]
+
+            # NOTE: This operation should be a separate method, it is duplicated in a lot of cases.
+            if len(alert_fields) == 1 and alert_fields[0] == '':
+                alert_fields = []
+
+            alert_fields = validator.assert_field_min_amount_valid(alert_fields, 1)
+
+            self.receive_latest_word_golf_alert(alert_fields)
+
+
         elif data.startswith("?game-over"):
             fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
             game = fields[1]
@@ -183,6 +196,22 @@ class ServerCommandInterpreter:
         self.client_state.word_golf_state.stashed_words = stashed_words
 
         print(f"LOG: The stashed words are: {self.client_state.word_golf_state.stashed_words}")
+
+
+    def receive_latest_word_golf_alert(self, alert_fields: list[str]):
+        assert self.client_state.word_golf_state, "Word Golf state was None"
+
+        kind = alert_fields[0]
+
+        if kind == "received-word":
+            opp_username = self.client_state.word_golf_state.opp_username
+            own_word_amt = self.client_state.word_golf_state.own_queued_word_amt
+
+            self.client_state.word_golf_state.received_alerts\
+                .append(f"'{opp_username}' sent a word! Now you have {own_word_amt} words to solve.")
+
+        else:
+            print(f"ERROR: unknown alert kind '{kind}'")
 
 
     def get_game_over_message(self, reason: str, game: str, all_received_fields: list[str]):

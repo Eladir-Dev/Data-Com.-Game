@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Literal
 from server_types import Connection
+from collections import deque
 
 @dataclass
 class WordGolfPlayer:
@@ -17,6 +18,8 @@ class WordGolfPlayer:
     feedback_history: list[str] = field(default_factory=lambda: [])
 
     stashed_words: set[str] = field(default_factory=lambda: set())
+
+    pending_alerts: deque[str] = field(default_factory=lambda: deque())
 
 
 @dataclass

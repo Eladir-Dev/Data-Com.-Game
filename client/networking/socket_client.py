@@ -160,6 +160,9 @@ def connect_word_golf(server_host: str, server_command_queue: Queue[str], client
                 elif data.startswith("?stashed-words"):
                     server_command_queue.put(data)
 
+                elif data.startswith("?alert"):
+                    server_command_queue.put(data)
+
                 elif data.startswith("?game-over"):
                     # Stop the client.
                     client_running = False

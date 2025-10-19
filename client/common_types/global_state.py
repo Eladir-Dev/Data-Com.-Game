@@ -48,6 +48,8 @@ class WordGolfGlobalState:
 
         self.stashed_words: list[str] = []
 
+        self.received_alerts: list[str] = []
+
     
 @dataclass
 class GlobalClientState:

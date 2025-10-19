@@ -103,6 +103,21 @@ class WordGolfGame:
         player.conn.sendall(feedback_hist_cmd.encode())
 
 
+    def add_alert_for_player(self, player_idx: int, alert_cmd_fields: list[str]):
+        alert_cmd = f"?alert:{':'.join(alert_cmd_fields)}"
+        self.players[player_idx].pending_alerts.append(alert_cmd)
+
+
+    def send_pending_alert_to_player(self, player: WordGolfPlayer):
+        if len(player.pending_alerts) == 0:
+            return
+        
+        # Wait a small delay.
+        time.sleep(0.5)
+        oldest_alert_cmd = player.pending_alerts.popleft()
+        player.conn.sendall(oldest_alert_cmd.encode())
+
+
     def get_player_opponent_idx(self, player_idx: int) -> int:
         """
         Returns the index of the opposing player i.e. returns 1 if given 0 and 0 if given 1.
@@ -174,6 +189,10 @@ class WordGolfGame:
                 # Wait a small delay and then send the player's stashed words.
                 time.sleep(0.5)
                 self.send_stashed_words_to_player(self.players[curr_idx])
+
+                # This has an in-built delay that only triggers when there are 
+                # pending alerts.
+                self.send_pending_alert_to_player(self.players[curr_idx])
 
             # Receive data from both players until the game determines that client-state needs 
             # to be updated (by setting `update_needed = True`).
@@ -294,6 +313,9 @@ class WordGolfGame:
 
             # Add the stashed word to the start of the queue.
             self.players[opponent_idx].queued_words.insert(0, occurrence.stashed_word)
+
+            # Add an alert notifying the opponent of the received stashed word.
+            self.add_alert_for_player(opponent_idx, ["received-word"])
 
         else:
             print(f"ERROR: unhandled occurence kind '{occurrence.kind}'")
