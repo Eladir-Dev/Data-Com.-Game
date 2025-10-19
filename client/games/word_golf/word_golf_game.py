@@ -22,6 +22,7 @@ def gen_stashed_word_cmd(stashed_word: str) -> str:
 def draw_all_ui(surface: Surface, global_game_data: WordGolfGlobalState) -> list[RenderedStashedWord]:
     draw_feedback_and_typed_word_ui(surface, global_game_data)
     draw_points_and_queued_word_ui(surface, global_game_data)
+    draw_most_recent_alert_ui(surface, global_game_data)
     rendered_stashed_words = draw_stashed_word_ui(surface, global_game_data)
 
     return rendered_stashed_words
@@ -101,10 +102,30 @@ def draw_points_and_queued_word_ui(surface: Surface, global_game_data: WordGolfG
     )
 
 
+def draw_most_recent_alert_ui(surface: Surface, global_game_data: WordGolfGlobalState):
+    alerts = global_game_data.received_alerts
+
+    if len(alerts) == 0:
+        return
+    
+    font_size = SYMBOL_SIZE * 3 // 5
+    most_recent_alert_ui_start_location = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 2 * font_size)
+
+    most_recent_alert_text = alerts[-1]
+
+    drawing_utils.draw_text(
+        surface,
+        most_recent_alert_text,
+        font_size,
+        most_recent_alert_ui_start_location,
+        Color.WHITE,
+    )
+
+
 def draw_stashed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState) -> list[RenderedStashedWord]:
     # Draw the stashed words UI after the points UI.
     font_size = SYMBOL_SIZE * 3 // 5
-    points_ui_start_location = (0, SCREEN_HEIGHT - font_size)
+    stashed_word_ui_start_location = (0, SCREEN_HEIGHT - font_size)
 
     rendered_stashed_words: list[RenderedStashedWord] = []
 
@@ -118,7 +139,7 @@ def draw_stashed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState
             surface,
             word,
             font_size,
-            (points_ui_start_location[0] + word_offset, points_ui_start_location[1]),
+            (stashed_word_ui_start_location[0] + word_offset, stashed_word_ui_start_location[1]),
             Color.WHITE,
         )
         rendered_stashed_words.append(RenderedStashedWord(
