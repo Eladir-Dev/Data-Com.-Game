@@ -1,6 +1,8 @@
 from common_types.global_state import GlobalClientState, StrategoGlobalState, WordGolfGlobalState, ValidState
 from typing import Callable
-from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color
+from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color, ROWS, COLS
+
+import networking.validator as validator
 
 class ServerCommandInterpreter:
     def __init__(
@@ -14,17 +16,17 @@ class ServerCommandInterpreter:
 
     def parse_server_command(self, data: str):
         if data.startswith("?game-start"):
-            fields = data.split(':')
+            fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
             game = fields[1]
 
             if game == 'stratego':
                 own_color = assert_str_is_color(fields[2])
-                opponent_username = fields[3]
+                opponent_username = validator.assert_valid_username(fields[3])
 
                 self.game_start_stratego(own_color, opponent_username)
 
             elif game == 'word_golf':
-                opponent_username = fields[2]
+                opponent_username = validator.assert_valid_username(fields[2])
 
                 self.game_start_word_golf(opponent_username)
 
@@ -33,7 +35,7 @@ class ServerCommandInterpreter:
 
 
         elif data.startswith("?turn-info"):
-            fields = data.split(':')
+            fields = validator.assert_field_amount_valid(data.split(':'), 2 + ROWS * COLS)
             current_turn = assert_str_is_color(fields[1])
             board_repr = ':'.join(fields[2:])
 
@@ -43,7 +45,7 @@ class ServerCommandInterpreter:
         elif data.startswith("?move-result"):
             print(f"Received the following move result CMD: {data}")
 
-            fields = data.split(':')
+            fields = validator.assert_field_amount_valid(data.split(':'), 6)
             kind = fields[1]
             r_atk = int(fields[2])
             c_atk = int(fields[3])
@@ -55,7 +57,7 @@ class ServerCommandInterpreter:
 
 
         elif data.startswith("?update"):
-            fields = data.split(':')
+            fields = validator.assert_field_amount_valid(data.split(':'), 5)
             own_points = int(fields[1])
             own_queued_word_amt = int(fields[2])
             opp_points = int(fields[3])
@@ -70,7 +72,7 @@ class ServerCommandInterpreter:
 
 
         elif data.startswith("?feedback-history"):
-            fields = data.split(':')
+            fields = validator.assert_field_min_amount_valid(data.split(':'), 2)
             feedback_hist = fields[1:]
             
             # Quirk with string split means that an empty feedback history is parsed as [''].
@@ -82,7 +84,7 @@ class ServerCommandInterpreter:
 
 
         elif data.startswith("?stashed-words"):
-            fields = data.split(':')
+            fields = validator.assert_field_min_amount_valid(data.split(':'), 2)
             stashed_words = fields[1:]
             
             # Quirk with string split means that an empty word stash is parsed as [''].
@@ -94,7 +96,7 @@ class ServerCommandInterpreter:
 
 
         elif data.startswith("?game-over"):
-            fields = data.split(':')
+            fields = validator.assert_field_amount_valid(data.split(':'), 3)
             game = fields[1]
             reason = fields[2]
 
