@@ -16,6 +16,9 @@ from .stratego_types import StrategoRenderedTile
 # from "/stratego_types.py"
 # class DeckSelection(pygame_menu.Menu):
 from common_types.global_state import GlobalClientState
+from pathlib import Path
+
+SPRITE_FOLDER = Path(__file__).parent / "assets"
 
 class RedHighlight(Selection):
     """
@@ -55,8 +58,75 @@ class DeckSelector():
     def __init__(self):
         super().__init__(margin_left=0, margin_right=0, margin_top=0, margin_bottom=0)
 
+        self.CELL_SIZE = 50
+        # Add a dictionary of sprites (replace with your actual loaded images)
+        # Example: self.sprites = {"piece1": pygame.image.load("assets/piece1.png"), ...}
+        self.sprites = {
+            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
+            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
+            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
+            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
+            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png"),
+            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png"),
+            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png"),
+            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png"),
+            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png"),
+            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png"),
+            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
+            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
+        }
+        """
+        Encoding legend:
+        * 'S' = Spy (1)
+        * '1' = Marshal (1)
+        * 'G' = General (1)
+        * '2' = Coronel (2)
+        * '3' = Major (3)
+        * 'C' = Captain (4)
+        * 'L' = Lieutenant (4)---
+        * '4' = Sargeant (4)
+        * '8' = Scout (8)
+        * '5' = Miner (5)
+        * 'B' = Bomb (6)
+        * 'F' = Flag (1)
+        """
+        limits = {
+            'S': 1,
+            '1': 1,
+            'G': 1,
+            '2': 2,
+            '3': 3,
+            'C': 4,
+            'L': 4,
+            '4': 4,
+            '8': 8,
+            '5': 5,
+            'B': 6,
+            'F': 1
+        }
+        # Scale all sprites to fit within the grid squares (50x50 pixels)
+        for key in self.sprites:
+            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
 
-    def draw(self, surface):
+
+    def draw(self, surface, top_grid, bottom_grid):
+        CELL_SIZE = 50
+        sprites = {
+            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
+            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
+            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
+            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
+            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png"),
+            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png"),
+            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png"),
+            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png"),
+            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png"),
+            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png"),
+            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
+            "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
+        }
+        for key in sprites:
+            sprites[key] = pygame.transform.scale(sprites[key], (CELL_SIZE, CELL_SIZE))
         # Constants
         SCREEN_WIDTH = 800
         SCREEN_HEIGHT = 600
@@ -93,6 +163,24 @@ class DeckSelector():
         for col in range(GRID_COLS + 1):
             x = X_START + col * CELL_SIZE
             pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y), (x, BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
+
+        # NEW: Draw pieces in the top grid based on self.top_grid
+        for row in range(GRID_ROWS):
+            for col in range(GRID_COLS):
+                piece = top_grid[row][col]
+                if piece != "":  # Only draw if there's a piece
+                    x = X_START + col * CELL_SIZE
+                    y = TOP_GRID_Y + row * CELL_SIZE
+                    surface.blit(sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
+
+        # NEW: Draw pieces in the bottom grid based on self.bottom_grid
+        for row in range(GRID_ROWS):
+            for col in range(GRID_COLS):
+                piece = bottom_grid[row][col]
+                if piece != "":  # Only draw if there's a piece
+                    x = X_START + col * CELL_SIZE
+                    y = BOTTOM_GRID_Y + row * CELL_SIZE
+                    surface.blit(sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
 class StrategoSettingsWindow():
     def __init__(self, 
@@ -387,7 +475,7 @@ class StrategoSettingsWindow():
 
         self.menu.update(events)
         self.menu.draw(self.surface)
-        DeckSelector.draw(self, surface=self.surface)
+        DeckSelector.draw(self, surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
         pygame.display.flip()
 
 
