@@ -48,6 +48,52 @@ class GreenHighlight(Selection):
         pygame.draw.rect(surface, (0, 255, 0), rect, 3)  # RGB red, thickness 3
         pygame.draw.rect(surface, (144, 238, 144), rect, 1)  # Light green fill (RGB for light green)
 
+class DeckSelector():
+    """
+    This class take care of drawing the grids for the deck selection.
+    """
+    def __init__(self):
+        super().__init__(margin_left=0, margin_right=0, margin_top=0, margin_bottom=0)
+
+
+    def draw(self, surface):
+        # Constants
+        SCREEN_WIDTH = 800
+        SCREEN_HEIGHT = 600
+        CELL_SIZE = 50
+        GRID_COLS = 10
+        GRID_ROWS = 4
+        TOP_GRID_Y = 70
+        BOTTOM_GRID_Y = 340
+        X_START = 336
+        # Colors
+        WHITE = (255, 255, 255)
+        BLACK = (0, 0, 0)
+        CREMA = (219, 196, 156)
+        LIGHT_GRAY = (200, 200, 200)
+        COLORS = [(255, 0, 0), (255, 100, 100), (0, 0, 255), (100, 100, 255), (0, 255, 0), (255, 255, 0),
+                  (255, 255, 100), (100, 255, 100), (255, 100, 255), (100, 255, 255)]
+
+        # Draw the UI.
+        # pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
+        pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Example UI panel
+
+        # Top grid outline: Horizontal/vertical lines for visual slots.
+        for row in range(GRID_ROWS + 1):
+            y = TOP_GRID_Y + row * CELL_SIZE
+            pygame.draw.line(surface, WHITE, (X_START, y), (X_START + GRID_COLS * CELL_SIZE, y), 2)
+        for col in range(GRID_COLS + 1):
+            x = X_START + col * CELL_SIZE
+            pygame.draw.line(surface, WHITE, (x, TOP_GRID_Y), (x, TOP_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
+
+        # Bottom grid outline: Identical to top for consistency.
+        for row in range(GRID_ROWS + 1):
+            y = BOTTOM_GRID_Y + row * CELL_SIZE
+            pygame.draw.line(surface, WHITE, (X_START, y), (X_START + GRID_COLS * CELL_SIZE, y), 2)
+        for col in range(GRID_COLS + 1):
+            x = X_START + col * CELL_SIZE
+            pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y), (x, BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
+
 class StrategoSettingsWindow():
     def __init__(self, 
         surface: Surface, 
@@ -334,8 +380,6 @@ class StrategoSettingsWindow():
         """
         Updates the UI.
         """
-        # Draw the UI.
-        pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
 
         if self.deck_full():
             green_selection = GreenHighlight()
@@ -343,6 +387,7 @@ class StrategoSettingsWindow():
 
         self.menu.update(events)
         self.menu.draw(self.surface)
+        DeckSelector.draw(self, surface=self.surface)
         pygame.display.flip()
 
 
