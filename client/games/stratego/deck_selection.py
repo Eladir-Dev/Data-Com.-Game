@@ -57,61 +57,15 @@ class DeckSelector():
     """
     def __init__(self):
         super().__init__(margin_left=0, margin_right=0, margin_top=0, margin_bottom=0)
-
+        # Drag-and-drop state variables
+        self.dragging = False
+        self.dragged_piece = None
+        self.dragged_from = None  # 'top' or 'bottom'
+        self.drag_row = None
+        self.drag_col = None
+        self.drag_offset = (0, 0)  # Offset to center the sprite on the mouse
         self.CELL_SIZE = 50
-        # Add a dictionary of sprites (replace with your actual loaded images)
-        # Example: self.sprites = {"piece1": pygame.image.load("assets/piece1.png"), ...}
         self.sprites = {
-            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
-            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
-            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
-            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
-            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png"),
-            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png"),
-            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png"),
-            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png"),
-            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png"),
-            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png"),
-            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
-            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
-        }
-        """
-        Encoding legend:
-        * 'S' = Spy (1)
-        * '1' = Marshal (1)
-        * 'G' = General (1)
-        * '2' = Coronel (2)
-        * '3' = Major (3)
-        * 'C' = Captain (4)
-        * 'L' = Lieutenant (4)---
-        * '4' = Sargeant (4)
-        * '8' = Scout (8)
-        * '5' = Miner (5)
-        * 'B' = Bomb (6)
-        * 'F' = Flag (1)
-        """
-        limits = {
-            'S': 1,
-            '1': 1,
-            'G': 1,
-            '2': 2,
-            '3': 3,
-            'C': 4,
-            'L': 4,
-            '4': 4,
-            '8': 8,
-            '5': 5,
-            'B': 6,
-            'F': 1
-        }
-        # Scale all sprites to fit within the grid squares (50x50 pixels)
-        for key in self.sprites:
-            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
-
-
-    def draw(self, surface, top_grid, bottom_grid):
-        CELL_SIZE = 50
-        sprites = {
             "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
             "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
             "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
@@ -125,11 +79,92 @@ class DeckSelector():
             "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
             "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
         }
-        for key in sprites:
-            sprites[key] = pygame.transform.scale(sprites[key], (CELL_SIZE, CELL_SIZE))
+
+
+    def handle_mouse_event(self, event, top_grid, bottom_grid):
+        CELL_SIZE = 50
+        GRID_COLS = 10
+        GRID_ROWS = 4
+        TOP_GRID_Y = 70
+        BOTTOM_GRID_Y = 340
+        X_START = 336
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button down
+            mouse_x, mouse_y = event.pos
+            # Check if click is in top grid
+            if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
+                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                col = (mouse_x - X_START) // CELL_SIZE
+                row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
+                if top_grid[row][col] != "":  # There's a piece here
+                    self.dragging = True
+                    self.dragged_piece = top_grid[row][col]
+                    self.dragged_from = 'top'
+                    self.drag_row = row
+                    self.drag_col = col
+                    top_grid[row][col] = ""  # Temporarily remove from grid
+                    # Calculate offset to center the sprite on the mouse
+                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2),
+                                        mouse_y - (TOP_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2))
+            # Check if click is in bottom grid
+            elif (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
+                  X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                col = (mouse_x - X_START) // CELL_SIZE
+                row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
+                if bottom_grid[row][col] != "":  # There's a piece here
+                    self.dragging = True
+                    self.dragged_piece = bottom_grid[row][col]
+                    self.dragged_from = 'bottom'
+                    self.drag_row = row
+                    self.drag_col = col
+                    bottom_grid[row][col] = ""  # Temporarily remove from grid
+                    # Calculate offset to center the sprite on the mouse
+                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2),
+                                        mouse_y - (BOTTOM_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2))
+
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.dragging:  # Left mouse button up
+            mouse_x, mouse_y = event.pos
+            dropped = False
+            # Attempt to drop in the other grid
+            if self.dragged_from == 'top':
+                # Check if mouse is over bottom grid
+                if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
+                    X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                    col = (mouse_x - X_START) // CELL_SIZE
+                    row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
+                    if bottom_grid[row][col] == "":  # Only drop if the cell is empty
+                        bottom_grid[row][col] = self.dragged_piece
+                        dropped = True
+            elif self.dragged_from == 'bottom':
+                # Check if mouse is over top grid
+                if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
+                    X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                    col = (mouse_x - X_START) // CELL_SIZE
+                    row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
+                    if top_grid[row][col] == "":  # Only drop if the cell is empty
+                        top_grid[row][col] = self.dragged_piece
+                        dropped = True
+            # If drop failed, return to original position
+            if not dropped:
+                if self.dragged_from == 'top':
+                    top_grid[self.drag_row][self.drag_col] = self.dragged_piece
+                else:
+                    bottom_grid[self.drag_row][self.drag_col] = self.dragged_piece
+            #Reset drag state
+            self.dragging = False
+            self.dragged_piece = None
+            self.dragged_from = None
+            self.drag_row = None
+            self.drag_col = None
+            self.drag_offset = (0, 0)
+
+
+
+    def draw(self, surface, top_grid, bottom_grid):
+        for key in self.sprites:
+            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
+
         # Constants
-        SCREEN_WIDTH = 800
-        SCREEN_HEIGHT = 600
         CELL_SIZE = 50
         GRID_COLS = 10
         GRID_ROWS = 4
@@ -164,23 +199,30 @@ class DeckSelector():
             x = X_START + col * CELL_SIZE
             pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y), (x, BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
 
-        # NEW: Draw pieces in the top grid based on self.top_grid
+        # Draw pieces in the top grid based on self.top_grid
         for row in range(GRID_ROWS):
             for col in range(GRID_COLS):
                 piece = top_grid[row][col]
                 if piece != "":  # Only draw if there's a piece
                     x = X_START + col * CELL_SIZE
                     y = TOP_GRID_Y + row * CELL_SIZE
-                    surface.blit(sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
+                    surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
-        # NEW: Draw pieces in the bottom grid based on self.bottom_grid
+        # Draw pieces in the bottom grid based on self.bottom_grid
         for row in range(GRID_ROWS):
             for col in range(GRID_COLS):
                 piece = bottom_grid[row][col]
                 if piece != "":  # Only draw if there's a piece
                     x = X_START + col * CELL_SIZE
                     y = BOTTOM_GRID_Y + row * CELL_SIZE
-                    surface.blit(sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
+                    surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
+
+        # If dragging, draw the dragged sprite at the mouse position (centered)
+        if self.dragging and self.dragged_piece:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            drag_x = mouse_x - self.drag_offset[0]
+            drag_y = mouse_y - self.drag_offset[1]
+            surface.blit(self.sprites[self.dragged_piece], (drag_x, drag_y))
 
 class StrategoSettingsWindow():
     def __init__(self, 
@@ -205,6 +247,28 @@ class StrategoSettingsWindow():
         self.pieces = [['' for _ in range(rows)] for _ in range(cols)]
         self.deck = [['' for _ in range(rows)] for _ in range(cols)]
         self.fill_pieces(rows, cols, True)
+        # ====================Deck renderer========================#
+        self.dragging = False # TODO: Revisar si se puede quitar sin errores
+        self.dragged_piece = None
+        self.dragged_from = None  # 'top' or 'bottom'
+        self.drag_row = None
+        self.drag_col = None
+        self.drag_offset = (0, 0)  # Offset to center the sprite on the mouse
+        self.CELL_SIZE = 50
+        self.sprites = {
+            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
+            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
+            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
+            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
+            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png"),
+            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png"),
+            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png"),
+            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png"),
+            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png"),
+            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png"),
+            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
+            "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
+        }
 
         # Create menu with left-side layout
         menu_hight = 600
@@ -475,6 +539,8 @@ class StrategoSettingsWindow():
 
         self.menu.update(events)
         self.menu.draw(self.surface)
+        for event in events:
+            DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
         DeckSelector.draw(self, surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
         pygame.display.flip()
 
