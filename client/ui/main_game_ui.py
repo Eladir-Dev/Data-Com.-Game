@@ -8,6 +8,7 @@ from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import games.stratego.stratego_game as stratego_game
 import games.word_golf.word_golf_game as word_golf_game
 from ui.main_game_ui_sub_menus import MainGameSubMenus
+from ui.secret_game_background_activator import SecretGameBackgroundActivator
 from networking.server_cmd_interpreter import ServerCommandInterpreter
 
 class MainGameUI:
@@ -47,6 +48,11 @@ class MainGameUI:
             change_game_state=self.change_game_state,
         )
 
+        # Very important.
+        self.secret_game_background_activator = SecretGameBackgroundActivator(
+            secret_key_hash="f1e7f77e70f7db539b79e8c827f6bed02aab95a31248ec0926c593bf5b1c71f9"
+        )
+
 
     def change_game_state(self, new_state: ValidState):
         """
@@ -70,6 +76,11 @@ class MainGameUI:
                     progress.set_value(progress.get_value() + 1)
                     if progress.get_value() == 100:
                         pygame.time.set_timer(self.sub_menus.update_loading, 0)
+
+                if event.type == pygame.KEYDOWN:
+                    # Very important.
+                    self.secret_game_background_activator.read_user_key_press(event.unicode)
+
                 if event.type == pygame.QUIT:
                     exit()
 
