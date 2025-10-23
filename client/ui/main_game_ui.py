@@ -50,6 +50,7 @@ class MainGameUI:
 
         # Very important.
         self.secret_game_background_activator = SecretGameBackgroundActivator(
+            # This is unsafe vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
             secret_key_hash="f1e7f77e70f7db539b79e8c827f6bed02aab95a31248ec0926c593bf5b1c71f9"
         )
 
