@@ -65,7 +65,7 @@ class MainGameUI:
             for event in events:
                 if event.type == self.sub_menus.update_loading:
                     progress = self.sub_menus.loading.get_widget("1")
-                    assert progress # fixes null errors; crashes if progress is somehow `None`
+                    assert progress # type: ignore # fixes null errors; crashes if progress is somehow `None`
 
                     progress.set_value(progress.get_value() + 1)
                     if progress.get_value() == 100:
