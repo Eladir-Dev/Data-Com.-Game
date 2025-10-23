@@ -13,6 +13,9 @@ from stratego.stratego_player import StrategoPlayer
 from word_golf.word_golf_types import WordGolfPlayer
 from word_golf.word_golf_game import WordGolfGame
 
+from secret_game.secret_game_types import SecretGamePlayer
+from secret_game.secret_game_game import SecretGameGame
+
 # Standard loopback interface address (localhost).
 # 127.0.0.1 makes it so that the server is only accesible from the same machine.
 # 0.0.0.0 allows connections from other machines.
@@ -26,6 +29,8 @@ LOCK = threading.Lock()
 WAITING_STRATEGO_PLAYERS: list[StrategoPlayer] = []
 
 WAITING_WORD_GOLF_PLAYERS: list[WordGolfPlayer] = []
+
+WAITING_SECRET_GAME_PLAYERS: list[SecretGamePlayer] = []
 
 def handle_client(conn: Connection, addr):
     # This timeout is for communicating with existing clients.
@@ -60,6 +65,11 @@ def handle_client(conn: Connection, addr):
         word_golf_player = WordGolfPlayer(conn, username)
 
         move_player_to_word_golf_queue(word_golf_player)
+
+    elif game == "secret_game":
+        secret_game_player = SecretGamePlayer(conn, username)
+
+        
 
     else:
         print(f"ERROR: unknown game '{game}'")
@@ -108,6 +118,25 @@ def move_player_to_word_golf_queue(player: WordGolfPlayer):
     start_word_golf_game(player1, player2)
 
 
+def move_player_to_secret_game_queue(player: SecretGamePlayer):
+    with LOCK:
+        WAITING_SECRET_GAME_PLAYERS.append(player)
+
+     # Wait for an opponent to join.
+    while len(WAITING_SECRET_GAME_PLAYERS) < 2:
+        time.sleep(WAITING_TIMEOUT_IN_SECS) # Wait and check again
+    
+    # Once a second player joins, start a new game.
+    with LOCK:
+        player1 = WAITING_SECRET_GAME_PLAYERS.pop()
+        player2 = WAITING_SECRET_GAME_PLAYERS.pop()
+
+    time.sleep(WAITING_TIMEOUT_IN_SECS)
+
+    # Logic to start the game
+    start_secret_game_game(player1, player2)
+
+
 def start_stratego_game(player_1: StrategoPlayer, player_2: StrategoPlayer):
     print("LOG: Two players found. Starting Stratego game...")
 
@@ -142,6 +171,26 @@ def start_word_golf_game(player_1: WordGolfPlayer, player_2: WordGolfPlayer):
 
     # The game for this thread. 
     game = WordGolfGame([player_1, player_2])
+
+    # Run the game in a loop.
+    game.run()
+
+
+def start_secret_game_game(player_1: SecretGamePlayer, player_2: SecretGamePlayer):
+    print("LOG: Two players found. Starting Secret Game game...")
+
+    # Send a message to both players to start the game.
+    player_1.conn.sendall(f"?game-start:secret_game:{player_2.username}".encode())
+    player_2.conn.sendall(f"?game-start:secret_game:{player_1.username}".encode())
+
+    # Give the clients time to process the game's start.
+    time.sleep(0.5)
+
+    print(f"LOG: {player_1.username} joined a Secret Game game")
+    print(f"LOG: {player_2.username} joined a Secret Game game")
+
+    # The game for this thread. 
+    game = SecretGameGame([player_1, player_2])
 
     # Run the game in a loop.
     game.run()
