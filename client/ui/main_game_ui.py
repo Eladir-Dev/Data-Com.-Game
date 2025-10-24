@@ -51,6 +51,7 @@ class MainGameUI:
 
         # Very important.
         self.secret_game_background_activator = SecretGameBackgroundActivator(
+            client_state=self.client_state,
             start_loading_secret_game=self.start_loading_secret_game,
 
             # This is unsafe vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
