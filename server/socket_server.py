@@ -69,7 +69,7 @@ def handle_client(conn: Connection, addr):
     elif game == "secret_game":
         secret_game_player = SecretGamePlayer(conn, username)
 
-        
+        move_player_to_secret_game_queue(secret_game_player)
 
     else:
         print(f"ERROR: unknown game '{game}'")

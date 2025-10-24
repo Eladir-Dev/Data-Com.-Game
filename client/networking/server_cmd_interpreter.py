@@ -154,6 +154,7 @@ class ServerCommandInterpreter:
             own_username=self.client_state.username,
             opp_username=opponent_username,
         )
+        self.change_game_state('in_secret_game')
 
 
     def update_using_stratego_turn_info(self, current_turn: StrategoColor, board_repr: str):
