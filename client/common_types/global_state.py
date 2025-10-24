@@ -6,10 +6,12 @@ ValidState = Literal[
     'main_menu', 
     'loading_stratego_game',
     'in_stratego_game', 
-    'in_word_golf_game',
     'loading_word_golf_game', 
+    'in_word_golf_game',
+    'loading_secret_game',
+    'in_secret_game',
     'finished_game',
-    'in_deck_selection_state'
+    'in_deck_selection_state',
 ]
 
 class StrategoGlobalState:
@@ -51,6 +53,12 @@ class WordGolfGlobalState:
         self.received_alerts: list[str] = []
 
     
+class SecretGameGlobalState:
+    def __init__(self, own_username: str, opp_username: str):
+        self.own_username = own_username
+        self.opp_username = opp_username
+
+
 @dataclass
 class GlobalClientState:
     """
@@ -80,6 +88,10 @@ class GlobalClientState:
     word_golf_state: WordGolfGlobalState | None = None
     """
     Holds Word Golf-specific game data.
+    """
+    secret_game_state: SecretGameGlobalState | None = None
+    """
+    Holds Secret Game-specific game state.
     """
 
     # Socket-representation of the starting deck.

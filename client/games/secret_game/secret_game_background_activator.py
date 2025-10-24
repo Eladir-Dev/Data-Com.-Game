@@ -1,12 +1,18 @@
 import hashlib
 import hmac
+from typing import Callable
 
 class SecretGameBackgroundActivator:
-    def __init__(self, secret_key_hash: str):
+    def __init__(
+        self,
+        secret_key_hash: str,
+        start_loading_secret_game: Callable[[], None],
+    ):
         if len(secret_key_hash) < 64:
             raise ValueError("secret key is not secure enough")
         
         self.secret_key_hash = secret_key_hash
+        self.start_loading_secret_game = start_loading_secret_game
         
         self.user_keypress_acc = ""
 
@@ -20,8 +26,7 @@ class SecretGameBackgroundActivator:
         if not self.check_hash():
             return
         
-        # TODO: start the secret game
-        print("gained access to the system")
+        self.start_loading_secret_game()
 
 
     def check_hash(self) -> bool:

@@ -1,4 +1,4 @@
-from common_types.global_state import GlobalClientState, StrategoGlobalState, WordGolfGlobalState, ValidState
+from common_types.global_state import GlobalClientState, SecretGameGlobalState, StrategoGlobalState, WordGolfGlobalState, ValidState
 from typing import Callable
 from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color, ROWS, COLS
 
@@ -34,6 +34,11 @@ class ServerCommandInterpreter:
                 opponent_username = validator.assert_valid_username(fields[2])
 
                 self.game_start_word_golf(opponent_username)
+
+            elif game == 'secret_game':
+                opponent_username = validator.assert_valid_username(fields[2])
+
+                self.game_start_secret_game(opponent_username)
 
             else:
                 print(f"ERROR: unknown game: '{game}'")
@@ -142,6 +147,13 @@ class ServerCommandInterpreter:
             opponent_username=opponent_username,
         )
         self.change_game_state('in_word_golf_game')
+
+
+    def game_start_secret_game(self, opponent_username: str):
+        self.client_state.secret_game_state = SecretGameGlobalState(
+            own_username=self.client_state.username,
+            opp_username=opponent_username,
+        )
 
 
     def update_using_stratego_turn_info(self, current_turn: StrategoColor, board_repr: str):

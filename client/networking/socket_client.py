@@ -6,6 +6,7 @@ import socket
 from queue import Queue
 from games.stratego.stratego_types import StrategoStartingPlayerInfo
 from games.word_golf.word_golf_types import WordGolfStartingPlayerInfo
+from games.secret_game.secret_game_types import SecretGameStartingPlayerInfo
 
 PORT = 49300 # The port used by the server
 
@@ -28,11 +29,12 @@ def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
                     starting_deck_repr = ':'.join(fields[4:]) # rejoin the deck
 
                     connect_stratego(server_host, server_command_queue, client_queue, StrategoStartingPlayerInfo(username, starting_deck_repr))
-                    # Should there be a break here?
 
                 elif game == "word_golf":
                     connect_word_golf(server_host, server_command_queue, client_queue, WordGolfStartingPlayerInfo(username))
-                    # Should there be a break here?
+
+                elif game == "secret_game":
+                    connect_secret_game(server_host, server_command_queue, client_queue, SecretGameStartingPlayerInfo(username))
 
                 else:
                     print(f"ERROR: Unknown game: '{game}'")
@@ -123,7 +125,7 @@ def connect_word_golf(server_host: str, server_command_queue: Queue[str], client
         # Prevents the socket from blocking the entire client thread when reading.
         s.settimeout(1.0)
 
-        # Tell the server that this client wants to play Stratego under the given username and starting deck.
+        # Tell the server that this client wants to play Word Golf with the given username.
         s.sendall(f"?game:word_golf:{starting_player_info.username}".encode())
 
         # Wait for the server to confirm that the game has started.
@@ -188,3 +190,91 @@ def connect_word_golf(server_host: str, server_command_queue: Queue[str], client
 
                 else:
                     print(f"ERROR: Unknown client message '{data}'")
+
+
+def connect_secret_game(
+    server_host: str, 
+    server_command_queue: Queue[str], 
+    client_queue: Queue[str], 
+    starting_player_info: SecretGameStartingPlayerInfo,
+):
+    """
+    Connects to the server. Sends commands from the server back 
+    through the server command queue. Receives user messages from the client queue.
+    """
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((server_host, PORT))
+
+        # Prevents the socket from blocking the entire client thread when reading.
+        s.settimeout(1.0)
+
+        # Tell the server that this client wants to play the secret game.
+        s.sendall(f"?game:secret_game:{starting_player_info.username}".encode())
+
+        # Wait for the server to confirm that the game has started.
+        while True:
+            try:
+                data = s.recv(BUF_SIZE).decode()
+
+                if data.startswith("?game-start"):
+                    # Forward the game start command to the UI.
+                    server_command_queue.put(data)
+                    break
+
+                else:
+                    print(f"ERROR: Unknown server response: '{data}'")
+
+            except socket.timeout: pass
+
+        print("LOG: starting Word Golf game on client...")
+
+        client_running = True
+
+        while client_running:
+            try:
+                data = s.recv(BUF_SIZE).decode()
+
+                print(f"received secret game server CMD: {data}")
+
+                # Forward server commands to the UI.
+
+                # if data.startswith("?update"):
+                #     server_command_queue.put(data)
+
+                # elif data.startswith("?feedback-history"):
+                #     server_command_queue.put(data)
+
+                # elif data.startswith("?stashed-words"):
+                #     server_command_queue.put(data)
+
+                # elif data.startswith("?alert"):
+                #     server_command_queue.put(data)
+
+                # elif data.startswith("?game-over"):
+                #     # Stop the client.
+                #     client_running = False
+
+                #     # Forward the game over command to the UI.
+                #     server_command_queue.put(data)
+
+                # else:
+                #     print(f"ERROR: received unknown data from server: '{data}'")
+
+            except socket.timeout: pass
+
+            while not client_queue.empty():
+                data = client_queue.get()
+
+                print(f"intercepted secret game CMD from client {data}")
+
+                # if data.startswith("!guess"):
+                #     print(f"LOG: trying to send guess command: '{data}'")
+                #     s.sendall(data.encode())
+
+                # elif data.startswith("!send-stashed-word"):
+                #     print(f"LOG: trying to send stashed word command: '{data}'")
+                #     s.sendall(data.encode())
+
+                # else:
+                #     print(f"ERROR: Unknown client message '{data}'")
