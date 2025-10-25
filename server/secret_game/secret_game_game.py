@@ -1,6 +1,7 @@
 from secret_game.secret_game_types import SecretGamePlayer
 from server_types import BUF_SIZE
 import socket
+import time
 
 class SecretGameGame:
     def __init__(self, players: list[SecretGamePlayer]):
@@ -54,6 +55,10 @@ class SecretGameGame:
         """
         while self.is_running:
             for player in self.players:
+                # NOTE: this is only for testing
+                player.conn.sendall(f"?move:6:6\\".encode())
+                time.sleep(0.5)
+
                 self.handle_player_client_response(player)
 
 

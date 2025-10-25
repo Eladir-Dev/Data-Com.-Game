@@ -229,37 +229,32 @@ def connect_secret_game(
 
         print("LOG: starting Word Golf game on client...")
 
+        VALID_COMMAND_PREFIXES = (
+            '?pos',
+        )
         client_running = True
+        buffer = ""
 
         while client_running:
             try:
                 data = s.recv(BUF_SIZE).decode()
+                buffer += data
 
-                print(f"received secret game server CMD: {data}")
+                while '\\' in buffer:
+                    cmd_end = buffer.find('\\')
+                    server_cmd = buffer[:cmd_end]
 
-                # Forward server commands to the UI.
+                    buffer = buffer[cmd_end+1:] # +1 for skipping past the trailing `/`
 
-                # if data.startswith("?update"):
-                #     server_command_queue.put(data)
+                    print(f"RECEIVED SECRET SERVER COMMAND: {server_cmd}")
 
-                # elif data.startswith("?feedback-history"):
-                #     server_command_queue.put(data)
-
-                # elif data.startswith("?stashed-words"):
-                #     server_command_queue.put(data)
-
-                # elif data.startswith("?alert"):
-                #     server_command_queue.put(data)
-
-                # elif data.startswith("?game-over"):
-                #     # Stop the client.
-                #     client_running = False
-
-                #     # Forward the game over command to the UI.
-                #     server_command_queue.put(data)
-
-                # else:
-                #     print(f"ERROR: received unknown data from server: '{data}'")
+                    if not server_cmd.startswith('?'):
+                        raise Exception(f"received invalid command: {server_cmd}")
+                    
+                    if server_cmd.startswith(VALID_COMMAND_PREFIXES):
+                        server_command_queue.put(server_cmd)
+                    else:
+                        print(f"ERROR: received unknown data from server: '{data}'")
 
             except socket.timeout: pass
 
