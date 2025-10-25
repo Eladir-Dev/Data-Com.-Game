@@ -1,7 +1,8 @@
-from secret_game.secret_game_types import SecretGamePlayer
+from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult
 from server_types import BUF_SIZE
 import socket
 import time
+import math
 
 class SecretGameGame:
     def __init__(self, players: list[SecretGamePlayer]):
@@ -9,8 +10,51 @@ class SecretGameGame:
 
         self.is_running = True
 
+        self._last_timestamp = None
+        self.deltatime = 0.1
 
-    # TODO: everything
+        self.result: SecretGameResult | None = None
+
+
+    def send_race_countdown_command(self, player: SecretGamePlayer, count_down: int):
+        player.conn.send(f"?countdown:{count_down}\\".encode())
+
+
+    def send_race_start_command(self, player: SecretGamePlayer):
+        player.conn.send(f"?race-start\\".encode())
+
+
+    def calc_deltatime(self):
+        now = time.perf_counter()
+
+        if self._last_timestamp is not None:
+            self.deltatime = now - self._last_timestamp
+            return
+        
+        self.deltatime = 0.0001
+        self._last_timestamp = now
+
+
+    def move_player(self, player: SecretGamePlayer):
+        movement = Vector(
+            x=math.cos(player.facing_angle) * player.speed * self.deltatime,
+            y=math.sin(player.facing_angle) * player.speed * self.deltatime,
+        )
+        player.position += movement
+
+
+    def build_pos_cmd_for_player(self, player_idx: int) -> str:
+        pos = self.players[player_idx].position
+        return f"?pos:{player_idx}:{int(pos.x)}:{int(pos.y)}\\"
+
+
+    def send_position_commands(self):
+        move_cmds = [self.build_pos_cmd_for_player(i) for i in range(len(self.players))]
+
+        for move_cmd in move_cmds:
+            for player in self.players:
+                player.conn.sendall(move_cmd.encode())
+    
     
     def run(self):
         """
@@ -24,40 +68,51 @@ class SecretGameGame:
             # self.result = WordGolfGameResult(winner_username=None, abrupt_end=True)
             pass
 
-        # # Game ended.
-        # print("LOG: Word Golf game ended")
+        # Game ended.
+        print("LOG: A Secret Game ended")
 
-        # for player in self.players:
-        #     # The result of the game must have been determined already.
-        #     assert self.result
+        for player in self.players:
+            # The result of the game must have been determined already.
+            assert self.result
 
-        #     try:
-        #         # There is a winner.
-        #         if self.result.winner_username is not None:
-        #             player.conn.sendall(f"?game-over:word_golf:winner-determined:{self.result.winner_username}".encode())
+            try:
+                # There is a winner.
+                if self.result.winner_idx is not None:
+                    player.conn.sendall(f"?game-over:secret_game:winner-determined:{self.result.winner_idx}".encode())
 
-        #         # The game abruptly ended before finishing normally.
-        #         elif self.result.abrupt_end:
-        #             player.conn.sendall("?game-over:word_golf:abrupt-end".encode())
+                # The game abruptly ended before finishing normally.
+                elif self.result.abrupt_end:
+                    player.conn.sendall("?game-over:secret_game:abrupt-end".encode())
 
-        #         # Since the winner is None, but there wasn't an abrupt end, that means that 
-        #         # there was a tie.
-        #         else:
-        #             player.conn.sendall("?game-over:word_golf:tie".encode())
+                # Since the winner is None, but there wasn't an abrupt end, that means that 
+                # there was a tie.
+                else:
+                    player.conn.sendall("?game-over:secret_game:tie".encode())
 
-        #     # Do not bother trying to send a game over message if the client's socket is disconnected.
-        #     except ConnectionResetError: pass
+            # Do not bother trying to send a game over message if the client's socket is disconnected.
+            except ConnectionResetError: pass
 
 
     def run_main_game_loop(self):
         """
         Runs the main part of the game loop.
         """
+        for i in range(3, -1, -1):
+            time.sleep(1)
+
+            for player in self.players: 
+                self.send_race_countdown_command(player, count_down=i)
+
+        time.sleep(0.5)
+        for player in self.players:
+            self.send_race_start_command(player)
+
         while self.is_running:
+            self.calc_deltatime()
+
             for player in self.players:
-                # NOTE: this is only for testing
-                player.conn.sendall(f"?move:6:6\\".encode())
-                time.sleep(0.5)
+                self.move_player(player)
+                self.send_position_commands()
 
                 self.handle_player_client_response(player)
 
