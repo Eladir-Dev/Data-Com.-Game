@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from server_types import Connection
-from typing import Self, Literal
+from typing import Self
+
+DEFAULT_SPEED = 0.25
 
 @dataclass
 class Vector:
@@ -20,7 +22,7 @@ class SecretGamePlayer:
     username: str
 
     position: Vector = field(default_factory=lambda: Vector(x=0, y=0))
-    speed: float = 2.0
+    speed: float = field(default=DEFAULT_SPEED)
     facing_angle: float = 0.0
 
 

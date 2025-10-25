@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
+from games.secret_game.secret_game_types import SecretGamePlayer
 
 ValidState = Literal[
     'main_menu', 
@@ -54,9 +55,17 @@ class WordGolfGlobalState:
 
     
 class SecretGameGlobalState:
-    def __init__(self, own_username: str, opp_username: str):
-        self.own_username = own_username
-        self.opp_username = opp_username
+    def __init__(self, own_idx: int, players: list[SecretGamePlayer]):
+        self.own_idx = own_idx
+        self.players = players
+
+
+    def get_own_data(self) -> SecretGamePlayer:
+        return self.players[self.own_idx]
+    
+
+    def get_opp_data(self) -> SecretGamePlayer:
+        return self.players[(self.own_idx + 1) % 2]
 
 
 @dataclass

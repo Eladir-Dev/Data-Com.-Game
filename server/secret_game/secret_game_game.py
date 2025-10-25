@@ -65,8 +65,7 @@ class SecretGameGame:
 
         # End the game if a connection error occurs.
         except ConnectionResetError:
-            # self.result = WordGolfGameResult(winner_username=None, abrupt_end=True)
-            pass
+            self.result = SecretGameResult(winner_idx=None, abrupt_end=True)
 
         # Game ended.
         print("LOG: A Secret Game ended")
@@ -78,16 +77,16 @@ class SecretGameGame:
             try:
                 # There is a winner.
                 if self.result.winner_idx is not None:
-                    player.conn.sendall(f"?game-over:secret_game:winner-determined:{self.result.winner_idx}".encode())
+                    player.conn.sendall(f"?game-over:secret_game:winner-determined:{self.result.winner_idx}\\".encode())
 
                 # The game abruptly ended before finishing normally.
                 elif self.result.abrupt_end:
-                    player.conn.sendall("?game-over:secret_game:abrupt-end".encode())
+                    player.conn.sendall("?game-over:secret_game:abrupt-end\\".encode())
 
                 # Since the winner is None, but there wasn't an abrupt end, that means that 
                 # there was a tie.
                 else:
-                    player.conn.sendall("?game-over:secret_game:tie".encode())
+                    player.conn.sendall("?game-over:secret_game:tie\\".encode())
 
             # Do not bother trying to send a game over message if the client's socket is disconnected.
             except ConnectionResetError: pass

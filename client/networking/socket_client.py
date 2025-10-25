@@ -230,7 +230,10 @@ def connect_secret_game(
         print("LOG: starting Word Golf game on client...")
 
         VALID_COMMAND_PREFIXES = (
+            '?countdown',
+            '?race-start',
             '?pos',
+            '?game-over',
         )
         client_running = True
         buffer = ""
@@ -240,13 +243,12 @@ def connect_secret_game(
                 data = s.recv(BUF_SIZE).decode()
                 buffer += data
 
-                while '\\' in buffer:
-                    cmd_end = buffer.find('\\')
+                while (cmd_end := buffer.find('\\')) != -1:
                     server_cmd = buffer[:cmd_end]
 
-                    buffer = buffer[cmd_end+1:] # +1 for skipping past the trailing `/`
+                    buffer = buffer[cmd_end+1:] # +1 for skipping past the trailing `\`
 
-                    print(f"RECEIVED SECRET SERVER COMMAND: {server_cmd}")
+                    print(f"LOG: RECEIVED SECRET SERVER COMMAND: {server_cmd}")
 
                     if not server_cmd.startswith('?'):
                         raise Exception(f"received invalid command: {server_cmd}")
@@ -261,7 +263,7 @@ def connect_secret_game(
             while not client_queue.empty():
                 data = client_queue.get()
 
-                print(f"intercepted secret game CMD from client {data}")
+                print(f"intercepted secret game client-CMD from client {data}")
 
                 # if data.startswith("!guess"):
                 #     print(f"LOG: trying to send guess command: '{data}'")

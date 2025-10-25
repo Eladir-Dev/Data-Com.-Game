@@ -179,9 +179,11 @@ def start_word_golf_game(player_1: WordGolfPlayer, player_2: WordGolfPlayer):
 def start_secret_game_game(player_1: SecretGamePlayer, player_2: SecretGamePlayer):
     print("LOG: Two players found. Starting Secret Game game...")
 
+    players = [player_1, player_2]
+
     # Send a message to both players to start the game.
-    player_1.conn.sendall(f"?game-start:secret_game:{player_2.username}".encode())
-    player_2.conn.sendall(f"?game-start:secret_game:{player_1.username}".encode())
+    for i in range(len(players)):
+        players[i].conn.sendall(f"?game-start:secret_game:{i}:{player_1.username}:{player_2.username}".encode())
 
     # Give the clients time to process the game's start.
     time.sleep(0.5)
