@@ -1,5 +1,5 @@
 from secret_game.tile import Tile, parse_tile_kind
-from secret_game.secret_game_types import Vector
+from secret_game.secret_game_types import real_position_from_map_position
 
 class Map:
     def __init__(self, file_name: str):
@@ -37,6 +37,6 @@ class Map:
         assert p1_spawn_map_pos, "No P1 spawn position found in map"
         assert p2_spawn_map_pos, "No P2 spawn position found in map"
 
-        self.p1_spawn_map_pos = Vector(x=p1_spawn_map_pos[0], y=p1_spawn_map_pos[1])
-        self.p2_spawn_map_pos = Vector(x=p2_spawn_map_pos[0], y=p2_spawn_map_pos[1])
+        self.p1_spawn_map_pos = real_position_from_map_position(p1_spawn_map_pos)
+        self.p2_spawn_map_pos = real_position_from_map_position(p2_spawn_map_pos)
         

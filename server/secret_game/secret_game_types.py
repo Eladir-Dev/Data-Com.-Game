@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from server_types import Connection
 from typing import Self
 
+MAP_RESOLUTION = 32
 DEFAULT_SPEED = 0.25
 
 @dataclass
@@ -14,6 +15,11 @@ class Vector:
             x=self.x + other.x,
             y=self.y + other.y,
         )
+
+def real_position_from_map_position(map_pos: tuple[int, int]) -> Vector:
+    mx, my = map_pos
+    return Vector(x=MAP_RESOLUTION * mx, y=MAP_RESOLUTION * my)
+
 
 
 @dataclass

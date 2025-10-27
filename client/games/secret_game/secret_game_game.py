@@ -10,9 +10,10 @@ SPITE_FOLDER = Path(__file__).parent / "assets"
 
 
 def temp_draw_players(surface: Surface, global_game_data: SecretGameGlobalState):
-    # Draw players (temp logic).
     p1_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_01.png")
     p2_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_02.png")
+
+    # TODO: Figure out how to render the map and render the corresponding player at the center of the screen.
 
     draw_sprite_on_surface(
         surface,
