@@ -20,8 +20,8 @@ class Vector:
 class SecretGamePlayer:
     conn: Connection
     username: str
+    position: Vector | None
 
-    position: Vector = field(default_factory=lambda: Vector(x=0, y=0))
     speed: float = field(default=DEFAULT_SPEED)
     facing_angle: float = 0.0
 

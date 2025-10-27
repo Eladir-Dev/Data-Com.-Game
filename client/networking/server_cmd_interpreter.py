@@ -38,9 +38,19 @@ class ServerCommandInterpreter:
             elif game == 'secret_game':
                 own_idx = int(fields[2])
                 player_1_username = validator.assert_valid_username(fields[3])
-                player_2_username = validator.assert_valid_username(fields[4])
+                player_1_x = int(fields[4])
+                player_1_y = int(fields[5])
+                player_2_username = validator.assert_valid_username(fields[6])
+                player_2_x = int(fields[7])
+                player_2_y = int(fields[8])
 
-                self.game_start_secret_game(own_idx, player_1_username, player_2_username)
+                self.game_start_secret_game(
+                    own_idx, 
+                    player_1_username, 
+                    (player_1_x, player_1_y),
+                    player_2_username,
+                    (player_2_x, player_2_y),
+                )
 
             else:
                 print(f"ERROR: unknown game: '{game}'")
@@ -170,10 +180,17 @@ class ServerCommandInterpreter:
         self.change_game_state('in_word_golf_game')
 
 
-    def game_start_secret_game(self, own_idx: int, player_1_username: str, player_2_username: str):
+    def game_start_secret_game(
+        self, 
+        own_idx: int, 
+        player_1_username: str, 
+        player_1_start_pos: tuple[int, int],
+        player_2_username: str,
+        player_2_start_pos: tuple[int, int],
+    ):
         players = [
-            SecretGamePlayer(username=player_1_username, position=(0, 0)),
-            SecretGamePlayer(username=player_2_username, position=(0, 0)),
+            SecretGamePlayer(username=player_1_username, position=player_1_start_pos),
+            SecretGamePlayer(username=player_2_username, position=player_2_start_pos),
         ]
         self.client_state.secret_game_state = SecretGameGlobalState(own_idx, players)
         self.change_game_state('in_secret_game')

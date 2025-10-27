@@ -5,6 +5,7 @@ Do not run this script directly. Instead, call it as a library (e.g. `import soc
 import socket
 import threading
 import time
+from pathlib import Path
 
 from server_types import Connection, BUF_SIZE
 from stratego.stratego_game import StrategoGame
@@ -15,6 +16,7 @@ from word_golf.word_golf_game import WordGolfGame
 
 from secret_game.secret_game_types import SecretGamePlayer
 from secret_game.secret_game_game import SecretGameGame
+from secret_game.map import Map
 
 # Standard loopback interface address (localhost).
 # 127.0.0.1 makes it so that the server is only accesible from the same machine.
@@ -31,6 +33,8 @@ WAITING_STRATEGO_PLAYERS: list[StrategoPlayer] = []
 WAITING_WORD_GOLF_PLAYERS: list[WordGolfPlayer] = []
 
 WAITING_SECRET_GAME_PLAYERS: list[SecretGamePlayer] = []
+
+SECRET_GAME_MAPS_FOLDER = Path(__file__).parent / "secret_game" / "maps"
 
 def handle_client(conn: Connection, addr):
     # This timeout is for communicating with existing clients.
@@ -67,7 +71,7 @@ def handle_client(conn: Connection, addr):
         move_player_to_word_golf_queue(word_golf_player)
 
     elif game == "secret_game":
-        secret_game_player = SecretGamePlayer(conn, username)
+        secret_game_player = SecretGamePlayer(conn, username, position=None)
 
         move_player_to_secret_game_queue(secret_game_player)
 
@@ -181,9 +185,19 @@ def start_secret_game_game(player_1: SecretGamePlayer, player_2: SecretGamePlaye
 
     players = [player_1, player_2]
 
+    # TODO: Pick one (of various) map randomly.
+    map_ =  Map(f"{SECRET_GAME_MAPS_FOLDER}/map_01.txt")
+
+    player_1.position = map_.p1_spawn_map_pos
+    player_2.position = map_.p2_spawn_map_pos
+
     # Send a message to both players to start the game.
     for i in range(len(players)):
-        players[i].conn.sendall(f"?game-start:secret_game:{i}:{player_1.username}:{player_2.username}".encode())
+        cmd = f"?game-start:secret_game:{i}" + \
+            f":{player_1.username}:{player_1.position.x}:{player_1.position.y}" + \
+            f":{player_2.username}:{player_2.position.x}:{player_2.position.y}"
+        
+        players[i].conn.sendall(cmd.encode())
 
     # Give the clients time to process the game's start.
     time.sleep(0.5)
@@ -192,7 +206,7 @@ def start_secret_game_game(player_1: SecretGamePlayer, player_2: SecretGamePlaye
     print(f"LOG: {player_2.username} joined a Secret Game game")
 
     # The game for this thread. 
-    game = SecretGameGame([player_1, player_2])
+    game = SecretGameGame([player_1, player_2], map_)
 
     # Run the game in a loop.
     game.run()

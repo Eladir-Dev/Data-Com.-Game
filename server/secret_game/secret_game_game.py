@@ -1,12 +1,14 @@
 from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult
+from secret_game.map import Map
 from server_types import BUF_SIZE
 import socket
 import time
 import math
 
 class SecretGameGame:
-    def __init__(self, players: list[SecretGamePlayer]):
+    def __init__(self, players: list[SecretGamePlayer], map: Map):
         self.players = players
+        self.map = map
 
         self.is_running = True
 
@@ -40,11 +42,13 @@ class SecretGameGame:
             x=math.cos(player.facing_angle) * player.speed * self.deltatime,
             y=math.sin(player.facing_angle) * player.speed * self.deltatime,
         )
+        assert player.position
         player.position += movement
 
 
     def build_pos_cmd_for_player(self, player_idx: int) -> str:
         pos = self.players[player_idx].position
+        assert pos
         return f"?pos:{player_idx}:{int(pos.x)}:{int(pos.y)}\\"
 
 
