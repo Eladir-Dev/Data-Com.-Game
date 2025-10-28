@@ -58,6 +58,19 @@ class SecretGameGame:
         for move_cmd in move_cmds:
             for player in self.players:
                 player.conn.sendall(move_cmd.encode())
+
+
+    def build_angle_cmd_for_player(self, player_idx: int) -> str:
+        angle = self.players[player_idx].facing_angle
+        return f"?angle:{player_idx}:{angle}\\"
+
+
+    def send_angle_commands(self):
+        move_cmds = [self.build_angle_cmd_for_player(i) for i in range(len(self.players))]
+
+        for move_cmd in move_cmds:
+            for player in self.players:
+                player.conn.sendall(move_cmd.encode())
     
     
     def run(self):
@@ -113,9 +126,11 @@ class SecretGameGame:
         while self.is_running:
             self.calc_deltatime()
 
+            self.send_position_commands()
+            self.send_angle_commands()
+
             for player in self.players:
                 self.move_player(player)
-                self.send_position_commands()
 
                 self.handle_player_client_response(player)
 

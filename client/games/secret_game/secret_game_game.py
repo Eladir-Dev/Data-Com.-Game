@@ -6,6 +6,7 @@ from pathlib import Path
 from ui.drawing_utils import draw_sprite_on_surface
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, Pair
 from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, MAP_RESOLUTION
+import math
 
 SPITE_FOLDER = Path(__file__).parent / "assets"
 
@@ -31,16 +32,19 @@ def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_o
 
 
 def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, camera_offset: Pair):
-    p1_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_01.png")
-    p2_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_02.png")
+    p1 = global_game_data.players[0]
+    p2 = global_game_data.players[1]
 
-    p1_pos = global_game_data.players[0].position
-    p2_pos = global_game_data.players[1].position
+    p1_angle_deg = p1.facing_angle * 180 / math.pi
+    p2_angle_deg = p2.facing_angle * 180 / math.pi
+
+    p1_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_01.png"), p1_angle_deg)
+    p2_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_02.png"), p2_angle_deg)
 
     draw_sprite_on_surface(
         surface,
         p1_sprite,
-        location=(p1_pos[0] + camera_offset[0], p1_pos[1] + camera_offset[1]),
+        location=(p1.position[0] + camera_offset[0], p1.position[1] + camera_offset[1]),
         target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
         rect_origin='top_left',
     )
@@ -48,7 +52,7 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     draw_sprite_on_surface(
         surface,
         p2_sprite,
-        location=(p2_pos[0] + camera_offset[0], p2_pos[1] + camera_offset[1]),
+        location=(p2.position[0] + camera_offset[0], p2.position[1] + camera_offset[1]),
         target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
         rect_origin='top_left',
     )

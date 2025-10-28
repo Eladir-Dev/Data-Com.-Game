@@ -233,6 +233,7 @@ def connect_secret_game(
             '?countdown',
             '?race-start',
             '?pos',
+            '?angle',
             '?game-over',
         )
         client_running = True
@@ -264,14 +265,3 @@ def connect_secret_game(
                 data = client_queue.get()
 
                 print(f"intercepted secret game client-CMD from client {data}")
-
-                # if data.startswith("!guess"):
-                #     print(f"LOG: trying to send guess command: '{data}'")
-                #     s.sendall(data.encode())
-
-                # elif data.startswith("!send-stashed-word"):
-                #     print(f"LOG: trying to send stashed word command: '{data}'")
-                #     s.sendall(data.encode())
-
-                # else:
-                #     print(f"ERROR: Unknown client message '{data}'")
