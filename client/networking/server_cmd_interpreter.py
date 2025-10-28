@@ -1,6 +1,7 @@
 from common_types.global_state import GlobalClientState, SecretGameGlobalState, StrategoGlobalState, WordGolfGlobalState, ValidState, SecretGamePlayer
 from typing import Callable
 from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color, ROWS, COLS
+from games.secret_game.secret_game_types import Map, get_default_map_path
 
 import networking.validator as validator
 
@@ -192,7 +193,12 @@ class ServerCommandInterpreter:
             SecretGamePlayer(username=player_1_username, position=player_1_start_pos),
             SecretGamePlayer(username=player_2_username, position=player_2_start_pos),
         ]
-        self.client_state.secret_game_state = SecretGameGlobalState(own_idx, players)
+
+        self.client_state.secret_game_state = SecretGameGlobalState(
+            own_idx,
+            players,
+            Map(file_name=get_default_map_path()) # TODO: make this dynamic instead of hardcoding a single map
+        )
         self.change_game_state('in_secret_game')
 
 

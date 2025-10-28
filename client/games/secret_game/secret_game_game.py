@@ -4,39 +4,64 @@ from common_types.global_state import SecretGameGlobalState
 import pygame
 from pathlib import Path
 from ui.drawing_utils import draw_sprite_on_surface
-from common_types.game_types import SCREEN_HEIGHT
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, Pair
+from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, MAP_RESOLUTION
 
 SPITE_FOLDER = Path(__file__).parent / "assets"
 
+def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_offset: Pair):
+    tiles = global_game_data.map.tiles
 
-def temp_draw_players(surface: Surface, global_game_data: SecretGameGlobalState):
+    for r in range(len(tiles)):
+        for c in range(len(tiles[r])):
+            y, x = r, c
+            tile_sprite = pygame.image.load(f"{SPITE_FOLDER}/{get_map_tile_sprite_name(tiles[r][c])}")
+
+            real_pos = map_pos_to_real_position((x, y))
+
+            draw_sprite_on_surface(
+                surface,
+                tile_sprite,
+                (real_pos[0] + camera_offset[0], real_pos[1] + camera_offset[1]),
+                (MAP_RESOLUTION, MAP_RESOLUTION),
+                rect_origin='top_left',
+            )
+
+    draw_players(surface, global_game_data, camera_offset)
+
+
+def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, camera_offset: Pair):
     p1_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_01.png")
     p2_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_02.png")
 
-    # TODO: Figure out how to render the map and render the corresponding player at the center of the screen.
+    p1_pos = global_game_data.players[0].position
+    p2_pos = global_game_data.players[1].position
 
     draw_sprite_on_surface(
         surface,
         p1_sprite,
-        location=(global_game_data.players[0].position[0], SCREEN_HEIGHT // 2),
-        target_dimensions=(32, 32),
+        location=(p1_pos[0] + camera_offset[0], p1_pos[1] + camera_offset[1]),
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
+        rect_origin='top_left',
     )
 
     draw_sprite_on_surface(
         surface,
         p2_sprite,
-        location=(global_game_data.players[1].position[0], SCREEN_HEIGHT // 2),
-        target_dimensions=(32, 32),
+        location=(p2_pos[0] + camera_offset[0], p2_pos[1] + camera_offset[1]),
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
+        rect_origin='top_left',
     )
 
 
 def secret_game_update(events: list[Event], surface: Surface, global_game_data: SecretGameGlobalState):
-    # TODO
     surface.fill((0, 0, 0))
 
     debug_string = f"{global_game_data.get_own_data().username} ({global_game_data.get_own_data().position}) " + \
         f"VS {global_game_data.get_opp_data().username} ({global_game_data.get_opp_data().position})"
-    
-    temp_draw_players(surface, global_game_data)
 
     pygame.display.set_caption(debug_string)
+
+    own_pos = global_game_data.get_own_data().position
+    camera_offset = (SCREEN_WIDTH // 2 - own_pos[0], SCREEN_HEIGHT // 2 - own_pos[1])
+    draw_map(surface, global_game_data, camera_offset)
