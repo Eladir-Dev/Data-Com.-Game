@@ -138,7 +138,10 @@ class MainGameUI:
             elif game_state == 'in_secret_game':
                 assert self.client_state.secret_game_state, "Secret Game state was None"
 
-                secret_game_game.secret_game_update(events, self.surface, self.client_state.secret_game_state)
+                car_turn_cmd = secret_game_game.secret_game_update(events, self.surface, self.client_state.secret_game_state)
+
+                if car_turn_cmd is not None:
+                    self.client_cmd_queue.put(car_turn_cmd)
 
             elif game_state == 'finished_game':
                 game_over_msg = self.client_state.game_over_message

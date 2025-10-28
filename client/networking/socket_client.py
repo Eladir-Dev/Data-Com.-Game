@@ -249,8 +249,6 @@ def connect_secret_game(
 
                     buffer = buffer[cmd_end+1:] # +1 for skipping past the trailing `\`
 
-                    print(f"LOG: RECEIVED SECRET SERVER COMMAND: {server_cmd}")
-
                     if not server_cmd.startswith('?'):
                         raise Exception(f"received invalid command: {server_cmd}")
                     
@@ -264,4 +262,9 @@ def connect_secret_game(
             while not client_queue.empty():
                 data = client_queue.get()
 
-                print(f"intercepted secret game client-CMD from client {data}")
+                if data.startswith("!car-turn"):
+                    print(f"LOG: trying to send car turn command: '{data}'")
+                    s.sendall(data.encode())
+
+                else:
+                    print(f"ERROR: Unknown client message '{data}'")

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
-from games.secret_game.secret_game_types import SecretGamePlayer, Map
+from games.secret_game.secret_game_types import SecretGamePlayer, Map, TurnState
 
 ValidState = Literal[
     'main_menu', 
@@ -59,6 +59,7 @@ class SecretGameGlobalState:
         self.own_idx = own_idx
         self.players = players
         self.map = map
+        self.turn_state: TurnState = 'straight'
 
 
     def get_own_data(self) -> SecretGamePlayer:

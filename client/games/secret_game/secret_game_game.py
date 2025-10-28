@@ -5,7 +5,7 @@ import pygame
 from pathlib import Path
 from ui.drawing_utils import draw_sprite_on_surface
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, Pair
-from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, MAP_RESOLUTION
+from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, MAP_RESOLUTION, TurnState
 import math
 
 SPITE_FOLDER = Path(__file__).parent / "assets"
@@ -58,7 +58,33 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     )
 
 
-def secret_game_update(events: list[Event], surface: Surface, global_game_data: SecretGameGlobalState):
+def gen_move_command(new_turn_state: TurnState) -> str:
+    return f"!car-turn:{new_turn_state}\\"
+
+
+def handle_turning(global_game_data: SecretGameGlobalState) -> str | None:
+    keys = pygame.key.get_pressed()
+
+    should_go_straight = (keys[pygame.K_a] and keys[pygame.K_d]) or (not keys[pygame.K_a] and not keys[pygame.K_d])
+    turn_state_changed = False
+
+    if should_go_straight and global_game_data.turn_state != 'straight':
+        global_game_data.turn_state = 'straight'
+        turn_state_changed = True
+
+    elif keys[pygame.K_a] and global_game_data.turn_state != 'left':
+        global_game_data.turn_state = 'left'
+        turn_state_changed = True
+
+    elif keys[pygame.K_d] and global_game_data.turn_state != 'right':
+        global_game_data.turn_state = 'right'
+        turn_state_changed = True
+
+    if turn_state_changed:
+        return gen_move_command(global_game_data.turn_state)
+
+
+def secret_game_update(events: list[Event], surface: Surface, global_game_data: SecretGameGlobalState) -> str | None:
     surface.fill((0, 0, 0))
 
     debug_string = f"{global_game_data.get_own_data().username} ({global_game_data.get_own_data().position}) " + \
@@ -69,3 +95,7 @@ def secret_game_update(events: list[Event], surface: Surface, global_game_data: 
     own_pos = global_game_data.get_own_data().position
     camera_offset = (SCREEN_WIDTH // 2 - own_pos[0], SCREEN_HEIGHT // 2 - own_pos[1])
     draw_map(surface, global_game_data, camera_offset)
+
+    car_turn_cmd = handle_turning(global_game_data)
+    
+    return car_turn_cmd

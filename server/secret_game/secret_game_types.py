@@ -1,9 +1,18 @@
 from dataclasses import dataclass, field
 from server_types import Connection
-from typing import Self
+from typing import Self, Literal
 
 MAP_RESOLUTION = 32
 DEFAULT_SPEED = 2
+
+TurnState = Literal['straight', 'left', 'right']
+
+def assert_str_is_turn_state(s: str) -> TurnState:
+    if s not in {'straight', 'left', 'right'}:
+        raise ValueError(f"invalid turn state '{s}'")
+    
+    return s # type: ignore
+
 
 @dataclass
 class Vector:
@@ -30,6 +39,7 @@ class SecretGamePlayer:
 
     speed: float = field(default=DEFAULT_SPEED)
     facing_angle: float = 0.0
+    turn_state: TurnState = 'straight'
 
 
 @dataclass

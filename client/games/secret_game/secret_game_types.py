@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 MAP_RESOLUTION = 32
 MAP_FOLDER = Path(__file__).parent / "maps"
+
+TurnState = Literal['straight', 'left', 'right']
 
 @dataclass
 class SecretGameStartingPlayerInfo:

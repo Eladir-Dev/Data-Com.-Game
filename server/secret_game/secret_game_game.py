@@ -1,4 +1,4 @@
-from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult
+from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult, TurnState, assert_str_is_turn_state
 from secret_game.map import Map
 from server_types import BUF_SIZE
 import socket
@@ -44,6 +44,16 @@ class SecretGameGame:
         )
         assert player.position
         player.position += movement
+
+
+    def turn_player(self, player: SecretGamePlayer):
+        if player.turn_state == 'straight':
+            return
+
+        angular_speed = math.pi / 64 # radians per second
+        angle_sign = 1.0 if player.turn_state == 'right' else -1.0
+
+        player.facing_angle += angular_speed * angle_sign * self.deltatime
 
 
     def build_pos_cmd_for_player(self, player_idx: int) -> str:
@@ -131,6 +141,7 @@ class SecretGameGame:
 
             for player in self.players:
                 self.move_player(player)
+                self.turn_player(player)
 
                 self.handle_player_client_response(player)
 
@@ -138,68 +149,16 @@ class SecretGameGame:
     def handle_player_client_response(self, player: SecretGamePlayer):
         try:
             conn_to_handle = player.conn
-            data = conn_to_handle.recv(BUF_SIZE).decode()
+            data = conn_to_handle.recv(BUF_SIZE).decode()[:-1] # ignore the ending `\`
 
-            if data.startswith("!guess"):
-                pass
-                # fields = data.split(':')
-                # guess = fields[1].upper()
+            if data.startswith("!car-turn"):
+                fields = data.split(':')
+                new_turn_state = fields[1]
 
-                # if guess in self.players[curr_player_idx].already_guessed_words:
-                #     print(f"LOG: Player #{curr_player_idx} has already tried guessing: '{guess}'")
-                #     return None
-                
-                # # Mark the guessed word as already guessed (for avoiding re-sending the same word).
-                # self.players[curr_player_idx].already_guessed_words.add(guess)
-
-                # # Get the actual word that the player needs to guess.
-                # actual_word = self.players[curr_player_idx].queued_words[-1]
-
-                # print(f"LOG: received guess '{guess}'; actual word was '{actual_word}'")
-
-                # occurence: WordGolfOccurrence | None = None
-
-                # feedback = self.gen_feedback(actual_word, guess)
-
-                # if actual_word == guess:
-                #     occurence = WordGolfOccurrence(kind='correct_guess', player_idx=curr_player_idx)
-                # else:
-                #     occurence = WordGolfOccurrence(kind='wrong_guess', player_idx=curr_player_idx)
-
-                # # Save the feedback on the player's feedback history.
-                # self.players[curr_player_idx].feedback_history.append(feedback)
-
-                # if len(self.players[curr_player_idx].feedback_history) == WordGolfGame.MAX_FEEDBACK_HIST_LEN:
-                #     if occurence.kind != 'correct_guess':
-                #         occurence = WordGolfOccurrence(kind='ran_out_of_guesses', player_idx=curr_player_idx)
-
-                # return occurence
-            
-            elif data.startswith("!send-stashed-word"):
-                pass
-                # fields = data.split(':')
-                # stashed_word_to_send = fields[1]
-
-                # # Player is trying to send a word that they do not have stashed.
-                # if stashed_word_to_send not in self.players[curr_player_idx].stashed_words:
-                #     print(f"LOG: Player #{curr_player_idx} is trying to send word '{stashed_word_to_send}' that they do not have stashed.")
-                #     return None
-                
-                # # Remove the word from the stash.
-                # self.players[curr_player_idx].stashed_words.remove(stashed_word_to_send)
-
-                # occurence = WordGolfOccurrence(
-                #     kind='sending_stashed_word',
-                #     player_idx=curr_player_idx,
-                #     stashed_word=stashed_word_to_send,
-                # )
-                # return occurence
-                
+                player.turn_state = assert_str_is_turn_state(new_turn_state)
 
             else:
-                pass
-                # print(f"ERROR: Invalid client response '{data}'")
-                # return None # unknown command from client
+                print(f"ERROR: Invalid client response '{data}'")
 
         except socket.timeout: pass
 
