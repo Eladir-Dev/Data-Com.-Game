@@ -3,7 +3,7 @@ from server_types import Connection
 from typing import Self
 
 MAP_RESOLUTION = 32
-DEFAULT_SPEED = 0.25
+DEFAULT_SPEED = 2
 
 @dataclass
 class Vector:
