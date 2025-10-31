@@ -5,7 +5,7 @@ import pygame
 from pathlib import Path
 from ui.drawing_utils import draw_sprite_on_surface
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, Pair
-from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, MAP_RESOLUTION, TurnState
+from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, real_position_to_map_pos, MAP_RESOLUTION, TurnState
 import math
 
 SPITE_FOLDER = Path(__file__).parent / "assets"
@@ -13,9 +13,17 @@ SPITE_FOLDER = Path(__file__).parent / "assets"
 def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_offset: Pair):
     tiles = global_game_data.map.tiles
 
-    for r in range(len(tiles)):
-        for c in range(len(tiles[r])):
-            y, x = r, c
+    own_map_pos = real_position_to_map_pos(global_game_data.get_own_data().position)
+
+    min_vis_map_x = max(0, own_map_pos[0] - SCREEN_WIDTH // 2 // MAP_RESOLUTION)
+    max_vis_map_x = min(len(tiles[0]), own_map_pos[0] + SCREEN_WIDTH // 2 // MAP_RESOLUTION)
+
+    min_vis_map_y = max(0, own_map_pos[1] - SCREEN_HEIGHT // 2 // MAP_RESOLUTION)
+    max_vis_map_y = min(len(tiles), own_map_pos[1] + SCREEN_HEIGHT // 2 // MAP_RESOLUTION)
+
+    for x in range(min_vis_map_x, max_vis_map_x):
+        for y in range(min_vis_map_y, max_vis_map_y):
+            r, c = y, x
             tile_sprite = pygame.image.load(f"{SPITE_FOLDER}/{get_map_tile_sprite_name(tiles[r][c])}")
 
             real_pos = map_pos_to_real_position((x, y))
@@ -93,7 +101,7 @@ def secret_game_update(events: list[Event], surface: Surface, global_game_data: 
     own_pos = global_game_data.get_own_data().position
     camera_offset = (SCREEN_WIDTH // 2 - own_pos[0], SCREEN_HEIGHT // 2 - own_pos[1])
 
-    # draw_map(surface, global_game_data, camera_offset)
+    draw_map(surface, global_game_data, camera_offset)
     draw_players(surface, global_game_data, camera_offset)
 
     car_turn_cmd = handle_turning(global_game_data)

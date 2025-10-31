@@ -42,6 +42,10 @@ def map_pos_to_real_position(map_pos: tuple[int, int]) -> tuple[int, int]:
     return (map_pos[0] * MAP_RESOLUTION, map_pos[1] * MAP_RESOLUTION)
 
 
+def real_position_to_map_pos(real_position: tuple[int, int]) -> tuple[int, int]:
+    return (real_position[0] // MAP_RESOLUTION, real_position[1] // MAP_RESOLUTION)
+
+
 def _load_map(file_name: str) -> list[list[str]]:
     rows: list[list[str]] = []
 
