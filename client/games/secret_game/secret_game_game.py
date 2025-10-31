@@ -15,11 +15,11 @@ def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_o
 
     own_map_pos = real_position_to_map_pos(global_game_data.get_own_data().position)
 
-    min_vis_map_x = max(0, own_map_pos[0] - SCREEN_WIDTH // 2 // MAP_RESOLUTION)
-    max_vis_map_x = min(len(tiles[0]), own_map_pos[0] + SCREEN_WIDTH // 2 // MAP_RESOLUTION)
+    min_vis_map_x = max(0, own_map_pos[0] - SCREEN_WIDTH // 2 // MAP_RESOLUTION - 1)
+    max_vis_map_x = min(len(tiles[0]), own_map_pos[0] + SCREEN_WIDTH // 2 // MAP_RESOLUTION + 1)
 
-    min_vis_map_y = max(0, own_map_pos[1] - SCREEN_HEIGHT // 2 // MAP_RESOLUTION)
-    max_vis_map_y = min(len(tiles), own_map_pos[1] + SCREEN_HEIGHT // 2 // MAP_RESOLUTION)
+    min_vis_map_y = max(0, own_map_pos[1] - SCREEN_HEIGHT // 2 // MAP_RESOLUTION - 1)
+    max_vis_map_y = min(len(tiles), own_map_pos[1] + SCREEN_HEIGHT // 2 // MAP_RESOLUTION + 1)
 
     for x in range(min_vis_map_x, max_vis_map_x):
         for y in range(min_vis_map_y, max_vis_map_y):
