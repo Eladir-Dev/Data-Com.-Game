@@ -17,6 +17,9 @@ class SecretGameGame:
 
         self.result: SecretGameResult | None = None
 
+        self.command_buffers = ["" for _ in range(len(self.players))]
+        self.player_cmds: list[list[str]] = [[] for _ in range(len(self.players))]
+
 
     def send_race_countdown_command(self, player: SecretGamePlayer, count_down: int):
         player.conn.send(f"?countdown:{count_down}\\".encode())
@@ -29,11 +32,13 @@ class SecretGameGame:
     def calc_deltatime(self):
         now = time.perf_counter()
 
-        if self._last_timestamp is not None:
+        # There is no "last timestamp" in the first frame, so we use a default deltatime value of 10^-4 seconds.
+        if self._last_timestamp is None:
+            self.deltatime = 0.0001
+
+        else:
             self.deltatime = now - self._last_timestamp
-            return
-        
-        self.deltatime = 0.0001
+
         self._last_timestamp = now
 
 
@@ -50,10 +55,11 @@ class SecretGameGame:
         if player.turn_state == 'straight':
             return
 
-        angular_speed = math.pi / 64 # radians per second
+        angular_speed = math.pi / 2 # radians per second
         angle_sign = 1.0 if player.turn_state == 'right' else -1.0
 
-        player.facing_angle += angular_speed * angle_sign * self.deltatime
+        player.facing_angle += (angular_speed * angle_sign * self.deltatime)
+        player.facing_angle %= math.tau
 
 
     def build_pos_cmd_for_player(self, player_idx: int) -> str:
@@ -72,7 +78,7 @@ class SecretGameGame:
 
     def build_angle_cmd_for_player(self, player_idx: int) -> str:
         angle = self.players[player_idx].facing_angle
-        return f"?angle:{player_idx}:{angle}\\"
+        return f"?angle:{player_idx}:{angle:.4f}\\"
 
 
     def send_angle_commands(self):
@@ -139,26 +145,43 @@ class SecretGameGame:
             self.send_position_commands()
             self.send_angle_commands()
 
-            for player in self.players:
+            for player_idx in range(len(self.players)):
+                player = self.players[player_idx]
                 self.move_player(player)
                 self.turn_player(player)
 
-                self.handle_player_client_response(player)
+                self.handle_player_client_response(player_idx)
 
 
-    def handle_player_client_response(self, player: SecretGamePlayer):
+    def read_incoming_player_commands(self, player_idx: int):
         try:
+            player = self.players[player_idx]
             conn_to_handle = player.conn
-            data = conn_to_handle.recv(BUF_SIZE).decode()[:-1] # ignore the ending `\`
+            data = conn_to_handle.recv(BUF_SIZE).decode()
+            self.command_buffers[player_idx] += data
 
-            if data.startswith("!car-turn"):
-                fields = data.split(':')
-                new_turn_state = fields[1]
+            while (cmd_end := self.command_buffers[player_idx].find('\\')) != -1:
+                client_cmd = self.command_buffers[player_idx][:cmd_end]
 
-                player.turn_state = assert_str_is_turn_state(new_turn_state)
+                self.command_buffers[player_idx] = self.command_buffers[player_idx][cmd_end+1:] # +1 for skipping past the trailing `\`
 
-            else:
-                print(f"ERROR: Invalid client response '{data}'")
+                if not client_cmd.startswith('!'):
+                    raise Exception(f"received invalid command: {client_cmd}")
+                
+                if client_cmd.startswith(('!car-turn', )):
+                    self.player_cmds[player_idx].append(client_cmd)
+                else:
+                    print(f"ERROR: received unknown data from client: '{data}'")
 
         except socket.timeout: pass
 
+
+    def handle_player_client_response(self, player_idx: int):
+        self.read_incoming_player_commands(player_idx)
+
+        for client_cmd in self.player_cmds[player_idx]:
+            if client_cmd.startswith("!car-turn"):
+                fields = client_cmd.split(':')
+                new_turn_state = fields[1]
+
+                self.players[player_idx].turn_state = assert_str_is_turn_state(new_turn_state)

@@ -28,15 +28,13 @@ def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_o
                 rect_origin='top_left',
             )
 
-    draw_players(surface, global_game_data, camera_offset)
-
 
 def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, camera_offset: Pair):
     p1 = global_game_data.players[0]
     p2 = global_game_data.players[1]
 
-    p1_angle_deg = p1.facing_angle * 180 / math.pi
-    p2_angle_deg = p2.facing_angle * 180 / math.pi
+    p1_angle_deg = -(p1.facing_angle * 180 / math.pi)
+    p2_angle_deg = -(p2.facing_angle * 180 / math.pi)
 
     p1_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_01.png"), p1_angle_deg)
     p2_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_02.png"), p2_angle_deg)
@@ -87,14 +85,16 @@ def handle_turning(global_game_data: SecretGameGlobalState) -> str | None:
 def secret_game_update(events: list[Event], surface: Surface, global_game_data: SecretGameGlobalState) -> str | None:
     surface.fill((0, 0, 0))
 
-    debug_string = f"{global_game_data.get_own_data().username} ({global_game_data.get_own_data().position}) " + \
-        f"VS {global_game_data.get_opp_data().username} ({global_game_data.get_opp_data().position})"
+    debug_string = f"{global_game_data.get_own_data().username} ({global_game_data.get_own_data().position}) facing {global_game_data.get_own_data().facing_angle} " + \
+        f"VS {global_game_data.get_opp_data().username} ({global_game_data.get_opp_data().position}) facing {global_game_data.get_opp_data().facing_angle}"
 
     pygame.display.set_caption(debug_string)
 
     own_pos = global_game_data.get_own_data().position
     camera_offset = (SCREEN_WIDTH // 2 - own_pos[0], SCREEN_HEIGHT // 2 - own_pos[1])
-    draw_map(surface, global_game_data, camera_offset)
+
+    # draw_map(surface, global_game_data, camera_offset)
+    draw_players(surface, global_game_data, camera_offset)
 
     car_turn_cmd = handle_turning(global_game_data)
     
