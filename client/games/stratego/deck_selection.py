@@ -8,7 +8,7 @@
 #       * Guillermo Myers                                         |
 # ----------------------------------------------------------------+
 # Description:                                                    |
-#      This code is responsible for managing the deck selection    |
+#      This code is responsible for managing the deck selection   |
 #      screen for the Stratego game.                              |
 # ----------------------------------------------------------------+
 # Last modification [October 31, 2025]:                           |
@@ -16,8 +16,7 @@
 #                                                                 |
 #    * The following methods were eliminated:                     |
 #                                                                 |
-#    * The app logo was added when the duration of the network    |
-#      scan is asked.                                             |
+#    * Other:                                                     |
 #                                                                 |
 # ================================================================+
 
