@@ -16,29 +16,27 @@
 #                                                                 |
 #    * The following methods were eliminated:                     |
 #                                                                 |
-#    * Other:                                                     |
+#    * Other: Some comments were added and some code was          |
+#             simplified.                                         |
 #                                                                 |
 # ================================================================+
 
+#==========================Imports================================#
 from typing import Callable
 import pygame
 from pygame import Surface
 from pygame.event import Event
 import pygame_menu
 import random
-
 from pygame_menu.widgets.core import Selection
-
-#import stratego_types as stratego_types
 from . import stratego_types
 #from stratego_types import *
 from .stratego_types import StrategoRenderedTile
-# from "/stratego_types.py"
-# class DeckSelection(pygame_menu.Menu):
 from common_types.global_state import GlobalClientState
 from pathlib import Path
-
+#=================================================================#
 SPRITE_FOLDER = Path(__file__).parent / "assets"
+"""Sprite folder address"""
 
 class RedHighlight(Selection):
     """
@@ -75,33 +73,11 @@ class DeckSelector():
     """
     This class take care of drawing the grids for the deck selection.
     """
-    def __init__(self):
-        super().__init__(margin_left=0, margin_right=0, margin_top=0, margin_bottom=0)
-        # Drag-and-drop state variables
-        self.dragging = False
-        self.dragged_piece = None
-        self.dragged_from = None  # 'top' or 'bottom'
-        self.drag_row = None
-        self.drag_col = None
-        self.drag_offset = (0, 0)  # Offset to center the sprite on the mouse
-        self.CELL_SIZE = 50
-        self.sprites = {
-            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
-            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
-            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
-            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
-            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png"),
-            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png"),
-            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png"),
-            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png"),
-            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png"),
-            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png"),
-            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
-            "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
-        }
-
 
     def handle_mouse_event(self, event, top_grid, bottom_grid):
+        """
+        This function handles mouse events when a mouse button is pressed.
+        """
         CELL_SIZE = 50
         GRID_COLS = 10
         GRID_ROWS = 4
@@ -181,6 +157,9 @@ class DeckSelector():
 
 
     def draw(self, surface, top_grid, bottom_grid):
+        """
+        This function draws the grids and sprites for the Deck selection screen.
+        """
         for key in self.sprites:
             self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
 
@@ -268,13 +247,15 @@ class StrategoSettingsWindow():
         self.deck = [['' for _ in range(rows)] for _ in range(cols)]
         self.fill_pieces(rows, cols, True)
         # ====================Deck renderer========================#
-        self.dragging = False # TODO: Revisar si se puede quitar sin errores
+        # Drag-and-drop state variables
+        self.dragging = False
         self.dragged_piece = None
         self.dragged_from = None  # 'top' or 'bottom'
         self.drag_row = None
         self.drag_col = None
         self.drag_offset = (0, 0)  # Offset to center the sprite on the mouse
         self.CELL_SIZE = 50
+        # Sprite addreses
         self.sprites = {
             "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
             "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
@@ -289,6 +270,7 @@ class StrategoSettingsWindow():
             "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
             "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
         }
+        # =========================================================#
 
         # Create menu with left-side layout
         menu_hight = 600
