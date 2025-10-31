@@ -1,4 +1,25 @@
 # pyright: reportAttributeAccessIssue=false
+# ================================================================+
+# Started on:  September 2, 2025                                  |
+# Finished on: _______                                            |
+# Programmed by: Eduardo J. Matos                                 |
+# Collaborators:                                                  |
+#       * Eduardo J Matos Pérez                                   |
+#       * Guillermo Myers                                         |
+# ----------------------------------------------------------------+
+# Description:                                                    |
+#      This code is responsible for managing the deck selection    |
+#      screen for the Stratego game.                              |
+# ----------------------------------------------------------------+
+# Last modification [October 31, 2025]:                           |
+#    * The following methods were added:                          |
+#                                                                 |
+#    * The following methods were eliminated:                     |
+#                                                                 |
+#    * The app logo was added when the duration of the network    |
+#      scan is asked.                                             |
+#                                                                 |
+# ================================================================+
 
 from typing import Callable
 import pygame
