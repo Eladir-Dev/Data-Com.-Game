@@ -17,7 +17,8 @@
 #    * The following methods were eliminated:                     |
 #                                                                 |
 #    * Other: Some comments were added and some code was          |
-#             simplified.                                         |
+#             simplified. The sprite selection offset was         |
+#             modified                                            |
 #                                                                 |
 # ================================================================+
 
@@ -38,6 +39,7 @@ from pathlib import Path
 SPRITE_FOLDER = Path(__file__).parent / "assets"
 """Sprite folder address"""
 
+#=========================High Lights=============================#
 class RedHighlight(Selection):
     """
     Selection widget for when start game is selected and there is no deck selected.
@@ -68,6 +70,7 @@ class GreenHighlight(Selection):
         # Draw red border
         pygame.draw.rect(surface, (0, 255, 0), rect, 3)  # RGB red, thickness 3
         pygame.draw.rect(surface, (144, 238, 144), rect, 1)  # Light green fill (RGB for light green)
+#=================================================================#
 
 class DeckSelector():
     """
@@ -100,8 +103,8 @@ class DeckSelector():
                     self.drag_col = col
                     top_grid[row][col] = ""  # Temporarily remove from grid
                     # Calculate offset to center the sprite on the mouse
-                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2),
-                                        mouse_y - (TOP_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2))
+                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)-20,
+                                        mouse_y - (TOP_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2)-30)
             # Check if click is in bottom grid
             elif (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
                   X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
@@ -115,8 +118,8 @@ class DeckSelector():
                     self.drag_col = col
                     bottom_grid[row][col] = ""  # Temporarily remove from grid
                     # Calculate offset to center the sprite on the mouse
-                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2),
-                                        mouse_y - (BOTTOM_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2))
+                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)+20,
+                                        mouse_y - (BOTTOM_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2)+30)
 
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.dragging:  # Left mouse button up
             mouse_x, mouse_y = event.pos
