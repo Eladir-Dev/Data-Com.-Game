@@ -33,6 +33,8 @@ def get_default_map_path() -> str:
 def get_map_tile_sprite_name(tile: str) -> str:
     if tile == '#':
         return 'wall.png'
+    elif tile == 'X':
+        return 'dead_zone.png'
     elif tile == 'L':
         return 'lap_line.png'
     else:
