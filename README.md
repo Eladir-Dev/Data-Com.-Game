@@ -52,3 +52,9 @@ cd client
 ## Tutoriales de programación
 * [Tutoriales de pygame](https://www.pygame.org/wiki/tutorials)
   * [Como crear menus con pygame-menu](https://coderslegacy.com/python/create-menu-screens-in-pygame-tutorial/)
+
+## Atribucion
+* Musica para el juego secreto:
+    - Creador: [Wolfgang_](https://opengameart.org/users/wolfgang)
+    - [Musica](https://opengameart.org/content/skeleton-waltz-theme)
+    - [Licencia](https://creativecommons.org/licenses/by/4.0/)

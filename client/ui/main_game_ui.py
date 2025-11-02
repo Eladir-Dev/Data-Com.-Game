@@ -28,6 +28,7 @@ class MainGameUI:
         SOCKET_CLIENT_THREAD.start()
 
         pygame.init()
+        pygame.mixer.init()
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
         self.deck_selection_menu = StrategoSettingsWindow(
@@ -64,6 +65,17 @@ class MainGameUI:
         Changes the game's state. Used to determine the screen that is being shown.
         """
         self.client_state.game_state = new_state
+
+        # If starting a Secret Game, then start the background music.
+        if new_state == 'in_secret_game':
+            from pathlib import Path
+            SECRET_GAME_MUSIC_PATH = Path(__file__).parent.parent / "games" / "secret_game" / "assets" / "Bone Yard Waltz - Loopable.ogg"
+            pygame.mixer.music.load(SECRET_GAME_MUSIC_PATH)
+            pygame.mixer.music.play(-1)
+
+        # Stop the music (if any was playing) if a game ended.
+        elif new_state == 'finished_game':
+            pygame.mixer.music.stop()
     
 
     def start(self):
