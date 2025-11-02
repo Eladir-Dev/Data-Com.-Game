@@ -41,6 +41,9 @@ class SecretGamePlayer:
     facing_angle: float = 0.0
     turn_state: TurnState = 'straight'
 
+    completed_laps = 0
+    lap_state: Literal['initial', 'looking_for_line', 'looking_for_checkpoint_a', 'looking_for_checkpoint_b'] = 'initial' 
+
 
 @dataclass
 class SecretGameResult:

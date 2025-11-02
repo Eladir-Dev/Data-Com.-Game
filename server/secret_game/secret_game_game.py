@@ -62,7 +62,8 @@ class SecretGameGame:
         player.facing_angle %= math.tau
 
 
-    def check_collision(self, player: SecretGamePlayer):
+    def check_collision(self, player_idx: int):
+        player = self.players[player_idx]
         assert player.position
 
         corners = [
@@ -86,10 +87,35 @@ class SecretGameGame:
                 hit_wall = True
 
             elif tile.kind == 'line':
-                print(f"LOG: Player '{player.username}' crossed a line")
+                if player.lap_state == 'initial':
+                    player.lap_state = 'looking_for_checkpoint_a'
+                
+                elif player.lap_state == 'looking_for_line':
+                    player.completed_laps += 1
+                    player.lap_state = 'looking_for_checkpoint_a'
 
-            elif tile.kind == 'lap_check':
-                print(f"LOG: Player '{player.username}' crossed a lap checkpoint")
+                    print(f"Player '{player.username}' has completed {player.completed_laps} laps")
+
+            elif tile.kind == 'lap_check_a':
+                if player.lap_state == 'looking_for_checkpoint_a':
+                    player.lap_state = 'looking_for_checkpoint_b'
+
+            elif tile.kind == 'lap_check_b':
+                if player.lap_state == 'looking_for_checkpoint_b':
+                    player.lap_state = 'looking_for_line'
+
+            elif tile.kind == 'dead_zone':
+                print(f"LOG: Player '{player.username}' died")
+                
+                if player_idx == 0:
+                    respawn_pos = self.map.p1_spawn_map_pos
+                else:
+                    respawn_pos = self.map.p2_spawn_map_pos
+
+                # Reset player state when they enter a Dead Zone.
+                player.position = respawn_pos
+                player.facing_angle = 0.0
+                player.lap_state = 'initial'
 
             if hit_wall:
                 player.speed = DEFAULT_SPEED / 4
@@ -184,7 +210,7 @@ class SecretGameGame:
                 player = self.players[player_idx]
                 self.move_player(player)
                 self.turn_player(player)
-                self.check_collision(player)
+                self.check_collision(player_idx)
 
                 self.handle_player_client_response(player_idx)
 
