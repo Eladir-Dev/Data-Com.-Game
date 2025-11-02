@@ -40,3 +40,10 @@ class Map:
         self.p1_spawn_map_pos = real_position_from_map_position(p1_spawn_map_pos)
         self.p2_spawn_map_pos = real_position_from_map_position(p2_spawn_map_pos)
         
+    
+    def get_tile(self, map_x: int, max_y: int) -> Tile | None:
+        if map_x >= 0 and map_x < len(self.grid[0]) and max_y >= 0 and max_y < len(self.grid):
+            r, c = max_y, map_x
+            return self.grid[r][c]
+        else:
+            return None

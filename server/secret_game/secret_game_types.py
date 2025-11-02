@@ -3,7 +3,7 @@ from server_types import Connection
 from typing import Self, Literal
 
 MAP_RESOLUTION = 32
-DEFAULT_SPEED = 3 * MAP_RESOLUTION
+DEFAULT_SPEED = 5 * MAP_RESOLUTION
 
 TurnState = Literal['straight', 'left', 'right']
 
