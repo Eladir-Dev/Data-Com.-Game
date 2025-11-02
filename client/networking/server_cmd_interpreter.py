@@ -157,6 +157,13 @@ class ServerCommandInterpreter:
 
             self.update_secret_game_player_angle(player_idx, angle)
 
+        elif data.startswith("?lap-completion"):
+            fields = validator.assert_field_amount_valid(data.split(':'), 3)
+            player_idx = int(fields[1])
+            completed_laps = int(fields[2])
+
+            self.update_secret_game_player_lap_completion(player_idx, completed_laps)
+
 
         elif data.startswith("?game-over"):
             fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
@@ -198,8 +205,8 @@ class ServerCommandInterpreter:
         player_2_start_pos: tuple[int, int],
     ):
         players = [
-            SecretGamePlayer(username=player_1_username, position=player_1_start_pos, facing_angle=0.0),
-            SecretGamePlayer(username=player_2_username, position=player_2_start_pos, facing_angle=0.0),
+            SecretGamePlayer(username=player_1_username, position=player_1_start_pos, facing_angle=0.0, completed_laps=0),
+            SecretGamePlayer(username=player_2_username, position=player_2_start_pos, facing_angle=0.0, completed_laps=0),
         ]
 
         self.client_state.secret_game_state = SecretGameGlobalState(
@@ -295,6 +302,13 @@ class ServerCommandInterpreter:
         assert self.client_state.secret_game_state, "Secret Game state was None"
 
         self.client_state.secret_game_state.players[player_idx].facing_angle = angle
+
+
+    def update_secret_game_player_lap_completion(self, player_idx: int, completed_laps: int):
+        assert self.client_state.secret_game_state, "Secret Game state was None"
+
+        self.client_state.secret_game_state.players[player_idx].completed_laps = completed_laps
+
 
     def get_game_over_message(self, reason: str, game: str, all_received_fields: list[str]):
         if reason == "winner-determined":

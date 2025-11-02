@@ -93,8 +93,10 @@ class SecretGameGame:
                     player.lap_state = 'looking_for_checkpoint_a'
                 
                 elif player.lap_state == 'looking_for_line':
-                    player.completed_laps += 1
                     player.lap_state = 'looking_for_checkpoint_a'
+
+                    player.completed_laps += 1
+                    self.send_lap_completed_commands() # send update to both players
 
                     print(f"Player '{player.username}' has completed {player.completed_laps} laps")
 
@@ -149,11 +151,24 @@ class SecretGameGame:
 
 
     def send_angle_commands(self):
-        move_cmds = [self.build_angle_cmd_for_player(i) for i in range(len(self.players))]
+        angle_cmds = [self.build_angle_cmd_for_player(i) for i in range(len(self.players))]
 
-        for move_cmd in move_cmds:
+        for angle_cmd in angle_cmds:
             for player in self.players:
-                player.conn.sendall(move_cmd.encode())
+                player.conn.sendall(angle_cmd.encode())
+
+
+    def build_lap_completed_cmd_for_player(self, player_idx: int) -> str:
+        laps = self.players[player_idx].completed_laps
+        return f"?lap-completion:{player_idx}:{laps}\\"
+
+
+    def send_lap_completed_commands(self):
+        lap_cmds = [self.build_lap_completed_cmd_for_player(i) for i in range(len(self.players))]
+
+        for lap_cmd in lap_cmds:
+            for player in self.players:
+                player.conn.sendall(lap_cmd.encode())
     
     
     def run(self):

@@ -93,8 +93,8 @@ def handle_turning(global_game_data: SecretGameGlobalState) -> str | None:
 def secret_game_update(events: list[Event], surface: Surface, global_game_data: SecretGameGlobalState) -> str | None:
     surface.fill((0, 0, 0))
 
-    debug_string = f"{global_game_data.get_own_data().username} ({global_game_data.get_own_data().position}) facing {global_game_data.get_own_data().facing_angle} " + \
-        f"VS {global_game_data.get_opp_data().username} ({global_game_data.get_opp_data().position}) facing {global_game_data.get_opp_data().facing_angle}"
+    debug_string = f"{global_game_data.get_own_data().username} ({global_game_data.get_own_data().position}) facing {global_game_data.get_own_data().facing_angle} (LAPS: {global_game_data.get_own_data().completed_laps} / 3) " + \
+        f"VS {global_game_data.get_opp_data().username} ({global_game_data.get_opp_data().position}) facing {global_game_data.get_opp_data().facing_angle} (LAPS: {global_game_data.get_opp_data().completed_laps} / 3)"
 
     pygame.display.set_caption(debug_string)
 

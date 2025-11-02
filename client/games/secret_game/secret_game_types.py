@@ -17,6 +17,7 @@ class SecretGamePlayer:
     username: str
     position: tuple[int, int]
     facing_angle: float
+    completed_laps: int
 
 
 class Map:

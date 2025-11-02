@@ -234,6 +234,7 @@ def connect_secret_game(
             '?race-start',
             '?pos',
             '?angle',
+            '?lap-completion',
             '?game-over',
         )
         client_running = True
