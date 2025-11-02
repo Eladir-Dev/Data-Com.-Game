@@ -6,6 +6,8 @@ import time
 import math
 
 class SecretGameGame:
+    REQUIRED_LAPS = 3
+
     def __init__(self, players: list[SecretGamePlayer], map: Map):
         self.players = players
         self.map = map
@@ -123,6 +125,10 @@ class SecretGameGame:
                 player.speed = DEFAULT_SPEED
 
 
+    def check_if_completed_all_laps(self, player: SecretGamePlayer) -> bool:
+        return player.completed_laps == SecretGameGame.REQUIRED_LAPS
+
+
     def build_pos_cmd_for_player(self, player_idx: int) -> str:
         pos = self.players[player_idx].position
         assert pos
@@ -213,6 +219,11 @@ class SecretGameGame:
                 self.check_collision(player_idx)
 
                 self.handle_player_client_response(player_idx)
+
+                if self.check_if_completed_all_laps(player):
+                    self.result = SecretGameResult(winner_idx=player_idx, abrupt_end=False)
+                    self.is_running = False
+                    break
 
 
     def read_incoming_player_commands(self, player_idx: int):
