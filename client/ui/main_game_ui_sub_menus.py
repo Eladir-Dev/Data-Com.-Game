@@ -53,6 +53,9 @@ class MainGameSubMenus:
         self.loading_window_word_golf = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.loading_window_word_golf.add.label('Connecting...')
 
+        self.loading_window_secret_game = pygame_menu.Menu('Secret Game', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
+        self.loading_window_secret_game.add.label('Connecting...')
+
         self.game_over_menu = pygame_menu.Menu('Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
         self.game_over_menu.add.label('PLACEHOLDER TEXT', 'game_over_label')
         self.game_over_menu.add.button('Go To Main Menu', self.go_to_main_menu)

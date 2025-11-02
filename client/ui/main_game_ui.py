@@ -7,7 +7,9 @@ import networking.socket_client as socket_client
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import games.stratego.stratego_game as stratego_game
 import games.word_golf.word_golf_game as word_golf_game
+import games.secret_game.secret_game_game as secret_game_game
 from ui.main_game_ui_sub_menus import MainGameSubMenus
+from games.secret_game.secret_game_background_activator import SecretGameBackgroundActivator
 from networking.server_cmd_interpreter import ServerCommandInterpreter
 
 class MainGameUI:
@@ -26,6 +28,7 @@ class MainGameUI:
         SOCKET_CLIENT_THREAD.start()
 
         pygame.init()
+        pygame.mixer.init()
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
         self.deck_selection_menu = StrategoSettingsWindow(
@@ -47,12 +50,32 @@ class MainGameUI:
             change_game_state=self.change_game_state,
         )
 
+        # Very important.
+        self.secret_game_background_activator = SecretGameBackgroundActivator(
+            client_state=self.client_state,
+            start_loading_secret_game=self.start_loading_secret_game,
+
+            # This is unsafe vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+            secret_key_hash="f1e7f77e70f7db539b79e8c827f6bed02aab95a31248ec0926c593bf5b1c71f9",
+        )
+
 
     def change_game_state(self, new_state: ValidState):
         """
         Changes the game's state. Used to determine the screen that is being shown.
         """
         self.client_state.game_state = new_state
+
+        # If starting a Secret Game, then start the background music.
+        if new_state == 'in_secret_game':
+            from pathlib import Path
+            SECRET_GAME_MUSIC_PATH = Path(__file__).parent.parent / "games" / "secret_game" / "assets" / "Bone Yard Waltz - Loopable.ogg"
+            pygame.mixer.music.load(SECRET_GAME_MUSIC_PATH)
+            pygame.mixer.music.play(-1)
+
+        # Stop the music (if any was playing) if a game ended.
+        elif new_state == 'finished_game':
+            pygame.mixer.music.stop()
     
 
     def start(self):
@@ -65,11 +88,16 @@ class MainGameUI:
             for event in events:
                 if event.type == self.sub_menus.update_loading:
                     progress = self.sub_menus.loading.get_widget("1")
-                    assert progress # fixes null errors; crashes if progress is somehow `None`
+                    assert progress # type: ignore # fixes null errors; crashes if progress is somehow `None`
 
                     progress.set_value(progress.get_value() + 1)
                     if progress.get_value() == 100:
                         pygame.time.set_timer(self.sub_menus.update_loading, 0)
+
+                if event.type == pygame.KEYDOWN:
+                    # Very important.
+                    self.secret_game_background_activator.read_user_key_press(event.unicode)
+
                 if event.type == pygame.QUIT:
                     exit()
 
@@ -97,13 +125,9 @@ class MainGameUI:
                 self.sub_menus.loading_window_stratego.update(events)
                 self.sub_menus.loading_window_stratego.draw(self.surface)
 
-            elif game_state == 'finished_game':
-                game_over_msg = self.client_state.game_over_message
-                assert game_over_msg, "Game Over Message was None"
-                self.sub_menus.set_game_over_message(game_over_msg)
-
-                self.sub_menus.game_over_menu.update(events)
-                self.sub_menus.game_over_menu.draw(self.surface)
+            elif game_state == 'loading_word_golf_game':
+                self.sub_menus.loading_window_word_golf.update(events)
+                self.sub_menus.loading_window_word_golf.draw(self.surface)
 
             elif game_state == 'in_word_golf_game':
                 assert self.client_state.word_golf_state, "Word Golf state was None"
@@ -119,9 +143,25 @@ class MainGameUI:
                 elif update_result.stashed_word_cmd is not None:
                     self.client_cmd_queue.put(update_result.stashed_word_cmd)
 
-            elif game_state == 'loading_word_golf_game':
-                self.sub_menus.loading_window_word_golf.update(events)
-                self.sub_menus.loading_window_word_golf.draw(self.surface)
+            elif game_state == 'loading_secret_game':
+                self.sub_menus.loading_window_secret_game.update(events)
+                self.sub_menus.loading_window_secret_game.draw(self.surface)
+
+            elif game_state == 'in_secret_game':
+                assert self.client_state.secret_game_state, "Secret Game state was None"
+
+                car_turn_cmd = secret_game_game.secret_game_update(events, self.surface, self.client_state.secret_game_state)
+
+                if car_turn_cmd is not None:
+                    self.client_cmd_queue.put(car_turn_cmd)
+
+            elif game_state == 'finished_game':
+                game_over_msg = self.client_state.game_over_message
+                assert game_over_msg, "Game Over Message was None"
+                self.sub_menus.set_game_over_message(game_over_msg)
+
+                self.sub_menus.game_over_menu.update(events)
+                self.sub_menus.game_over_menu.draw(self.surface)
 
             else:
                 print(f"ERROR: unhandled game state '{game_state}'")
@@ -150,3 +190,10 @@ class MainGameUI:
         )
 
 
+    def start_loading_secret_game(self):
+        self.change_game_state('loading_secret_game')
+
+        # Send the user's username to the socket client (which then forwards it to the server).
+        self.client_cmd_queue.put(
+            f"!want-play-game:secret_game:{self.client_state.username}:{self.client_state.server_ip}"
+        )

@@ -1,15 +1,18 @@
 from dataclasses import dataclass
 from typing import Literal
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
+from games.secret_game.secret_game_types import SecretGamePlayer, Map, TurnState
 
 ValidState = Literal[
     'main_menu', 
     'loading_stratego_game',
     'in_stratego_game', 
-    'in_word_golf_game',
     'loading_word_golf_game', 
+    'in_word_golf_game',
+    'loading_secret_game',
+    'in_secret_game',
     'finished_game',
-    'in_deck_selection_state'
+    'in_deck_selection_state',
 ]
 
 class StrategoGlobalState:
@@ -51,6 +54,22 @@ class WordGolfGlobalState:
         self.received_alerts: list[str] = []
 
     
+class SecretGameGlobalState:
+    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: Map):
+        self.own_idx = own_idx
+        self.players = players
+        self.map = map
+        self.turn_state: TurnState = 'straight'
+
+
+    def get_own_data(self) -> SecretGamePlayer:
+        return self.players[self.own_idx]
+    
+
+    def get_opp_data(self) -> SecretGamePlayer:
+        return self.players[(self.own_idx + 1) % 2]
+
+
 @dataclass
 class GlobalClientState:
     """
@@ -80,6 +99,10 @@ class GlobalClientState:
     word_golf_state: WordGolfGlobalState | None = None
     """
     Holds Word Golf-specific game data.
+    """
+    secret_game_state: SecretGameGlobalState | None = None
+    """
+    Holds Secret Game-specific game state.
     """
 
     # Socket-representation of the starting deck.

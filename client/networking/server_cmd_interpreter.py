@@ -1,6 +1,7 @@
-from common_types.global_state import GlobalClientState, StrategoGlobalState, WordGolfGlobalState, ValidState
+from common_types.global_state import GlobalClientState, SecretGameGlobalState, StrategoGlobalState, WordGolfGlobalState, ValidState, SecretGamePlayer
 from typing import Callable
 from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color, ROWS, COLS
+from games.secret_game.secret_game_types import Map, get_default_map_path
 
 import networking.validator as validator
 
@@ -34,6 +35,23 @@ class ServerCommandInterpreter:
                 opponent_username = validator.assert_valid_username(fields[2])
 
                 self.game_start_word_golf(opponent_username)
+
+            elif game == 'secret_game':
+                own_idx = int(fields[2])
+                player_1_username = validator.assert_valid_username(fields[3])
+                player_1_x = int(fields[4])
+                player_1_y = int(fields[5])
+                player_2_username = validator.assert_valid_username(fields[6])
+                player_2_x = int(fields[7])
+                player_2_y = int(fields[8])
+
+                self.game_start_secret_game(
+                    own_idx, 
+                    player_1_username, 
+                    (player_1_x, player_1_y),
+                    player_2_username,
+                    (player_2_x, player_2_y),
+                )
 
             else:
                 print(f"ERROR: unknown game: '{game}'")
@@ -113,6 +131,40 @@ class ServerCommandInterpreter:
             self.receive_latest_word_golf_alert(alert_fields)
 
 
+        elif data.startswith("?countdown"):
+            fields = validator.assert_field_amount_valid(data.split(':'), 2)
+            countdown = int(fields[1])
+            print(f"TEMP-LOG: COUNTING DOWN... {countdown}")
+
+
+        elif data.startswith("?race-start"):
+            print("TEMP-LOG: started the race")
+
+
+        elif data.startswith("?pos"):
+            fields = validator.assert_field_amount_valid(data.split(':'), 4)
+            player_idx = int(fields[1])
+            new_x = int(fields[2])
+            new_y = int(fields[3])
+
+            self.update_secret_game_player_position(player_idx, new_x, new_y)
+
+
+        elif data.startswith("?angle"):
+            fields = validator.assert_field_amount_valid(data.split(':'), 3)
+            player_idx = int(fields[1])
+            angle = float(fields[2])
+
+            self.update_secret_game_player_angle(player_idx, angle)
+
+        elif data.startswith("?lap-completion"):
+            fields = validator.assert_field_amount_valid(data.split(':'), 3)
+            player_idx = int(fields[1])
+            completed_laps = int(fields[2])
+
+            self.update_secret_game_player_lap_completion(player_idx, completed_laps)
+
+
         elif data.startswith("?game-over"):
             fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
             game = fields[1]
@@ -142,6 +194,27 @@ class ServerCommandInterpreter:
             opponent_username=opponent_username,
         )
         self.change_game_state('in_word_golf_game')
+
+
+    def game_start_secret_game(
+        self, 
+        own_idx: int, 
+        player_1_username: str, 
+        player_1_start_pos: tuple[int, int],
+        player_2_username: str,
+        player_2_start_pos: tuple[int, int],
+    ):
+        players = [
+            SecretGamePlayer(username=player_1_username, position=player_1_start_pos, facing_angle=0.0, completed_laps=0),
+            SecretGamePlayer(username=player_2_username, position=player_2_start_pos, facing_angle=0.0, completed_laps=0),
+        ]
+
+        self.client_state.secret_game_state = SecretGameGlobalState(
+            own_idx,
+            players,
+            Map(file_name=get_default_map_path()) # TODO: make this dynamic instead of hardcoding a single map
+        )
+        self.change_game_state('in_secret_game')
 
 
     def update_using_stratego_turn_info(self, current_turn: StrategoColor, board_repr: str):
@@ -219,6 +292,24 @@ class ServerCommandInterpreter:
             print(f"ERROR: unknown alert kind '{kind}'")
 
 
+    def update_secret_game_player_position(self, player_idx: int, new_x: int, new_y: int):
+        assert self.client_state.secret_game_state, "Secret Game state was None"
+
+        self.client_state.secret_game_state.players[player_idx].position = (new_x, new_y)
+
+
+    def update_secret_game_player_angle(self, player_idx: int, angle: float):
+        assert self.client_state.secret_game_state, "Secret Game state was None"
+
+        self.client_state.secret_game_state.players[player_idx].facing_angle = angle
+
+
+    def update_secret_game_player_lap_completion(self, player_idx: int, completed_laps: int):
+        assert self.client_state.secret_game_state, "Secret Game state was None"
+
+        self.client_state.secret_game_state.players[player_idx].completed_laps = completed_laps
+
+
     def get_game_over_message(self, reason: str, game: str, all_received_fields: list[str]):
         if reason == "winner-determined":
             if game == "stratego":
@@ -228,6 +319,10 @@ class ServerCommandInterpreter:
             elif game == "word_golf":
                 winner_username = all_received_fields[3]
                 return f"Player '{winner_username}' has won!"
+            
+            elif game == "secret_game":
+                winner_idx = int(all_received_fields[3])
+                return f"Player #{winner_idx + 1} has won!"
 
             else:
                 print(f"ERROR: could not set game-over message; unknown game '{game}'")

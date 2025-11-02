@@ -1,10 +1,18 @@
 import pygame
 from pygame import Surface, Rect
 from common_types.game_types import Pair
+from typing import Literal
 
-def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair) -> Rect:
+RectOrigin = Literal['center', 'top_left']
+
+def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair, rect_origin: RectOrigin = 'center') -> Rect:
     scaled = pygame.transform.scale(sprite, target_dimensions)
-    sprite_rect = scaled.get_rect(center=location)
+
+    if rect_origin == 'top_left':
+        sprite_rect = scaled.get_rect(topleft=location)
+    else: # center (default)
+        sprite_rect = scaled.get_rect(center=location)
+
     surface.blit(scaled, sprite_rect)
     return sprite_rect
 
