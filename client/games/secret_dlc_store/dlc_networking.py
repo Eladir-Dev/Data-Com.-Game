@@ -5,6 +5,8 @@ import zipfile
 from pathlib import Path
 import shutil
 
+from typing import Callable
+
 DLC_PATH = Path(__file__).parent / "dlc"
 
 DOWNLOAD_URL = "https://github.com/cyan-wolf/Rust-Adventure/releases/download/v0.0.1/Rust.Adventure.zip"
@@ -16,7 +18,7 @@ GAME_EXE_PATH = EXTRACT_DIR / "Rust Adventure.exe"
 
 CHUNK_SIZE_BYTES = 8192
 
-def download_dlc() -> bool:
+def download_dlc(update_progress: Callable[[float], None]) -> bool:
     try:
         resp = requests.get(DOWNLOAD_URL, stream=True)
         resp.raise_for_status()
@@ -34,7 +36,8 @@ def download_dlc() -> bool:
                     progress_bytes += CHUNK_SIZE_BYTES
 
                     if total_size_bytes != 0:
-                        print(f"{progress_bytes / total_size_bytes * 100:.2f}%")
+                        # Callback to track progress.
+                        update_progress(progress_bytes / total_size_bytes)
 
         print("LOG: Successfully downloaded file.")
         return True
@@ -60,14 +63,16 @@ def extract_dlc_zip() -> bool:
 def run_dlc_executable():
     if not os.path.exists(GAME_EXE_PATH):
         print("Error: Could not locate DLC executable to run.")
-        return
+        return None
     
     try:
-        subprocess.run([GAME_EXE_PATH], check=True, shell=False)
-        print("LOG: Finished running DLC.")
-
-        cleanup_dlc_files()
-
+        proc = subprocess.Popen(
+            [GAME_EXE_PATH],
+            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+            shell=False,
+        )
+        return proc
+    
     except FileNotFoundError:
         print("Error: Could not execute DLC file.")
 
@@ -78,16 +83,16 @@ def cleanup_dlc_files():
         print("LOG: Cleaned up DLC files.")
 
 
-def run_dlc():
-    if not download_dlc():
-        return
+# def run_dlc():
+#     if not download_dlc():
+#         return
     
-    if not extract_dlc_zip():
-        return
+#     if not extract_dlc_zip():
+#         return
     
-    run_dlc_executable()
+#     run_dlc_executable()
 
 
-if __name__ == "__main__":
-    run_dlc()
+# if __name__ == "__main__":
+#     run_dlc()
         

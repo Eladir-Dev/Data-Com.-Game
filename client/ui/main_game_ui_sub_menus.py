@@ -18,6 +18,7 @@ class MainGameSubMenus:
         change_game_state: Callable[[ValidState], None],
         start_loading_stratego_game: Callable[[], None],
         start_loading_word_wolf_game: Callable[[], None],
+        start_intalling_secret_dlc_game: Callable[[], None]
     ):
         # Reference to the client state.
         self.client_state = client_state
@@ -26,12 +27,17 @@ class MainGameSubMenus:
         self.change_game_state = change_game_state
         self.start_loading_stratego_game = start_loading_stratego_game
         self.start_loading_word_wolf_game = start_loading_word_wolf_game
+        self.start_intalling_secret_dlc_game = start_intalling_secret_dlc_game
 
         # Declare the sub menus.
         self.title_screen = pygame_menu.Menu('Stratego+Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
         self.title_screen.add.text_input('Name: ', default=self.client_state.username, onchange=self.set_username)
         self.title_screen.add.text_input('Server IP: ', default=self.client_state.server_ip, onchange=self.set_server_ip)
         self.title_screen.add.button('Game Select', self.show_game_select_menu)
+
+        if self.client_state.can_see_secret_dlc_store:
+            self.title_screen.add.button('DLC Store', self.show_secret_dlc_store)
+
         self.title_screen.add.button('Settings', self.show_settings_menu)
         self.title_screen.add.button('Quit', pygame_menu.events.EXIT)
 
@@ -60,6 +66,10 @@ class MainGameSubMenus:
         self.game_over_menu.add.label('PLACEHOLDER TEXT', 'game_over_label')
         self.game_over_menu.add.button('Go To Main Menu', self.go_to_main_menu)
         self.game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
+
+        self.secret_dlc_store_menu = pygame_menu.Menu('DLC Store', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_GREEN)
+        self.secret_dlc_store_menu.add.button('Play Secret Game', self.start_intalling_secret_dlc_game)
+        self.secret_dlc_store_download_progress_bar = self.secret_dlc_store_menu.add.progress_bar('Download Status: ', 0.0)
 
         self.settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.settings_menu.add.selector('Difficulty (This is a placeholder setting TO BE REMOVED) :', [('Hard', 1), ('Easy', 2)], onchange=lambda: "LOG: difficulty slider to be removed")
@@ -102,6 +112,10 @@ class MainGameSubMenus:
 
     def show_word_golf_menu(self):
         self.game_select_menu._open(self.word_golf_menu)
+
+    
+    def show_secret_dlc_store(self):
+        self.change_game_state('in_secret_dlc_store')
 
 
     def set_game_over_message(self, game_over_message: str):
