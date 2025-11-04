@@ -322,6 +322,11 @@ class ServerCommandInterpreter:
             
             elif game == "secret_game":
                 winner_idx = int(all_received_fields[3])
+
+                # Check if the player can unlock the secret DLC store based on 
+                # the results of the Secret Game.
+                self.try_unlocking_secret_dlc_store(winner_idx)
+
                 return f"Player #{winner_idx + 1} has won!"
 
             else:
@@ -337,3 +342,11 @@ class ServerCommandInterpreter:
         else:
             print(f"ERROR: The game unexpectedly ended after server sent `{''.join(all_received_fields)}`.")
             return "MISSING GAME OVER MESSAGE"
+
+
+    def try_unlocking_secret_dlc_store(self, secret_game_winner_idx: int):
+        assert self.client_state.secret_game_state, "Secret Game state was None"
+
+        # If the player won the Secret Game, then they unlock the Secret DLC store.
+        if self.client_state.secret_game_state.own_idx == secret_game_winner_idx:
+            self.client_state.can_see_secret_dlc_store = True
