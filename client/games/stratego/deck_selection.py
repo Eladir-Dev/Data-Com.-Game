@@ -23,6 +23,7 @@
 # ================================================================+
 
 #==========================Imports================================#
+from ui.drawing_utils import draw_text
 from typing import Callable
 import pygame
 from pygame import Surface
@@ -30,10 +31,13 @@ from pygame.event import Event
 import pygame_menu
 import random
 from pygame_menu.widgets.core import Selection
+
+
 from . import stratego_types
 #from stratego_types import *
 from .stratego_types import StrategoRenderedTile
 from common_types.global_state import GlobalClientState
+from common_types.game_types import SCREEN_WIDTH
 from pathlib import Path
 #=================================================================#
 SPRITE_FOLDER = Path(__file__).parent / "assets"
@@ -191,10 +195,21 @@ class DeckSelector():
         pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900, 40))  # Upper bar
 
         pygame.draw.rect(surface, LIGHT_GRAY2, (0, 35, 900, 5))  # lines
-        pygame.draw.rect(surface, LIGHT_GRAY2, (275, 35, 5, 600))
         # Draw the UI.
         # pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
         pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Example UI panel
+
+        # Render main text
+        font = pygame.font.Font(None, 36)
+        text = font.render("Stratego", True, (255, 255, 255))
+        #shadow = font.render("Hello, World!", True, (0, 0, 0))  # Black shadow
+        # Blit shadow offset, then main text
+        #surface.blit(shadow, (402, 302))  # Slight offset
+        # surface.blit(text, (10, 5))
+        # pygame.display.flip()
+
+        draw_text(surface, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
+
 
         # Top grid outline: Horizontal/vertical lines for visual slots.
         for row in range(GRID_ROWS + 1):
@@ -256,7 +271,7 @@ class StrategoSettingsWindow():
         # ======================Deck data=========================#
         rows = 10
         cols = 4
-        self.username = player_data.username
+        self.player_data = player_data
         self.pieces = [['' for _ in range(rows)] for _ in range(cols)]
         self.deck = [['' for _ in range(rows)] for _ in range(cols)]
         self.fill_pieces(rows, cols, True)
@@ -299,7 +314,7 @@ class StrategoSettingsWindow():
         # Add widgets with manual positioning
         self.menu.add.label('==Game Options==', float=True).translate(5, 35)
         button_spacing = 60
-        self.menu.add.text_input('Name: ', default=self.username, float=True).translate(20, 100)
+        self.label = self.menu.add.text_input('Name: ', default=self.player_data.username, float=True).translate(20, 100)
         self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
         self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
         self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 3)
@@ -548,7 +563,7 @@ class StrategoSettingsWindow():
         """
         Updates the UI.
         """
-
+        self.label.set_value(self.player_data.username)
         if self.deck_full():
             green_selection = GreenHighlight()
             self.start_button.set_selection_effect(green_selection)
