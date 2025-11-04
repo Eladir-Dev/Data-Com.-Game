@@ -25,7 +25,6 @@
 #==========================Imports================================#
 from typing import Callable
 import pygame
-import sys
 from pygame import Surface
 from pygame.event import Event
 import pygame_menu
@@ -78,32 +77,6 @@ class DeckSelector():
     This class take care of drawing the grids for the deck selection.
     """
 
-    def __init__(self):
-        # ====================Deck renderer========================#
-        # Drag-and-drop state variables
-        self.dragging = False
-        self.dragged_piece = None
-        self.dragged_from = None  # 'top' or 'bottom'
-        self.drag_row = None
-        self.drag_col = None
-        self.drag_offset = (0, 0)  # Offset to center the sprite on the mouse
-        self.CELL_SIZE = 50
-        # Sprite addreses
-        self.sprites = {
-            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
-            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
-            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
-            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
-            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png"),
-            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png"),
-            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png"),
-            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png"),
-            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png"),
-            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png"),
-            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
-            "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
-        }
-        # =========================================================#
     def handle_mouse_event(self, event, top_grid, bottom_grid):
         """
         This function handles mouse events when a mouse button is pressed.
@@ -152,24 +125,24 @@ class DeckSelector():
             mouse_x, mouse_y = event.pos
             dropped = False
             # Attempt to drop in the other grid
-
-            # Check if mouse is over bottom grid
-            if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
-                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
-                if bottom_grid[row][col] == "":  # Only drop if the cell is empty
-                    bottom_grid[row][col] = self.dragged_piece
-                    dropped = True
-
-            # Check if mouse is over top grid
-            if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
-                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
-                if top_grid[row][col] == "":  # Only drop if the cell is empty
-                    top_grid[row][col] = self.dragged_piece
-                    dropped = True
+            if self.dragged_from == 'top':
+                # Check if mouse is over bottom grid
+                if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
+                    X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                    col = (mouse_x - X_START) // CELL_SIZE
+                    row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
+                    if bottom_grid[row][col] == "":  # Only drop if the cell is empty
+                        bottom_grid[row][col] = self.dragged_piece
+                        dropped = True
+            elif self.dragged_from == 'bottom':
+                # Check if mouse is over top grid
+                if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
+                    X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                    col = (mouse_x - X_START) // CELL_SIZE
+                    row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
+                    if top_grid[row][col] == "":  # Only drop if the cell is empty
+                        top_grid[row][col] = self.dragged_piece
+                        dropped = True
             # If drop failed, return to original position
             if not dropped:
                 if self.dragged_from == 'top':
@@ -185,10 +158,17 @@ class DeckSelector():
             self.drag_offset = (0, 0)
 
 
-    def secondary_render(self, surface, top_grid, bottom_grid):
+
+    def draw(self, surface, top_grid, bottom_grid):
         """
-        This function renders everything except the menu.
+        This function draws the grids and sprites for the Deck selection screen.
         """
+
+
+
+        for key in self.sprites:
+            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
+
         # Constants
         CELL_SIZE = 50
         GRID_COLS = 10
@@ -207,26 +187,14 @@ class DeckSelector():
         BLUE_BAR = (24, 43, 51)
         GRAY_BACKGROUND = (51, 49, 45)
 
-        # Draw the UI.
-        # pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
-
         pygame.draw.rect(surface, CREMA, (275, 30, 650, 600))  # Background
-
         pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900, 40))  # Upper bar
 
         pygame.draw.rect(surface, LIGHT_GRAY2, (0, 35, 900, 5))  # lines
         pygame.draw.rect(surface, LIGHT_GRAY2, (275, 35, 5, 600))
-
-        pygame.draw.rect(surface, GRAY_BACKGROUND, (300, 50, 575, 520))  # Grid
-
-        # # Render main text
-        # font = pygame.font.Font(None, 36)
-        # text = font.render("Stratego", True, (255, 255, 255))
-        # #shadow = font.render("Hello, World!", True, (0, 0, 0))  # Black shadow
-        # # Blit shadow offset, then main text
-        # #surface.blit(shadow, (402, 302))  # Slight offset
-        # surface.blit(text, (10, 5))
-        # pygame.display.flip()
+        # Draw the UI.
+        # pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
+        pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Example UI panel
 
         # Top grid outline: Horizontal/vertical lines for visual slots.
         for row in range(GRID_ROWS + 1):
@@ -243,6 +211,7 @@ class DeckSelector():
         for col in range(GRID_COLS + 1):
             x = X_START + col * CELL_SIZE
             pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y), (x, BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
+
         # Draw pieces in the top grid based on self.top_grid
         for row in range(GRID_ROWS):
             for col in range(GRID_COLS):
@@ -260,18 +229,6 @@ class DeckSelector():
                     x = X_START + col * CELL_SIZE
                     y = BOTTOM_GRID_Y + row * CELL_SIZE
                     surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
-
-    def draw(self, surface, top_grid, bottom_grid):
-        """
-        This function draws the grids and sprites for the Deck selection screen.
-        """
-        for key in self.sprites:
-            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
-
-        self.secondary_render(surface, top_grid, bottom_grid)
-
-
-
 
         # If dragging, draw the dragged sprite at the mouse position (centered)
         if self.dragging and self.dragged_piece:
@@ -303,6 +260,31 @@ class StrategoSettingsWindow():
         self.pieces = [['' for _ in range(rows)] for _ in range(cols)]
         self.deck = [['' for _ in range(rows)] for _ in range(cols)]
         self.fill_pieces(rows, cols, True)
+        # ====================Deck renderer========================#
+        # Drag-and-drop state variables
+        self.dragging = False
+        self.dragged_piece = None
+        self.dragged_from = None  # 'top' or 'bottom'
+        self.drag_row = None
+        self.drag_col = None
+        self.drag_offset = (0, 0)  # Offset to center the sprite on the mouse
+        self.CELL_SIZE = 50
+        # Sprite addreses
+        self.sprites = {
+            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
+            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
+            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
+            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
+            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png"),
+            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png"),
+            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png"),
+            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png"),
+            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png"),
+            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png"),
+            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
+            "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
+        }
+        # =========================================================#
 
         # Create menu with left-side layout
         menu_hight = 600
@@ -568,19 +550,16 @@ class StrategoSettingsWindow():
         """
 
         if self.deck_full():
-            green_highlight = GreenHighlight()
-            self.start_button.set_selection_effect(green_highlight)
-        else:
-            red_highlight = RedHighlight()
-            self.start_button.set_selection_effect(red_highlight)
+            green_selection = GreenHighlight()
+            self.start_button.set_selection_effect(green_selection)
 
         self.menu.update(events)
         self.menu.draw(self.surface)
-        deck_selector = DeckSelector()
         for event in events:
-            deck_selector.handle_mouse_event(event=event, top_grid=self.deck, bottom_grid=self.pieces)
-        deck_selector.draw(surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
+            DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
+        DeckSelector.draw(self, surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
         pygame.display.flip()
+
 
 
 
