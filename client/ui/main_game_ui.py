@@ -108,6 +108,8 @@ class MainGameUI:
 
             game_state: ValidState = self.client_state.game_state
 
+            self.sub_menus.general_update()
+
             if game_state == 'main_menu':
                 self.sub_menus.title_screen.update(events)
                 self.sub_menus.title_screen.draw(self.surface)
@@ -161,8 +163,6 @@ class MainGameUI:
                     self.client_cmd_queue.put(car_turn_cmd)
 
             elif game_state == 'in_secret_dlc_store':
-                self.sub_menus.secret_dlc_store_download_progress_bar.set_value(int(self.client_state.secret_dlc_download_percentage * 100))
-
                 self.sub_menus.secret_dlc_store_menu.update(events)
                 self.sub_menus.secret_dlc_store_menu.draw(self.surface)
 

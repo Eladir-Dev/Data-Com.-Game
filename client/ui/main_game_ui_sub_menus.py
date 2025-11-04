@@ -35,8 +35,7 @@ class MainGameSubMenus:
         self.title_screen.add.text_input('Server IP: ', default=self.client_state.server_ip, onchange=self.set_server_ip)
         self.title_screen.add.button('Game Select', self.show_game_select_menu)
 
-        if self.client_state.can_see_secret_dlc_store:
-            self.title_screen.add.button('DLC Store', self.show_secret_dlc_store)
+        self.title_screen_secret_dlc_button = self.title_screen.add.button('DLC Store', self.show_secret_dlc_store)
 
         self.title_screen.add.button('Settings', self.show_settings_menu)
         self.title_screen.add.button('Quit', pygame_menu.events.EXIT)
@@ -80,6 +79,15 @@ class MainGameSubMenus:
         self.arrow = pygame_menu.widgets.LeftArrowSelection(arrow_size=(10, 15))
 
         self.update_loading = pygame.USEREVENT + 0
+
+
+    def general_update(self):
+        self.secret_dlc_store_download_progress_bar.set_value(int(self.client_state.secret_dlc_download_percentage * 100))
+
+        if self.client_state.can_see_secret_dlc_store:
+            self.title_screen_secret_dlc_button.show()
+        else:
+            self.title_screen_secret_dlc_button.hide()
 
 
     def go_to_main_menu(self):
