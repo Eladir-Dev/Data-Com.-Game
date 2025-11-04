@@ -254,6 +254,10 @@ def connect_secret_game(
                         raise Exception(f"received invalid command: {server_cmd}")
                     
                     if server_cmd.startswith(VALID_COMMAND_PREFIXES):
+                        if data.startswith("?game-over"):
+                            # Stop the client.
+                            client_running = False
+                            
                         server_command_queue.put(server_cmd)
                     else:
                         print(f"ERROR: received unknown data from server: '{data}'")

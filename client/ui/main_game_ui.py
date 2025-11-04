@@ -11,6 +11,8 @@ import games.secret_game.secret_game_game as secret_game_game
 from ui.main_game_ui_sub_menus import MainGameSubMenus
 from games.secret_game.secret_game_background_activator import SecretGameBackgroundActivator
 from networking.server_cmd_interpreter import ServerCommandInterpreter
+from games.secret_dlc_store.secret_dlc_store import start_getting_dlc
+from games.secret_dlc_store.secret_dlc_store_update import SecretDLCStoreUpdate
 
 class MainGameUI:
     def __init__(self):
@@ -22,6 +24,8 @@ class MainGameUI:
 
         self.server_cmd_queue: queue.Queue[str] = queue.Queue()
         self.client_cmd_queue: queue.Queue[str] = queue.Queue()
+
+        self.secret_dlc_store_update_queue: queue.Queue[SecretDLCStoreUpdate] = queue.Queue()
 
         SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(self.server_cmd_queue, self.client_cmd_queue))
         SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
@@ -43,6 +47,7 @@ class MainGameUI:
             change_game_state=self.change_game_state,
             start_loading_stratego_game=self.start_loading_stratego_game,
             start_loading_word_wolf_game=self.start_loading_word_wolf_game,
+            start_intalling_secret_dlc_game=self.start_intalling_secret_dlc_game,
         )
 
         self.server_cmd_interpreter = ServerCommandInterpreter(
@@ -80,9 +85,9 @@ class MainGameUI:
 
     def start(self):
         while True:
-            while not self.server_cmd_queue.empty():
-                data = self.server_cmd_queue.get()
-                self.server_cmd_interpreter.interpret_server_command(data)
+            self.receive_server_commands()
+
+            self.receive_secret_dlc_store_updates()
 
             events = pygame.event.get()
             for event in events:
@@ -102,6 +107,8 @@ class MainGameUI:
                     exit()
 
             game_state: ValidState = self.client_state.game_state
+
+            self.sub_menus.general_update()
 
             if game_state == 'main_menu':
                 self.sub_menus.title_screen.update(events)
@@ -155,6 +162,14 @@ class MainGameUI:
                 if car_turn_cmd is not None:
                     self.client_cmd_queue.put(car_turn_cmd)
 
+            elif game_state == 'in_secret_dlc_store':
+                self.sub_menus.secret_dlc_store_menu.update(events)
+                self.sub_menus.secret_dlc_store_menu.draw(self.surface)
+
+            elif game_state == 'in_secret_dlc_game':
+                # Blank screen since the (secret) DLC runs as another executable.
+                self.surface.fill((0, 0, 0))
+
             elif game_state == 'finished_game':
                 game_over_msg = self.client_state.game_over_message
                 assert game_over_msg, "Game Over Message was None"
@@ -167,6 +182,35 @@ class MainGameUI:
                 print(f"ERROR: unhandled game state '{game_state}'")
 
             pygame.display.update()
+
+
+    def receive_server_commands(self):
+        while not self.server_cmd_queue.empty():
+            data = self.server_cmd_queue.get()
+            self.server_cmd_interpreter.interpret_server_command(data)
+
+
+    def receive_secret_dlc_store_updates(self):
+        while not self.secret_dlc_store_update_queue.empty():
+            update = self.secret_dlc_store_update_queue.get()
+
+            if update.kind == 'download_progress':
+                self.client_state.secret_dlc_download_percentage = update.percentage
+
+            elif update.kind == 'installation_finish':
+                self.change_game_state('in_secret_dlc_game')
+
+            elif update.kind == 'game_finish':
+                self.client_state.is_already_downloading_dlc = False
+                self.change_game_state('main_menu')
+            
+            elif update.kind == 'error':
+                print("ERROR: Could not install DLC.")
+                self.client_state.is_already_downloading_dlc = False
+                self.change_game_state('main_menu')
+
+            else:
+                print(f"Error: unknown secret DLC store update: '{update}'")
 
 
     def start_loading_stratego_game(self):
@@ -197,3 +241,12 @@ class MainGameUI:
         self.client_cmd_queue.put(
             f"!want-play-game:secret_game:{self.client_state.username}:{self.client_state.server_ip}"
         )
+
+
+    def start_intalling_secret_dlc_game(self):
+        if self.client_state.is_already_downloading_dlc:
+            print("LOG: already downloading DLC")
+            return
+
+        self.client_state.is_already_downloading_dlc = True
+        start_getting_dlc(self.secret_dlc_store_update_queue)

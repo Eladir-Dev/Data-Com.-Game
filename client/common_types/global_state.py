@@ -13,6 +13,8 @@ ValidState = Literal[
     'in_secret_game',
     'finished_game',
     'in_deck_selection_state',
+    'in_secret_dlc_store',
+    'in_secret_dlc_game',
 ]
 
 class StrategoGlobalState:
@@ -117,3 +119,7 @@ class GlobalClientState:
     """
     A game-agnostic game over message that needs to be set after a game finishes.
     """
+
+    can_see_secret_dlc_store: bool = False
+    secret_dlc_download_percentage: float = 0.0
+    is_already_downloading_dlc: bool = False
