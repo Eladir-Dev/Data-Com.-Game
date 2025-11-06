@@ -11,14 +11,16 @@
 #      This code is responsible for managing the deck selection   |
 #      screen for the Stratego game.                              |
 # ----------------------------------------------------------------+
-# Last modification [October 31, 2025]:                           |
+# Last modification [November 5, 2025]:                           |
 #    * The following methods were added:                          |
 #                                                                 |
 #    * The following methods were eliminated:                     |
 #                                                                 |
-#    * Other: Some comments were added and some code was          |
-#             simplified. The sprite selection offset was         |
-#             modified                                            |
+#    * Other: Pieces can now be moved within the same grid.       |
+#             The buttons "Host Game" and "Join Game" were        |
+#             added. A new file "st_custom_game.py" will be       |
+#             created to manage the custom games (host/join       |
+#             game mechanic)                                      |
 #                                                                 |
 # ================================================================+
 
@@ -128,25 +130,24 @@ class DeckSelector():
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.dragging:  # Left mouse button up
             mouse_x, mouse_y = event.pos
             dropped = False
-            # Attempt to drop in the other grid
-            if self.dragged_from == 'top':
-                # Check if mouse is over bottom grid
-                if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
-                    X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                    col = (mouse_x - X_START) // CELL_SIZE
-                    row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
-                    if bottom_grid[row][col] == "":  # Only drop if the cell is empty
-                        bottom_grid[row][col] = self.dragged_piece
-                        dropped = True
-            elif self.dragged_from == 'bottom':
-                # Check if mouse is over top grid
-                if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
-                    X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                    col = (mouse_x - X_START) // CELL_SIZE
-                    row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
-                    if top_grid[row][col] == "":  # Only drop if the cell is empty
-                        top_grid[row][col] = self.dragged_piece
-                        dropped = True
+
+            # Check if mouse is over bottom grid
+            if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
+                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                col = (mouse_x - X_START) // CELL_SIZE
+                row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
+                if bottom_grid[row][col] == "":  # Only drop if the cell is empty
+                    bottom_grid[row][col] = self.dragged_piece
+                    dropped = True
+
+            # Check if mouse is over top grid
+            if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
+                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                col = (mouse_x - X_START) // CELL_SIZE
+                row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
+                if top_grid[row][col] == "":  # Only drop if the cell is empty
+                    top_grid[row][col] = self.dragged_piece
+                    dropped = True
             # If drop failed, return to original position
             if not dropped:
                 if self.dragged_from == 'top':
@@ -194,20 +195,11 @@ class DeckSelector():
         pygame.draw.rect(surface, CREMA, (275, 30, 650, 600))  # Background
         pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900, 40))  # Upper bar
 
-        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 35, 900, 5))  # lines
-        # Draw the UI.
-        # pygame.draw.rect(self.surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
-        pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Example UI panel
+        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40, 900, 3))  # lines
+
+        pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Grid backgrounds
 
         # Render main text
-        font = pygame.font.Font(None, 36)
-        text = font.render("Stratego", True, (255, 255, 255))
-        #shadow = font.render("Hello, World!", True, (0, 0, 0))  # Black shadow
-        # Blit shadow offset, then main text
-        #surface.blit(shadow, (402, 302))  # Slight offset
-        # surface.blit(text, (10, 5))
-        # pygame.display.flip()
-
         draw_text(surface, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
 
 
@@ -317,7 +309,8 @@ class StrategoSettingsWindow():
         self.label = self.menu.add.text_input('Name: ', default=self.player_data.username, float=True).translate(20, 100)
         self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
         self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
-        self.menu.add.selector('Timer:  ', [('On', 1), ('Off', 2)], float=True).translate(20, 100 + button_spacing * 3)
+        self.menu.add.button('Host Game', print("host game"), float=True).translate(20, 100 + button_spacing * 3)
+        self.menu.add.button('Join Game', print("join game"), float=True).translate(20, 100 + button_spacing * 4)
         self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
 
         #red highlight for start_button
