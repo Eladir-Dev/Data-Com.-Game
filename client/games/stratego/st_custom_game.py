@@ -32,6 +32,7 @@ from pygame_menu.widgets.core import Selection
 
 
 from . import stratego_types
+from .deck_selection import StrategoSettingsWindow
 #from stratego_types import *
 from .stratego_types import StrategoRenderedTile
 from common_types.global_state import GlobalClientState
@@ -160,7 +161,7 @@ class DeckSelector():
 
 
 
-    def draw(self, surface, top_grid, bottom_grid):
+    def draw(self, surface, bottom_grid):
         """
         This function draws the grids and sprites for the Deck selection screen.
         """
@@ -200,12 +201,12 @@ class DeckSelector():
 
 
         # Top grid outline: Horizontal/vertical lines for visual slots.
-        for row in range(GRID_ROWS + 1):
-            y = TOP_GRID_Y + row * CELL_SIZE
-            pygame.draw.line(surface, WHITE, (X_START, y), (X_START + GRID_COLS * CELL_SIZE, y), 2)
-        for col in range(GRID_COLS + 1):
-            x = X_START + col * CELL_SIZE
-            pygame.draw.line(surface, WHITE, (x, TOP_GRID_Y), (x, TOP_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
+        # for row in range(GRID_ROWS + 1):
+        #     y = TOP_GRID_Y + row * CELL_SIZE
+        #     pygame.draw.line(surface, WHITE, (X_START, y), (X_START + GRID_COLS * CELL_SIZE, y), 2)
+        # for col in range(GRID_COLS + 1):
+        #     x = X_START + col * CELL_SIZE
+        #     pygame.draw.line(surface, WHITE, (x, TOP_GRID_Y), (x, TOP_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
 
         # Bottom grid outline: Identical to top for consistency.
         for row in range(GRID_ROWS + 1):
@@ -216,13 +217,13 @@ class DeckSelector():
             pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y), (x, BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
 
         # Draw pieces in the top grid based on self.top_grid
-        for row in range(GRID_ROWS):
-            for col in range(GRID_COLS):
-                piece = top_grid[row][col]
-                if piece != "":  # Only draw if there's a piece
-                    x = X_START + col * CELL_SIZE
-                    y = TOP_GRID_Y + row * CELL_SIZE
-                    surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
+        # for row in range(GRID_ROWS):
+        #     for col in range(GRID_COLS):
+        #         piece = top_grid[row][col]
+        #         if piece != "":  # Only draw if there's a piece
+        #             x = X_START + col * CELL_SIZE
+        #             y = TOP_GRID_Y + row * CELL_SIZE
+        #             surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
         # Draw pieces in the bottom grid based on self.bottom_grid
         for row in range(GRID_ROWS):
@@ -234,11 +235,11 @@ class DeckSelector():
                     surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
         # If dragging, draw the dragged sprite at the mouse position (centered)
-        if self.dragging and self.dragged_piece:
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            drag_x = mouse_x - self.drag_offset[0]
-            drag_y = mouse_y - self.drag_offset[1]
-            surface.blit(self.sprites[self.dragged_piece], (drag_x, drag_y))
+        # if self.dragging and self.dragged_piece:
+        #     mouse_x, mouse_y = pygame.mouse.get_pos()
+        #     drag_x = mouse_x - self.drag_offset[0]
+        #     drag_y = mouse_y - self.drag_offset[1]
+        #     surface.blit(self.sprites[self.dragged_piece], (drag_x, drag_y))
 
 class StrategoCustomsWindow():
     def __init__(self,
@@ -246,10 +247,16 @@ class StrategoCustomsWindow():
         go_to_prev_menu: Callable[[], None],
         go_to_start: Callable[[], None],
         player_data: GlobalClientState,
+        host: bool,
+        deck: list[list[str]],
+        deck_selector_data: StrategoSettingsWindow
     ):
         self.surface = surface
         # Methods
         self.go_to_start = go_to_start
+        self.go_to_prev_menu = go_to_prev_menu
+        self.host = host
+        self.deck_selector_data = deck_selector_data
 
         #======================Custom theme======================#
         self.theme = pygame_menu.themes.THEME_DARK.copy()
@@ -260,9 +267,9 @@ class StrategoCustomsWindow():
         rows = 10
         cols = 4
         self.player_data = player_data
-        self.pieces = [['' for _ in range(rows)] for _ in range(cols)]
-        self.deck = [['' for _ in range(rows)] for _ in range(cols)]
-        self.fill_pieces(rows, cols, True)
+        #self.pieces = [['' for _ in range(rows)] for _ in range(cols)]
+        self.deck = deck
+        #self.fill_pieces(rows, cols, True)
         # ====================Deck renderer========================#
         # Drag-and-drop state variables
         self.dragging = False
@@ -300,20 +307,21 @@ class StrategoCustomsWindow():
         )
         self.menu.set_relative_position(0, 10)
         # Add widgets with manual positioning
-        self.menu.add.label('==Game Options==', float=True).translate(5, 35)
+        self.menu.add.label('==Custom Game==', float=True).translate(5, 35)
         button_spacing = 60
         self.label = self.menu.add.text_input('Name: ', default=self.player_data.username, float=True).translate(20, 100)
         self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
-        self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
-        self.menu.add.button('Host Game', print("host game"), float=True).translate(20, 100 + button_spacing * 3)
-        self.menu.add.button('Join Game', print("join game"), float=True).translate(20, 100 + button_spacing * 4)
-        self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
+        # self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
+        # self.menu.add.button('Host Game', print("host game"), float=True).translate(20, 100 + button_spacing * 3)
+        # self.menu.add.button('Join Game', print("join game"), float=True).translate(20, 100 + button_spacing * 4)
+        self.menu.add.button('<- Return', self.go_back, float=True).translate(20, menu_hight - 60)
 
         #red highlight for start_button
         red_selection = RedHighlight()
         self.start_button.set_selection_effect(red_selection)
 
-
+    def go_back(self):
+        self.deck_selector_data.in_custom_game = False
     def deck_full(self):
         """
         This method verifies if the deck is full.
@@ -469,7 +477,7 @@ class StrategoCustomsWindow():
 
         self.menu.update(events)
         self.menu.draw(self.surface)
-        for event in events:
-            DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
-        DeckSelector.draw(self, surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
+        # for event in events:
+        #     DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
+        DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck)
         pygame.display.flip()
