@@ -240,7 +240,7 @@ class DeckSelector():
             drag_y = mouse_y - self.drag_offset[1]
             surface.blit(self.sprites[self.dragged_piece], (drag_x, drag_y))
 
-class StrategoSettingsWindow():
+class StrategoCustomsWindow():
     def __init__(self,
         surface: Surface,
         go_to_prev_menu: Callable[[], None],

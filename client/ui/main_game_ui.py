@@ -1,6 +1,7 @@
 import pygame
 import queue
 import threading
+from games.stratego.st_custom_game import StrategoCustomsWindow
 from games.stratego.deck_selection import StrategoSettingsWindow
 from common_types.global_state import GlobalClientState, ValidState
 import networking.socket_client as socket_client
@@ -35,12 +36,21 @@ class MainGameUI:
         pygame.mixer.init()
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        self.deck_selection_menu = StrategoSettingsWindow(
-            self.surface, 
-            go_to_prev_menu=lambda: self.change_game_state('main_menu'), 
+        # ======Stratego menus (before game start)======#
+        self.st_custom_game_menu = StrategoCustomsWindow(
+            self.surface,
+            go_to_prev_menu=lambda: self.change_game_state('in_deck_selection_state'),
             go_to_start=self.start_loading_stratego_game,
             player_data=self.client_state,
         )
+
+        self.deck_selection_menu = StrategoSettingsWindow(
+            self.surface, 
+            go_to_prev_menu=lambda: self.change_game_state('main_menu'), 
+            go_to_start=lambda: self.change_game_state('in_st_custom_game_state'),
+            player_data=self.client_state,
+        )
+        # ==============================================#
 
         self.sub_menus = MainGameSubMenus(
             client_state=self.client_state,
@@ -116,8 +126,13 @@ class MainGameUI:
                 if (self.sub_menus.title_screen.get_current().get_selected_widget()):
                     self.sub_menus.arrow.draw(self.surface, self.sub_menus.title_screen.get_current().get_selected_widget())
 
+            #======Stratego menus (before game start)======#
             elif game_state == 'in_deck_selection_state':
                 self.deck_selection_menu.update(events)
+
+            elif game_state == 'in_st_custom_game_state':
+                self.st_custom_game_menu.update(events)
+            # ==============================================#
 
             elif game_state == 'in_stratego_game':
                 assert self.client_state.stratego_state, "Stratego state was None"

@@ -1,7 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
 # ================================================================+
 # Started on:  September 2, 2025                                  |
-# Finished on: _______                                            |
+# Finished on: November 9, 2025                                   |
 # Programmed by: Eduardo J. Matos                                 |
 # Collaborators:                                                  |
 #       * Eduardo J Matos Pérez                                   |
