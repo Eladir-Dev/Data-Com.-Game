@@ -309,8 +309,8 @@ class StrategoSettingsWindow():
         self.label = self.menu.add.text_input('Name: ', default=self.player_data.username, float=True).translate(20, 100)
         self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
         self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
-        self.menu.add.button('Host Game', lambda: self.custom_game(True), float=True).translate(20, 100 + button_spacing * 3)
-        self.menu.add.button('Join Game', lambda: self.custom_game(False), float=True).translate(20, 100 + button_spacing * 4)
+        self.host_button = self.menu.add.button('Host Game', lambda: self.custom_game(True), float=True).translate(20, 100 + button_spacing * 3)
+        self.join_button = self.menu.add.button('Join Game', lambda: self.custom_game(False), float=True).translate(20, 100 + button_spacing * 4)
         self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
         self.in_custom_game = False
         #red highlight for start_button
@@ -318,18 +318,33 @@ class StrategoSettingsWindow():
         self.start_button.set_selection_effect(red_selection)
 
     def custom_game(self, host):
-        print("inizializing custom game")
+        print(f"inizializing custom game, host: {host}")
         from .st_custom_game import StrategoCustomsWindow
-        self.st_custom_game_menu = StrategoCustomsWindow(
-            self.surface,
-            go_to_prev_menu=self.go_to_prev_menu,
-            go_to_start=self.go_to_start,
-            player_data=self.player_data,
-            host=host,
-            deck=self.deck,
-            deck_selector_data=self
-        )
-        self.in_custom_game = True
+        if self.deck_full():
+            green_selection = GreenHighlight()
+            if host:
+                self.host_button.set_selection_effect(green_selection)
+            else:
+
+                self.join_button.set_selection_effect(green_selection)
+            self.st_custom_game_menu = StrategoCustomsWindow(
+                self.surface,
+                go_to_prev_menu=self.go_to_prev_menu,
+                go_to_start=self.go_to_start,
+                player_data=self.player_data,
+                host=host,
+                deck=self.deck,
+                deck_selector_data=self
+            )
+            self.in_custom_game = True
+        else:
+            red_selection = RedHighlight()
+            if host:
+                self.host_button.set_selection_effect(red_selection)
+            else:
+
+                self.join_button.set_selection_effect(red_selection)
+
 
     def deck_full(self):
         """
@@ -487,6 +502,9 @@ class StrategoSettingsWindow():
             if self.deck_full():
                 green_selection = GreenHighlight()
                 self.start_button.set_selection_effect(green_selection)
+            else:
+                red_selection = RedHighlight()
+                self.start_button.set_selection_effect(red_selection)
 
             self.menu.update(events)
             self.menu.draw(self.surface)
