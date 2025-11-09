@@ -11,16 +11,12 @@
 #      This code is responsible for managing the deck selection   |
 #      screen for the Stratego game.                              |
 # ----------------------------------------------------------------+
-# Last modification [November 5, 2025]:                           |
+# Last modification [November 9, 2025]:                           |
 #    * The following methods were added:                          |
 #                                                                 |
 #    * The following methods were eliminated:                     |
 #                                                                 |
-#    * Other: Pieces can now be moved within the same grid.       |
-#             The buttons "Host Game" and "Join Game" were        |
-#             added. A new file "st_custom_game.py" will be       |
-#             created to manage the custom games (host/join       |
-#             game mechanic)                                      |
+#    * Other: The code was cleaned                                |
 #                                                                 |
 # ================================================================+
 
@@ -389,31 +385,7 @@ class StrategoSettingsWindow():
         for i in range(4):
             for j in range(10):
                 self.pieces[i][j] = flat_deck[i * 10 + j]
-        #
-        # unitAmountIdx = 0
-        # # unit[piece, amount]
-        # units = [('S', 1), ('1', 1), ('G', 1), ('2', 2), ('3', 3), ('C', 4), ('L', 4), ('4', 4), ('8', 8), ('5', 5),
-        #          ('B', 6), ('F', 1)]
-        # acum = 0
-        # for col in range(cols):  # creats the 2d array TODO todavia no esta terminado
-        #     for row in range(rows):
-        #         unit = units[unitAmountIdx]
-        #         amount = unit[1]
-        #         if (amount - acum) <= 0:
-        #             unitAmountIdx += 1
-        #             acum = 0
-        #             unit = units[unitAmountIdx]
-        #
-        #             if debug:
-        #                 print(col, row)
-        #             self.pieces[col][row] = unit[0]  # adds string to 2d array
-        #             acum = acum + 1
-        #
-        #         else:
-        #             if debug:
-        #                 print(col, row)
-        #             self.pieces[col][row] = unit[0]  # adds string to 2d array
-        #             acum = acum + 1
+
         if debug:
             for col in range(cols):
                 print(self.pieces[col])
@@ -425,21 +397,6 @@ class StrategoSettingsWindow():
             Output:
               deck (2D array)
         """
-
-        # limits = {
-        #     's': 1,
-        #     '1': 8,
-        #     '2': 5,
-        #     '3': 4,
-        #     '4': 4,
-        #     '5': 4,
-        #     '6': 3,
-        #     '7': 2,
-        #     '8': 1,
-        #     '9': 1,
-        #     'b': 6,
-        #     'f': 1
-        # }
 
         limits = {
             'S': 1,
@@ -500,58 +457,6 @@ class StrategoSettingsWindow():
             for col in range(len(self.pieces[row])):
                 self.pieces[row][col] = ''
 
-    def main(self):
-        while True:
-            events = pygame.event.get()
-            self.update(events)
-
-        #self.__init__()# TODO revisar coo mejora y si todo esta bien
-        #game_settings = self.generate_screen()
-        #Main loop
-        # while True:
-        #     events = pygame.event.get()
-        #     for event in events:
-        #         if event.type == pygame.QUIT:
-        #             exit()
-        #
-        #     surface.fill((50, 50, 50))  # Background
-        #
-        #     # You can draw other UI elements here (e.g., game canvas on the right)
-        #     pygame.draw.rect(surface, (100, 100, 200), (300, 50, 575, 500))  # Example UI panel
-        #
-        #     game_settings.menu.update(events)
-        #     game_settings.menu.draw(surface)
-        #     pygame.display.flip()
-        # events = pygame.event.get()
-        # for event in events:
-        #     if event.type == pygame.MOUSEBUTTONDOWN:
-        #         mouse_pos = event.pos
-
-        #         print(mouse_pos)
-
-        #         for rendered_tile in rendered_tiles:
-        #             sprite_rect = rendered_tile.sprite_rect
-
-        #             if sprite_rect.collidepoint(mouse_pos):
-        #                 # TODO: Do not print these out in an actual game, it
-        #                 # would ruin the entire point of hiding the opponent's pieces.
-        #                 print(rendered_tile.str_encoding)
-
-        #                 if global_game_data.last_selected_piece is None:
-        #                     # Select the tile.
-        #                     global_game_data.last_selected_piece = rendered_tile
-
-        #                 else:
-        #                     from_pos = global_game_data.last_selected_piece.board_location
-        #                     to_pos = rendered_tile.board_location
-
-        #                     move_cmd = gen_move_cmd(from_pos, to_pos)
-
-        #                     # Un-select the tile.
-        #                     global_game_data.last_selected_piece = None
-            #You can draw other UI elements here (e.g., game canvas on the right)
-
-
     def update(self, events: list[Event]):
         """
         Updates the UI.
@@ -567,17 +472,6 @@ class StrategoSettingsWindow():
             DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
         DeckSelector.draw(self, surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
         pygame.display.flip()
-
-
-
-
-
-def main():
-    pygame.init()
-    surface = pygame.display.set_mode((900, 600))
-
-    # game_settings = GameSettings(surface)
-    # game_settings.main()
 
 if __name__ == "__main__":
    main()
