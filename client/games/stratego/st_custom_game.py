@@ -502,7 +502,6 @@ class StrategoCustomsWindow():
         Updates the UI.
         """
         self.label.set_value(self.player_data.username)
-        self.ip_shower.update(events)
         if self.deck_full():
             green_selection = GreenHighlight()
             self.start_button.set_selection_effect(green_selection)
