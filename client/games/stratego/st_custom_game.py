@@ -12,15 +12,16 @@
 #      for Stratego. It is a sub-window/menu of deck_selection    |
 # ----------------------------------------------------------------+
 # Last modification [November 9, 2025]:                           |
-#    * The following methods were added:                          |
+#    * The following methods were added:  start_local_server      |
 #                                                                 |
 #    * The following methods were eliminated:                     |
 #                                                                 |
-#    * Other: The code was cleaned                                |
+#    * Other: Code was refined and worked on                      |
 #                                                                 |
 # ================================================================+
 
 #==========================Imports================================#
+import requests
 from ui.drawing_utils import draw_text
 from typing import Callable
 import pygame
@@ -36,7 +37,7 @@ from .deck_selection import StrategoSettingsWindow
 #from stratego_types import *
 from .stratego_types import StrategoRenderedTile
 from common_types.global_state import GlobalClientState
-from common_types.game_types import SCREEN_WIDTH
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from pathlib import Path
 #=================================================================#
 SPRITE_FOLDER = Path(__file__).parent / "assets"
@@ -316,11 +317,33 @@ class StrategoCustomsWindow():
         # self.menu.add.button('Join Game', print("join game"), float=True).translate(20, 100 + button_spacing * 4)
         self.menu.add.button('<- Return', self.go_back, float=True).translate(20, menu_hight - 60)
 
+
+        if host:
+            self.menu.add.label(f"Code: {self.get_public_ip()}", float=True).translate(20, SCREEN_HEIGHT // 2)
+            #draw_text(surface, f"{self.get_public_ip()}", 36, (SCREEN_WIDTH // 2, 100), (255, 255, 255))
+        else:
+            self.ip = self.menu.add.text_input('Code: ', default="", float=True).translate(20,SCREEN_HEIGHT // 2)
+
         #red highlight for start_button
         red_selection = RedHighlight()
         self.start_button.set_selection_effect(red_selection)
 
+    def get_public_ip(self):
+        """
+        return the public ip of the machine
+        """
+        try:
+            response = requests.get('https://api.ipify.org?format=json')
+            return response.json()['ip']
+        except requests.RequestException as e:
+            print(f"Error: {e}")
+            return None
+
+
     def go_back(self):
+        """
+        Retruns to the previous menu
+        """
         self.deck_selector_data.in_custom_game = False
     def deck_full(self):
         """
@@ -332,11 +355,19 @@ class StrategoCustomsWindow():
                     return False
         return True
 
+    def start_local_server(self):
+        """
+        Start the local server
+        """
+        # TODO: Pendiente implementar
+        return
     def start_game(self):
         """
         This method starts the game.
         """
         if self.deck_full():
+            if self.host:
+                self.start_local_server()
             self.go_to_start()
 
     def fill_pieces(self, rows, cols,debug):
@@ -471,11 +502,13 @@ class StrategoCustomsWindow():
         Updates the UI.
         """
         self.label.set_value(self.player_data.username)
+        self.ip_shower.update(events)
         if self.deck_full():
             green_selection = GreenHighlight()
             self.start_button.set_selection_effect(green_selection)
 
         self.menu.update(events)
+
         self.menu.draw(self.surface)
         # for event in events:
         #     DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
