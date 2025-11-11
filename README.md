@@ -53,6 +53,7 @@ cd client
 * UI Framework: Pygame and pygame-menu.
 * Package management: `uv`.
 * Documentation: `sphinx`.
+* Game engine (for the secret DLC game): Godot
 
 ## Attribution
 * Music for the secret racing game:
