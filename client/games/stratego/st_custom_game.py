@@ -252,6 +252,11 @@ class StrategoCustomsWindow():
         deck: list[list[str]],
         deck_selector_data: StrategoSettingsWindow
     ):
+
+        pygame.mixer.music.load("games/stratego/sfx/game_music_v1.wav")
+        pygame.mixer.music.set_volume(.25)
+        pygame.mixer.music.play(-1, 0.0)
+
         self.surface = surface
         # Methods
         self.go_to_start = go_to_start
@@ -344,6 +349,7 @@ class StrategoCustomsWindow():
         """
         Retruns to the previous menu
         """
+        pygame.mixer.music.stop()
         self.deck_selector_data.in_custom_game = False
     def deck_full(self):
         """
