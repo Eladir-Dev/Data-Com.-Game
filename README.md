@@ -1,31 +1,46 @@
-# Data-Com.-Game
-Esto es un juego de turnos que se creo para la clase de comunicación de datos en la universidad de UPRB. La aplicación debe tener una estructura de cliente-servidor. 
-El cliente y servidor deben comunicarse mediante [sockets](https://docs.python.org/3/library/socket.html).
+# Data-Communications-Game
+For a Data Communications course, several client-server socket games were made.
 
-## Equipo de trabajo 
-* Eduardo J. Matos Pérez
-* Guillermo Myers
+## Creators
+* Eduardo J. Matos Pérez ([GitHub](https://github.com/Eladir-Dev))
+* Guillermo Myers ([GitHub](https://github.com/cyan-wolf))
 
-## Como correr el programa
-* OJO: La aplicación esta compuesta de dos partes: el cliente y el servidor.
-    - Solo debe haber 1 servidor corriendo.
-    - Pueden haber varios clientes corriendo.
-* OJO: El servidor tiene que estar corriendo para que funcione la aplicación.
-* Para probar la aplicación en un ambiente de prueba:
-    1. Ir al directorio de `Data-Com.-Game`.
-    2. Asegurar de que tengas el paquete `uv` de Python instalado. Si no esta instalado, se puede instalar con `pip install uv`.
-    3. Abrir al menos tres instancias del terminal en este directorio (1 para el servidor y 2 para el cliente).
-    4. En un terminal, ir al directorio del servidor `cd server` y luego correrlo `uv run main.py`.
-    5. En los otros dos terminales, ir al directorio del cliente `cd client` y correrlos `uv run main.py`.
-    6. Una forma alternativa de correr el programa es mantenerse en el directorio de `Data-Com.-Game` y usar los comandos `uv run server/main.py` y `uv run client/main.py` para correr el servidor y el cliente respectivamente.
+## Concept
+This client-server app allows plays to play one of several games. The two main games are:
+* A turn-based strategy board game.
+* A real-time word game.
+
+In addition to these, there are two more secret games:
+* A secret real-time racing game.
+* A secret DLC (downloadable) singleplayer game with an engaging storyline and boss fight. This is related to the Data Communications course since we are downloading a game from the network.
+
+## Running the app (Notes)
+* **NOTE**: The app has two components: the client and the server. These two function as separate programs.
+    - On a given machine, there should only be 1 server running at a time.
+    - Various clients can run on a single machine.
+* **NOTE**: To play any of the games (besides the secret DLC one), the client must first connect to a server.
+* A client can connect to external machines running the server by connecting to their IP address.
+* Both the client and server sub-projects use the `uv` package manager for managing dependencies and running each program.
+    - It can be installed using the `pip install uv`command.
+    - Installing using `pip` should allow using `uv` directly. You can check using the `uv --version` command.
+    - If for some reason the above command fails even after installing with `pip`, you can use the `python -m uv` command instead of `uv` as a workaround.
+          * You can check that the workaround works by running the `python -m uv --version` command.
+
+## Running the app
+* For running the client locally:
+    - **NOTE**: Since most of the games are 2-player, to actually test any of them you should run these commands in two separate terminals to run multiple instances of the client.
+    - Go to the `client` subdirectory of the `Data-Com.-Game` project.
+    - Run the `uv run main.py` (or `python -m uv run main.py`) command.
+* For running the server locally:
+    - Go to the `server` subdirectory of the `Data-Com.-Game` project.
+    - Run the `uv run main.py` (or `python -m uv run main.py`) command.
  
-## Documentacion
-### Protocolo
-* [Enlace a documentacion del protocolo](docs/PROTOCOL.md).
+## Documentation
+### Protocol
+* [Link to the protocol documentation](docs/PROTOCOL.md).
 
-### Documentation de cliente
-Para construir la documentation, hay que estar en el directorio de `client` (se puede usar `cd client`) y luego corriendo 
-el batch file `docs/build_docs.bat`. Luego se puede ver la documentation en el achivo HTML en `docs/_build/html/html/index.html`.
+### Client
+To locally build the client documentation, navigate to the `client` subfolder and execute the `docs/build_docs.bat` (Windows) batch file. The script builds the documentation and generates an HTML file at `docs/_build/html/html/index.html`.
 
 ```sh
 cd client
@@ -33,28 +48,14 @@ cd client
 ./docs/_build/html/html/index.html
 ```
 
-## Ideas
-* Simple RPB (Puede ser complicado pensar en las mecanicas)
-* Juego de cartas
-* Juegos de mesa
-  * Stratego ([video tutorial](https://youtu.be/3R7d0A9ymwQ?si=mtdiY1v7GfDuuOxt))
-      - Desventaja: las partidas pueden ser largas (30 min.)
-  * Go ([video tutorial](https://youtu.be/gOvG5ACfeL4?si=De_OHUljeq2VZBPb))
-      - Desventaja: Los juegos pueden ser muy largos
-* Juego inspirado por [Wordle](https://en.wikipedia.org/wiki/Wordle), pero con elementos de multijugador.
-    - Wordle típicamente es un juego de un solo jugador.
-* ect.
+## Tools
+* Programming language: Python
+* UI Framework: Pygame and pygame-menu.
+* Package management: `uv`.
+* Documentation: `sphinx`.
 
-## Herramientas
-* Lenguaje de programacián: Python
-* Framework para gráficas y UI: Pygame y pygame-menu
-
-## Tutoriales de programación
-* [Tutoriales de pygame](https://www.pygame.org/wiki/tutorials)
-  * [Como crear menus con pygame-menu](https://coderslegacy.com/python/create-menu-screens-in-pygame-tutorial/)
-
-## Atribucion
-* Musica para el juego secreto:
-    - Creador: [Wolfgang_](https://opengameart.org/users/wolfgang)
-    - [Musica](https://opengameart.org/content/skeleton-waltz-theme)
-    - [Licencia](https://creativecommons.org/licenses/by/4.0/)
+## Attribution
+* Music for the secret racing game:
+    - Creator: [Wolfgang_](https://opengameart.org/users/wolfgang)
+    - [Music](https://opengameart.org/content/skeleton-waltz-theme)
+    - [License](https://creativecommons.org/licenses/by/4.0/)
