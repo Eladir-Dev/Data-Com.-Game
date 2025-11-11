@@ -6,7 +6,7 @@ For a Data Communications course, several client-server socket games were made.
 * Guillermo Myers ([GitHub](https://github.com/cyan-wolf))
 
 ## Concept
-This client-server app allows plays to play one of several games. The two main games are:
+This client-server app allows players to play one of several games. The two main games are:
 * A turn-based strategy board game.
 * A real-time word game.
 
