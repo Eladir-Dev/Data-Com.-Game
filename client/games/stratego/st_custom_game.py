@@ -19,8 +19,10 @@
 #    * Other: Code was refined and worked on                      |
 #                                                                 |
 # ================================================================+
+import subprocess
 
 #==========================Imports================================#
+from ui.main_game_ui_sub_menus import MainGameSubMenus
 import requests
 from ui.drawing_utils import draw_text
 from typing import Callable
@@ -327,12 +329,17 @@ class StrategoCustomsWindow():
             self.menu.add.label(f"Code: {self.get_public_ip()}", float=True).translate(20, SCREEN_HEIGHT // 2)
             #draw_text(surface, f"{self.get_public_ip()}", 36, (SCREEN_WIDTH // 2, 100), (255, 255, 255))
         else:
-            self.ip = self.menu.add.text_input('Code: ', default="", float=True).translate(20,SCREEN_HEIGHT // 2)
+            self.ip = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip ).translate(20,SCREEN_HEIGHT // 2)
 
         #red highlight for start_button
         red_selection = RedHighlight()
         self.start_button.set_selection_effect(red_selection)
 
+    def set_ip(self, ip):
+        """
+        Sets the ip of the host
+        """
+        self.ip = ip
     def get_public_ip(self):
         """
         return the public ip of the machine
@@ -365,8 +372,38 @@ class StrategoCustomsWindow():
         """
         Start the local server
         """
-        # TODO: Pendiente implementar
-        return
+        command = ["python", "../server/main.py", "host"]
+
+        # # Execute the command
+        # try:
+        #     print("Starting local server...")
+        #     subprocess.run(command)
+        # except subprocess.CalledProcessError as e:
+        #     print(f"Error running called_script: {e}")
+
+        # Use Popen for non-blocking execution
+        # command = [sys.executable, script_path, "host"]  # sys.executable ensures the right Python
+        try:
+            print("Starting local server in the background...")
+            # Popen starts the process without waiting
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Optional: Check if it started successfully after a short delay
+            import time
+            time.sleep(1)  # Wait 1 second
+            if process.poll() is None:  # poll() returns None if still running
+                print("Server appears to be running.")
+            else:
+                stdout, stderr = process.communicate()
+                print(f"Server failed to start. Return code: {process.returncode}")
+                print("Stdout:", stdout.decode())
+                print("Stderr:", stderr.decode())
+
+        except FileNotFoundError:
+            print("Error: Python interpreter or script not found.")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+
     def start_game(self):
         """
         This method starts the game.

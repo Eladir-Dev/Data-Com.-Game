@@ -37,12 +37,6 @@ class MainGameUI:
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # ======Stratego menus (before game start)======#
-        # self.st_custom_game_menu = StrategoCustomsWindow(
-        #     self.surface,
-        #     go_to_prev_menu=lambda: self.change_game_state('in_deck_selection_state'),
-        #     go_to_start=self.start_loading_stratego_game,
-        #     player_data=self.client_state,
-        # )
 
         self.deck_selection_menu = StrategoSettingsWindow(
             self.surface, 
@@ -129,9 +123,6 @@ class MainGameUI:
             #======Stratego menus (before game start)======#
             elif game_state == 'in_deck_selection_state':
                 self.deck_selection_menu.update(events)
-
-            # elif game_state == 'in_st_custom_game_state':
-            #     self.st_custom_game_menu.update(events)
             # ==============================================#
 
             elif game_state == 'in_stratego_game':
