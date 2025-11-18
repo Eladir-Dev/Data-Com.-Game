@@ -361,6 +361,7 @@ class StrategoSettingsWindow():
         This method starts the game.
         """
         if self.deck_full():
+            print("Caling start_local_server...")
             self.go_to_start()
 
     def fill_pieces(self, rows, cols,debug):

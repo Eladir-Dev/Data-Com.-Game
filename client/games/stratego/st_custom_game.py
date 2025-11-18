@@ -344,11 +344,60 @@ class StrategoCustomsWindow():
         """
         return the public ip of the machine
         """
+        print("Getting local public IP")
         try:
             response = requests.get('https://api.ipify.org?format=json')
             return response.json()['ip']
         except requests.RequestException as e:
-            print(f"Error: {e}")
+            print("Getting local public IP X2")
+            urls = [
+                ('https://api.ipify.org?format=json', 'json', 'ip'),
+                ('https://checkip.amazonaws.com', 'text', None),
+                ('https://ifconfig.me/ip', 'text', None)
+            ]
+
+            for url, mode, key in urls:
+                try:
+                    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+                    response.raise_for_status()
+                    if mode == 'json':
+                        return response.json().get(key)
+                    elif mode == 'text':
+                        return response.text.strip()
+                except requests.RequestException as e:
+                    import socket
+                    print("Getting local public IP X3")
+                    try:
+
+                        hostname = socket.gethostname()
+                        local_ip = socket.gethostbyname(hostname)
+                        return local_ip
+                    except socket.error as e:
+                        print(f"Error getting local IP: {e}")
+                        return None
+                    # print(f"Failed with {url}: {e}")
+                    # return None
+                except ValueError as ve:
+                    import socket
+                    print("Getting local public IP X3")
+                    try:
+
+                        hostname = socket.gethostname()
+                        local_ip = socket.gethostbyname(hostname)
+                        return local_ip
+                    except socket.error as e:
+                        print(f"Error getting local IP: {e}")
+                        return None
+
+                    # print(f"JSON parsing error from {url}: {ve}")
+                    # return None
+
+
+            # print("All public IP services failed.")
+            # return None
+
+            print(f"Error geting local public IP: {e}")
+            # print(f"Error: {e}")
             return None
 
 
@@ -373,6 +422,7 @@ class StrategoCustomsWindow():
         Start the local server
         """
         command = ["python", "../server/main.py", "host"]
+        print("Trying to start server...")
 
         # # Execute the command
         # try:
@@ -409,7 +459,9 @@ class StrategoCustomsWindow():
         This method starts the game.
         """
         if self.deck_full():
+            print("Starting game...")
             if self.host:
+                print("Caling start_local_server...")
                 self.start_local_server()
             self.go_to_start()
 
