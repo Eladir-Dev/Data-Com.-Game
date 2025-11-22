@@ -36,9 +36,11 @@ WAITING_SECRET_GAME_PLAYERS: list[SecretGamePlayer] = []
 
 SECRET_GAME_MAPS_FOLDER = Path(__file__).parent / "secret_game" / "maps"
 
+CLIENT_SOCKET_TIMEOUT = 0.001 # seconds
+
 def handle_client(conn: Connection, addr):
     # This timeout is for communicating with existing clients.
-    conn.settimeout(0.1)
+    conn.settimeout(CLIENT_SOCKET_TIMEOUT)
     client_deciding_game = True
 
     while client_deciding_game:
