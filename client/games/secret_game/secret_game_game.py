@@ -94,6 +94,19 @@ def draw_race_start_countdown(surface: Surface, global_game_data: SecretGameGlob
         )
 
 
+def draw_completed_laps_ui(surface, global_game_data: SecretGameGlobalState):
+    text = f"LAPS: {global_game_data.get_own_data().completed_laps}/3"
+    font_size = MAP_RESOLUTION
+
+    draw_text(
+        surface,
+        text=text,
+        font_size=font_size,
+        location=(len(text) * font_size // 4, font_size // 2),
+        color=(255, 255, 255),
+    )
+
+
 def gen_move_command(new_turn_state: TurnState) -> str:
     return f"!car-turn:{new_turn_state}\\"
 
@@ -122,11 +135,7 @@ def handle_turning(global_game_data: SecretGameGlobalState) -> str | None:
 
 def secret_game_update(events: list[Event], surface: Surface, global_game_data: SecretGameGlobalState) -> str | None:
     surface.fill((0, 0, 0))
-
-    debug_string = f"{global_game_data.get_own_data().username} ({global_game_data.get_own_data().position}) facing {global_game_data.get_own_data().facing_angle} (LAPS: {global_game_data.get_own_data().completed_laps} / 3) " + \
-        f"VS {global_game_data.get_opp_data().username} ({global_game_data.get_opp_data().position}) facing {global_game_data.get_opp_data().facing_angle} (LAPS: {global_game_data.get_opp_data().completed_laps} / 3)"
-
-    pygame.display.set_caption(debug_string)
+    pygame.display.set_caption("Secret Game")
 
     own_pos = global_game_data.get_own_data().position
     camera_offset = (SCREEN_WIDTH // 2 - own_pos[0], SCREEN_HEIGHT // 2 - own_pos[1])
@@ -135,6 +144,7 @@ def secret_game_update(events: list[Event], surface: Surface, global_game_data: 
     draw_players(surface, global_game_data, camera_offset)
 
     draw_race_start_countdown(surface, global_game_data)
+    draw_completed_laps_ui(surface, global_game_data)
 
     car_turn_cmd = handle_turning(global_game_data)
     
