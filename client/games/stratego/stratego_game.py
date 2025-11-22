@@ -61,7 +61,7 @@ def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
     """
     components = [from_pos[0], from_pos[1], to_pos[0], to_pos[1]]
     components_str = ':'.join(str(c) for c in components)
-    return f"!move:{components_str}"
+    return f"!move:{components_str}\\"
 
 
 def stratego_update(events: list[Event], surface: Surface, global_game_data: StrategoGlobalState) -> str | None:

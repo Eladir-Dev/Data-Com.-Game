@@ -104,4 +104,4 @@ def toggle_color(color: StrategoColor) -> StrategoColor:
 def move_result_to_command(move_result: StrategoMoveResult) -> str:
     r_atk, c_atk = move_result.attacking_pos
     r_def, c_def = move_result.defending_pos
-    return f"?move-result:{move_result.kind}:{r_atk}:{c_atk}:{r_def}:{c_def}"
+    return f"?move-result:{move_result.kind}:{r_atk}:{c_atk}:{r_def}:{c_def}\\"

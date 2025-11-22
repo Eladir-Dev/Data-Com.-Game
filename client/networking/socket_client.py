@@ -77,29 +77,21 @@ def connect_stratego(server_host: str, server_command_queue: Queue[str], client_
 
         client_running = True
 
+        server_cmd_reader = ServerCommandReader(
+            server_conn=s,
+            valid_cmd_prefixes=(
+                '?turn-info',
+                '?move-result',
+                '?game-over',
+            ),
+            server_cmd_queue=server_command_queue,
+        )
+
         while client_running:
-            try:
-                data = s.recv(BUF_SIZE).decode()
+            should_continue = server_cmd_reader.read_incoming_commands()
 
-                # Forward the turn info server command to the UI.
-                if data.startswith("?turn-info"):
-                    server_command_queue.put(data)
-
-                # Forward move result commands to the UI.
-                elif data.startswith("?move-result"):
-                    server_command_queue.put(data)
-
-                elif data.startswith("?game-over"):
-                    # Stop the client.
-                    client_running = False
-
-                    # Forward the game over command to the UI.
-                    server_command_queue.put(data)
-
-                else:
-                    print(f"CLIENT ERROR: Unknown server command '{data}'")
-
-            except socket.timeout: pass
+            if not should_continue:
+                client_running = False
 
             while not client_queue.empty():
                 data = client_queue.get()
