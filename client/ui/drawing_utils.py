@@ -5,15 +5,16 @@ from typing import Literal
 
 RectOrigin = Literal['center', 'top_left']
 
-def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair, rect_origin: RectOrigin = 'center') -> Rect:
-    scaled = pygame.transform.scale(sprite, target_dimensions)
+def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair | None = None, rect_origin: RectOrigin = 'center') -> Rect:
+    if target_dimensions is not None:
+        sprite = pygame.transform.scale(sprite, target_dimensions)
 
     if rect_origin == 'top_left':
-        sprite_rect = scaled.get_rect(topleft=location)
+        sprite_rect = sprite.get_rect(topleft=location)
     else: # center (default)
-        sprite_rect = scaled.get_rect(center=location)
+        sprite_rect = sprite.get_rect(center=location)
 
-    surface.blit(scaled, sprite_rect)
+    surface.blit(sprite, sprite_rect)
     return sprite_rect
 
 

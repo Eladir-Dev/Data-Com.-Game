@@ -1,6 +1,7 @@
-from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult, assert_str_is_turn_state, MAP_RESOLUTION, DEFAULT_SPEED
+from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult, assert_str_is_turn_state, MAP_RESOLUTION, DEFAULT_SPEED, TURN_SPEED
 from secret_game.map import Map
 from server_types import BUF_SIZE
+from command_reader import CommandReader
 import socket
 import time
 import math
@@ -19,8 +20,10 @@ class SecretGameGame:
 
         self.result: SecretGameResult | None = None
 
-        self.command_buffers = ["" for _ in range(len(self.players))]
-        self.player_cmds: list[list[str]] = [[] for _ in range(len(self.players))]
+        self.command_reader = CommandReader(
+            connections=[p.conn for p in self.players],
+            valid_cmd_prefixes=('!car-turn',),
+        )
 
 
     def send_race_countdown_command(self, player: SecretGamePlayer, count_down: int):
@@ -57,10 +60,9 @@ class SecretGameGame:
         if player.turn_state == 'straight':
             return
 
-        angular_speed = math.pi / 2 # radians per second
         angle_sign = 1.0 if player.turn_state == 'right' else -1.0
 
-        player.facing_angle += (angular_speed * angle_sign * self.deltatime)
+        player.facing_angle += (TURN_SPEED * angle_sign * self.deltatime)
         player.facing_angle %= math.tau
 
 
@@ -75,14 +77,14 @@ class SecretGameGame:
             player.position + Vector(x=MAP_RESOLUTION, y=MAP_RESOLUTION),
         ]
 
+        hit_wall = False
+
         for corner_pos in corners:
             corner_map_pos = (int(corner_pos.x / MAP_RESOLUTION), int(corner_pos.y / MAP_RESOLUTION))
             tile = self.map.get_tile(corner_map_pos[0], corner_map_pos[1])
 
             if tile is None:
                 continue
-
-            hit_wall = False
 
             if tile.kind == 'wall':
                 print(f"LOG: Player '{player.username}' hit a wall")
@@ -121,10 +123,10 @@ class SecretGameGame:
                 player.facing_angle = 0.0
                 player.lap_state = 'initial'
 
-            if hit_wall:
-                player.speed = DEFAULT_SPEED / 4
-            else:
-                player.speed = DEFAULT_SPEED
+        if hit_wall:
+            player.speed = DEFAULT_SPEED / 4
+        else:
+            player.speed = DEFAULT_SPEED
 
 
     def check_if_completed_all_laps(self, player: SecretGamePlayer) -> bool:
@@ -241,33 +243,10 @@ class SecretGameGame:
                     break
 
 
-    def read_incoming_player_commands(self, player_idx: int):
-        try:
-            player = self.players[player_idx]
-            conn_to_handle = player.conn
-            data = conn_to_handle.recv(BUF_SIZE).decode()
-            self.command_buffers[player_idx] += data
-
-            while (cmd_end := self.command_buffers[player_idx].find('\\')) != -1:
-                client_cmd = self.command_buffers[player_idx][:cmd_end]
-
-                self.command_buffers[player_idx] = self.command_buffers[player_idx][cmd_end+1:] # +1 for skipping past the trailing `\`
-
-                if not client_cmd.startswith('!'):
-                    raise Exception(f"received invalid command: {client_cmd}")
-                
-                if client_cmd.startswith(('!car-turn', )):
-                    self.player_cmds[player_idx].append(client_cmd)
-                else:
-                    print(f"ERROR: received unknown data from client: '{data}'")
-
-        except socket.timeout: pass
-
-
     def handle_player_client_response(self, player_idx: int):
-        self.read_incoming_player_commands(player_idx)
+        self.command_reader.read_incoming_commands(player_idx)
 
-        for client_cmd in self.player_cmds[player_idx]:
+        for client_cmd in self.command_reader.player_cmds[player_idx]:
             if client_cmd.startswith("!car-turn"):
                 fields = client_cmd.split(':')
                 new_turn_state = fields[1]
