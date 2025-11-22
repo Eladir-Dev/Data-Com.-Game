@@ -4,13 +4,13 @@ Do not run this file directly. Instead call it as a library (e.g. `import socket
 
 import socket
 from queue import Queue
+from common_types.server_types import BUF_SIZE
+from networking.server_cmd_reader import ServerCommandReader
 from games.stratego.stratego_types import StrategoStartingPlayerInfo
 from games.word_golf.word_golf_types import WordGolfStartingPlayerInfo
 from games.secret_game.secret_game_types import SecretGameStartingPlayerInfo
 
 PORT = 49300 # The port used by the server
-
-BUF_SIZE = 1024
 
 def connect(server_command_queue: Queue[str], client_queue: Queue[str]):
     while True:
@@ -229,40 +229,26 @@ def connect_secret_game(
 
         print("LOG: starting Word Golf game on client...")
 
-        VALID_COMMAND_PREFIXES = (
-            '?countdown',
-            '?race-start',
-            '?pos',
-            '?angle',
-            '?lap-completion',
-            '?game-over',
-        )
         client_running = True
-        buffer = ""
+
+        server_cmd_reader = ServerCommandReader(
+            server_conn=s,
+            valid_cmd_prefixes=(
+                '?countdown',
+                '?race-start',
+                '?pos',
+                '?angle',
+                '?lap-completion',
+                '?game-over',
+            ),
+            server_cmd_queue=server_command_queue,
+        )
 
         while client_running:
-            try:
-                data = s.recv(BUF_SIZE).decode()
-                buffer += data
+            should_continue = server_cmd_reader.read_incoming_commands()
 
-                while (cmd_end := buffer.find('\\')) != -1:
-                    server_cmd = buffer[:cmd_end]
-
-                    buffer = buffer[cmd_end+1:] # +1 for skipping past the trailing `\`
-
-                    if not server_cmd.startswith('?'):
-                        raise Exception(f"received invalid command: {server_cmd}")
-                    
-                    if server_cmd.startswith(VALID_COMMAND_PREFIXES):
-                        if data.startswith("?game-over"):
-                            # Stop the client.
-                            client_running = False
-                            
-                        server_command_queue.put(server_cmd)
-                    else:
-                        print(f"ERROR: received unknown data from server: '{data}'")
-
-            except socket.timeout: pass
+            if not should_continue:
+                client_running = False
 
             while not client_queue.empty():
                 data = client_queue.get()
