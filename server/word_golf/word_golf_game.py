@@ -1,6 +1,5 @@
 from pathlib import Path
 import random
-import time
 from command_reader import ClientCommandReader
 
 from .word_golf_types import WordGolfPlayer, WordGolfOccurrence, WordGolfGameResult
@@ -118,8 +117,6 @@ class WordGolfGame:
         if len(player.pending_alerts) == 0:
             return
         
-        # Wait a small delay.
-        time.sleep(0.5)
         oldest_alert_cmd = player.pending_alerts.popleft()
         player.conn.sendall(oldest_alert_cmd.encode())
 
@@ -188,12 +185,8 @@ class WordGolfGame:
 
                 self.players[curr_idx].conn.sendall(data.encode())
 
-                # Wait a small delay and then send the player's feedback history.
-                time.sleep(0.5)
                 self.send_feedback_history_to_player(self.players[curr_idx])
 
-                # Wait a small delay and then send the player's stashed words.
-                time.sleep(0.5)
                 self.send_stashed_words_to_player(self.players[curr_idx])
 
                 # This has an in-built delay that only triggers when there are 
