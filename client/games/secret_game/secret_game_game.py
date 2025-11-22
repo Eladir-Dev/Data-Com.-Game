@@ -81,6 +81,19 @@ def draw_player_nametags(surface: Surface, global_game_data: SecretGameGlobalSta
         )
 
 
+def draw_race_start_countdown(surface: Surface, global_game_data: SecretGameGlobalState):
+    if global_game_data.countdown is not None:
+        screen_text = str(global_game_data.countdown) if global_game_data.countdown > 0 else "GO"
+
+        draw_text(
+            surface,
+            text=screen_text,
+            font_size=MAP_RESOLUTION * 4,
+            location=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
+            color=(255, 255, 255),
+        )
+
+
 def gen_move_command(new_turn_state: TurnState) -> str:
     return f"!car-turn:{new_turn_state}\\"
 
@@ -120,6 +133,8 @@ def secret_game_update(events: list[Event], surface: Surface, global_game_data: 
 
     draw_map(surface, global_game_data, camera_offset)
     draw_players(surface, global_game_data, camera_offset)
+
+    draw_race_start_countdown(surface, global_game_data)
 
     car_turn_cmd = handle_turning(global_game_data)
     

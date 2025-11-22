@@ -134,11 +134,12 @@ class ServerCommandInterpreter:
         elif data.startswith("?countdown"):
             fields = validator.assert_field_amount_valid(data.split(':'), 2)
             countdown = int(fields[1])
-            print(f"TEMP-LOG: COUNTING DOWN... {countdown}")
+
+            self.set_secret_game_race_countdown(countdown)
 
 
         elif data.startswith("?race-start"):
-            print("TEMP-LOG: started the race")
+            self.remove_secret_game_countdown()
 
 
         elif data.startswith("?pos"):
@@ -290,6 +291,18 @@ class ServerCommandInterpreter:
 
         else:
             print(f"ERROR: unknown alert kind '{kind}'")
+
+
+    def set_secret_game_race_countdown(self, countdown: int):
+        assert self.client_state.secret_game_state, "Secret Game state was None"
+
+        self.client_state.secret_game_state.countdown = countdown
+
+
+    def remove_secret_game_countdown(self):
+        assert self.client_state.secret_game_state, "Secret Game state was None"
+
+        self.client_state.secret_game_state.countdown = None
 
 
     def update_secret_game_player_position(self, player_idx: int, new_x: int, new_y: int):
