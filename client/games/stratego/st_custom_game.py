@@ -169,8 +169,6 @@ class DeckSelector():
         This function draws the grids and sprites for the Deck selection screen.
         """
 
-
-
         for key in self.sprites:
             self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
 
