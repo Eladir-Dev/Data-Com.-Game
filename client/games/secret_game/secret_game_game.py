@@ -50,17 +50,13 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     draw_sprite_on_surface(
         surface,
         p1_sprite,
-        location=(p1.position[0] + camera_offset[0], p1.position[1] + camera_offset[1]),
-        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
-        rect_origin='top_left',
+        location=(p1.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p1.position[1] + camera_offset[1] + MAP_RESOLUTION // 2),
     )
 
     draw_sprite_on_surface(
         surface,
         p2_sprite,
-        location=(p2.position[0] + camera_offset[0], p2.position[1] + camera_offset[1]),
-        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
-        rect_origin='top_left',
+        location=(p2.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p2.position[1] + camera_offset[1] + MAP_RESOLUTION // 2),
     )
 
 
