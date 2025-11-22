@@ -75,14 +75,14 @@ class SecretGameGame:
             player.position + Vector(x=MAP_RESOLUTION, y=MAP_RESOLUTION),
         ]
 
+        hit_wall = False
+
         for corner_pos in corners:
             corner_map_pos = (int(corner_pos.x / MAP_RESOLUTION), int(corner_pos.y / MAP_RESOLUTION))
             tile = self.map.get_tile(corner_map_pos[0], corner_map_pos[1])
 
             if tile is None:
                 continue
-
-            hit_wall = False
 
             if tile.kind == 'wall':
                 print(f"LOG: Player '{player.username}' hit a wall")
@@ -121,10 +121,10 @@ class SecretGameGame:
                 player.facing_angle = 0.0
                 player.lap_state = 'initial'
 
-            if hit_wall:
-                player.speed = DEFAULT_SPEED / 4
-            else:
-                player.speed = DEFAULT_SPEED
+        if hit_wall:
+            player.speed = DEFAULT_SPEED / 4
+        else:
+            player.speed = DEFAULT_SPEED
 
 
     def check_if_completed_all_laps(self, player: SecretGamePlayer) -> bool:
