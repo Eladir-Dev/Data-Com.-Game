@@ -1,4 +1,4 @@
-from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult, assert_str_is_turn_state, MAP_RESOLUTION, DEFAULT_SPEED
+from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult, assert_str_is_turn_state, MAP_RESOLUTION, DEFAULT_SPEED, TURN_SPEED
 from secret_game.map import Map
 from server_types import BUF_SIZE
 import socket
@@ -57,10 +57,9 @@ class SecretGameGame:
         if player.turn_state == 'straight':
             return
 
-        angular_speed = math.pi / 2 # radians per second
         angle_sign = 1.0 if player.turn_state == 'right' else -1.0
 
-        player.facing_angle += (angular_speed * angle_sign * self.deltatime)
+        player.facing_angle += (TURN_SPEED * angle_sign * self.deltatime)
         player.facing_angle %= math.tau
 
 
