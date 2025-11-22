@@ -224,8 +224,6 @@ class WordGolfGame:
 
 
     def handle_player_client_response(self, curr_player_idx: int) -> WordGolfOccurrence | None:
-        self.command_reader.gather_incoming_commands(curr_player_idx)
-
         for player_cmd in self.command_reader.yield_commands(curr_player_idx):
             if player_cmd.startswith("!guess"):
                 fields = player_cmd.split(':')

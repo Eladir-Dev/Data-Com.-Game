@@ -244,8 +244,6 @@ class SecretGameGame:
 
 
     def handle_player_client_response(self, player_idx: int):
-        self.command_reader.gather_incoming_commands(player_idx)
-
         for client_cmd in self.command_reader.yield_commands(player_idx):
             if client_cmd.startswith("!car-turn"):
                 fields = client_cmd.split(':')

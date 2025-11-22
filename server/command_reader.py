@@ -12,7 +12,7 @@ class ClientCommandReader:
         self._player_cmds: list[deque[str]] = [deque() for _ in range(len(self._connections))]
 
 
-    def gather_incoming_commands(self, conn_idx: int):
+    def _gather_incoming_commands(self, conn_idx: int):
         try:
             conn = self._connections[conn_idx]
             data = conn.recv(BUF_SIZE).decode()
@@ -35,5 +35,7 @@ class ClientCommandReader:
 
 
     def yield_commands(self, conn_idx: int):
+        self._gather_incoming_commands(conn_idx)
+
         while len(self._player_cmds[conn_idx]) > 0:
             yield self._player_cmds[conn_idx].pop()
