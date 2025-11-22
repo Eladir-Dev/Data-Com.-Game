@@ -19,7 +19,7 @@ def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_o
     max_vis_map_x = min(len(tiles[0]), own_map_pos[0] + SCREEN_WIDTH // 2 // MAP_RESOLUTION + 1)
 
     min_vis_map_y = max(0, own_map_pos[1] - SCREEN_HEIGHT // 2 // MAP_RESOLUTION - 1)
-    max_vis_map_y = min(len(tiles), own_map_pos[1] + SCREEN_HEIGHT // 2 // MAP_RESOLUTION + 1)
+    max_vis_map_y = min(len(tiles), own_map_pos[1] + SCREEN_HEIGHT // 2 // MAP_RESOLUTION + 2) # the +2 is intentional
 
     for x in range(min_vis_map_x, max_vis_map_x):
         for y in range(min_vis_map_y, max_vis_map_y):
@@ -94,8 +94,8 @@ def draw_race_start_countdown(surface: Surface, global_game_data: SecretGameGlob
         )
 
 
-def draw_completed_laps_ui(surface, global_game_data: SecretGameGlobalState):
-    text = f"LAPS: {global_game_data.get_own_data().completed_laps}/3"
+def draw_lap_ui(surface, global_game_data: SecretGameGlobalState):
+    text = f"LAP: {global_game_data.get_own_data().completed_laps + 1}/3"
     font_size = MAP_RESOLUTION
 
     draw_text(
@@ -144,7 +144,7 @@ def secret_game_update(events: list[Event], surface: Surface, global_game_data: 
     draw_players(surface, global_game_data, camera_offset)
 
     draw_race_start_countdown(surface, global_game_data)
-    draw_completed_laps_ui(surface, global_game_data)
+    draw_lap_ui(surface, global_game_data)
 
     car_turn_cmd = handle_turning(global_game_data)
     
