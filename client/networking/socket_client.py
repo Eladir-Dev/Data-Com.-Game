@@ -147,35 +147,23 @@ def connect_word_golf(server_host: str, server_command_queue: Queue[str], client
 
         client_running = True
 
+        server_cmd_reader = ServerCommandReader(
+            server_conn=s,
+            valid_cmd_prefixes=(
+                '?update',
+                '?feedback-history',
+                '?stashed-words',
+                '?alert',
+                '?game-over',
+            ),
+            server_cmd_queue=server_command_queue,
+        )
+
         while client_running:
-            try:
-                data = s.recv(BUF_SIZE).decode()
+            should_continue = server_cmd_reader.read_incoming_commands()
 
-                # Forward server commands to the UI.
-
-                if data.startswith("?update"):
-                    server_command_queue.put(data)
-
-                elif data.startswith("?feedback-history"):
-                    server_command_queue.put(data)
-
-                elif data.startswith("?stashed-words"):
-                    server_command_queue.put(data)
-
-                elif data.startswith("?alert"):
-                    server_command_queue.put(data)
-
-                elif data.startswith("?game-over"):
-                    # Stop the client.
-                    client_running = False
-
-                    # Forward the game over command to the UI.
-                    server_command_queue.put(data)
-
-                else:
-                    print(f"ERROR: received unknown data from server: '{data}'")
-
-            except socket.timeout: pass
+            if not should_continue:
+                client_running = False
 
             while not client_queue.empty():
                 data = client_queue.get()
@@ -227,7 +215,7 @@ def connect_secret_game(
 
             except socket.timeout: pass
 
-        print("LOG: starting Word Golf game on client...")
+        print("LOG: starting Secret Game on client...")
 
         client_running = True
 

@@ -1,7 +1,7 @@
 from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult, assert_str_is_turn_state, MAP_RESOLUTION, DEFAULT_SPEED, TURN_SPEED
 from secret_game.map import Map
 from server_types import BUF_SIZE
-from command_reader import CommandReader
+from command_reader import ClientCommandReader
 import socket
 import time
 import math
@@ -20,7 +20,7 @@ class SecretGameGame:
 
         self.result: SecretGameResult | None = None
 
-        self.command_reader = CommandReader(
+        self.command_reader = ClientCommandReader(
             connections=[p.conn for p in self.players],
             valid_cmd_prefixes=('!car-turn',),
         )
@@ -244,9 +244,9 @@ class SecretGameGame:
 
 
     def handle_player_client_response(self, player_idx: int):
-        self.command_reader.read_incoming_commands(player_idx)
+        self.command_reader.gather_incoming_commands(player_idx)
 
-        for client_cmd in self.command_reader.player_cmds[player_idx]:
+        for client_cmd in self.command_reader.yield_commands(player_idx):
             if client_cmd.startswith("!car-turn"):
                 fields = client_cmd.split(':')
                 new_turn_state = fields[1]
