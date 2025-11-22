@@ -3,7 +3,7 @@ from pygame import Surface
 from common_types.global_state import SecretGameGlobalState
 import pygame
 from pathlib import Path
-from ui.drawing_utils import draw_sprite_on_surface
+from ui.drawing_utils import draw_sprite_on_surface, draw_text
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, Pair
 from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, real_position_to_map_pos, MAP_RESOLUTION, TurnState
 import math
@@ -47,17 +47,38 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     p1_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_01.png"), p1_angle_deg)
     p2_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_02.png"), p2_angle_deg)
 
+    p1_draw_location = (p1.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p1.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
+    p2_draw_location = (p2.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p2.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
+
     draw_sprite_on_surface(
         surface,
         p1_sprite,
-        location=(p1.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p1.position[1] + camera_offset[1] + MAP_RESOLUTION // 2),
+        location=p1_draw_location,
     )
 
     draw_sprite_on_surface(
         surface,
         p2_sprite,
-        location=(p2.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p2.position[1] + camera_offset[1] + MAP_RESOLUTION // 2),
+        location=p2_draw_location,
     )
+
+    draw_player_nametags(surface, global_game_data, [p1_draw_location, p2_draw_location])
+
+
+def draw_player_nametags(surface: Surface, global_game_data: SecretGameGlobalState, player_draw_locations: list[Pair]):
+    COLORS = [
+        (100, 100, 255), # player 1
+        (255, 100, 100), # player 2
+    ]
+
+    for player_idx in range(len(global_game_data.players)):
+        draw_text(
+            surface,
+            text=global_game_data.players[player_idx].username,
+            font_size=MAP_RESOLUTION * 2 // 3,
+            location=(player_draw_locations[player_idx][0], player_draw_locations[player_idx][1] - MAP_RESOLUTION),
+            color=COLORS[player_idx],
+        )
 
 
 def gen_move_command(new_turn_state: TurnState) -> str:
