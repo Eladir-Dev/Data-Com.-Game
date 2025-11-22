@@ -1,5 +1,4 @@
 import time
-
 from .stratego_types import (
     parse_piece_from_encoded_str, 
     get_piece_value, 
@@ -230,11 +229,9 @@ class StrategoGame:
                 player.conn.sendall(move_result_to_command(move_result).encode())
             
             # Wait a duration so that the client has time to display the sent move result to the user.
-            if move_result.kind == 'movement':
-                time.sleep(MOVE_RESULT_VIEW_DURATION_SECS / 2)
-            else:
+            if move_result.kind != 'movement':
                 time.sleep(MOVE_RESULT_VIEW_DURATION_SECS)
-
+                
             # Toggle the turn.
             self.toggle_turn()
 
