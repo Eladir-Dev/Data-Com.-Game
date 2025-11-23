@@ -71,7 +71,18 @@ class MainGameSubMenus:
         self.secret_dlc_store_download_progress_bar = self.secret_dlc_store_menu.add.progress_bar('Download Status: ', 0.0)
 
         self.settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
-        self.settings_menu.add.selector('Difficulty (This is a placeholder setting TO BE REMOVED) :', [('Hard', 1), ('Easy', 2)], onchange=lambda: "LOG: difficulty slider to be removed")
+        self.settings_menu.add.selector(
+            'UI Scale: ', 
+            [('Normal', 1), ('Small', 0.5), ('Larger', 1.5), ('Large', 2)], 
+            onchange=lambda _, value: self.set_ui_scale(value),
+        )
+        self.settings_menu.add.range_slider(
+            'Volume: ',
+            default=100,
+            range_values=(0, 100),
+            increment=1,
+            onchange=lambda value: self.set_volume(value),
+        )
 
         self.loading = pygame_menu.Menu('Loading the Game...', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_DARK)
         self.loading.add.progress_bar("Progress", progressbar_id="1", default=0, width=200, )
@@ -124,6 +135,14 @@ class MainGameSubMenus:
     
     def show_secret_dlc_store(self):
         self.change_game_state('in_secret_dlc_store')
+
+
+    def set_ui_scale(self, value: float):
+        self.client_state.ui_scale = value
+
+
+    def set_volume(self, value: float):
+        pygame.mixer.music.set_volume(value / 100)
 
 
     def set_game_over_message(self, game_over_message: str):
