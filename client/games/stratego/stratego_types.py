@@ -205,3 +205,11 @@ def parse_piece_from_encoded_str(encoded_str: str) -> StrategoPieceName:
         raise Exception(f"Unknown encoded piece string: '{encoded_str}'")
     
     return piece
+
+
+def encoded_str_is_empty(encoded_element_str: str):
+    return encoded_element_str == ""
+
+
+def encoded_str_is_lake(encoded_element_str: str):
+    return encoded_element_str == "XX"
