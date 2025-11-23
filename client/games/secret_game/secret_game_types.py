@@ -26,8 +26,8 @@ class Map:
 
 
 
-def get_default_map_path() -> str:
-    return f"{MAP_FOLDER}/map_01.txt"
+def get_map_path(map_idx: int) -> str:
+    return f"{MAP_FOLDER}/map_{str(map_idx).zfill(3)}.txt"
 
 
 def get_map_tile_sprite_name(tile: str) -> str:

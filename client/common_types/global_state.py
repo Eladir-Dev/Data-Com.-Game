@@ -63,6 +63,8 @@ class SecretGameGlobalState:
         self.map = map
         self.turn_state: TurnState = 'straight'
 
+        self.countdown: int | None = None
+
 
     def get_own_data(self) -> SecretGamePlayer:
         return self.players[self.own_idx]

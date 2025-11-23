@@ -1,9 +1,6 @@
-import socket
 from pathlib import Path
 import random
-import time
-
-from server_types import BUF_SIZE
+from command_reader import ClientCommandReader
 
 from .word_golf_types import WordGolfPlayer, WordGolfOccurrence, WordGolfGameResult
 
@@ -30,6 +27,14 @@ class WordGolfGame:
             )
 
         self.result: WordGolfGameResult | None = None
+
+        self.command_reader = ClientCommandReader(
+            connections=[p.conn for p in self.players],
+            valid_cmd_prefixes=(
+                '!guess',
+                '!send-stashed-word',
+            ),
+        )
         
 
     def choose_words_for_game(self) -> list[str]:
@@ -84,7 +89,7 @@ class WordGolfGame:
     
 
     def gen_feedback_history_cmd_for_player(self, player: WordGolfPlayer) -> str:
-        return f"?feedback-history:{':'.join(player.feedback_history)}"
+        return f"?feedback-history:{':'.join(player.feedback_history)}\\"
 
 
     def send_feedback_history_to_player(self, player: WordGolfPlayer):
@@ -94,7 +99,7 @@ class WordGolfGame:
 
 
     def gen_stashed_words_cmd_for_player(self, player: WordGolfPlayer) -> str:
-        return f"?stashed-words:{':'.join(player.stashed_words)}"
+        return f"?stashed-words:{':'.join(player.stashed_words)}\\"
     
 
     def send_stashed_words_to_player(self, player: WordGolfPlayer):
@@ -104,7 +109,7 @@ class WordGolfGame:
 
 
     def add_alert_for_player(self, player_idx: int, alert_cmd_fields: list[str]):
-        alert_cmd = f"?alert:{':'.join(alert_cmd_fields)}"
+        alert_cmd = f"?alert:{':'.join(alert_cmd_fields)}\\"
         self.players[player_idx].pending_alerts.append(alert_cmd)
 
 
@@ -112,8 +117,6 @@ class WordGolfGame:
         if len(player.pending_alerts) == 0:
             return
         
-        # Wait a small delay.
-        time.sleep(0.5)
         oldest_alert_cmd = player.pending_alerts.popleft()
         player.conn.sendall(oldest_alert_cmd.encode())
 
@@ -147,16 +150,16 @@ class WordGolfGame:
             try:
                 # There is a winner.
                 if self.result.winner_username is not None:
-                    player.conn.sendall(f"?game-over:word_golf:winner-determined:{self.result.winner_username}".encode())
+                    player.conn.sendall(f"?game-over:word_golf:winner-determined:{self.result.winner_username}\\".encode())
 
                 # The game abruptly ended before finishing normally.
                 elif self.result.abrupt_end:
-                    player.conn.sendall("?game-over:word_golf:abrupt-end".encode())
+                    player.conn.sendall("?game-over:word_golf:abrupt-end\\".encode())
 
                 # Since the winner is None, but there wasn't an abrupt end, that means that 
                 # there was a tie.
                 else:
-                    player.conn.sendall("?game-over:word_golf:tie".encode())
+                    player.conn.sendall("?game-over:word_golf:tie\\".encode())
 
             # Do not bother trying to send a game over message if the client's socket is disconnected.
             except ConnectionResetError: pass
@@ -178,16 +181,12 @@ class WordGolfGame:
                 other_points = self.players[other_idx].points
                 other_queued_word_amt = len(self.players[other_idx].queued_words)
 
-                data = f"?update:{curr_points}:{curr_queued_word_amt}:{other_points}:{other_queued_word_amt}"
+                data = f"?update:{curr_points}:{curr_queued_word_amt}:{other_points}:{other_queued_word_amt}\\"
 
                 self.players[curr_idx].conn.sendall(data.encode())
 
-                # Wait a small delay and then send the player's feedback history.
-                time.sleep(0.5)
                 self.send_feedback_history_to_player(self.players[curr_idx])
 
-                # Wait a small delay and then send the player's stashed words.
-                time.sleep(0.5)
                 self.send_stashed_words_to_player(self.players[curr_idx])
 
                 # This has an in-built delay that only triggers when there are 
@@ -218,12 +217,9 @@ class WordGolfGame:
 
 
     def handle_player_client_response(self, curr_player_idx: int) -> WordGolfOccurrence | None:
-        try:
-            conn_to_handle = self.players[curr_player_idx].conn
-            data = conn_to_handle.recv(BUF_SIZE).decode()
-
-            if data.startswith("!guess"):
-                fields = data.split(':')
+        for player_cmd in self.command_reader.yield_commands(curr_player_idx):
+            if player_cmd.startswith("!guess"):
+                fields = player_cmd.split(':')
                 guess = fields[1].upper()
 
                 if guess in self.players[curr_player_idx].already_guessed_words:
@@ -256,8 +252,8 @@ class WordGolfGame:
 
                 return occurence
             
-            elif data.startswith("!send-stashed-word"):
-                fields = data.split(':')
+            elif player_cmd.startswith("!send-stashed-word"):
+                fields = player_cmd.split(':')
                 stashed_word_to_send = fields[1]
 
                 # Player is trying to send a word that they do not have stashed.
@@ -276,12 +272,9 @@ class WordGolfGame:
                 return occurence
 
             else:
-                print(f"ERROR: Invalid client response '{data}'")
+                print(f"ERROR: Invalid client response '{player_cmd}'")
                 return None # unknown command from client
 
-        except socket.timeout: 
-            return None
-        
 
     def manage_occurrence_after_player_action(self, occurrence: WordGolfOccurrence):
         if occurrence.kind == 'wrong_guess':

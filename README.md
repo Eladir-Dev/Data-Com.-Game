@@ -56,6 +56,11 @@ cd client
 * Game engine (for the secret DLC game): Godot
 
 ## Attribution
+* Music for the strategy game:
+    - Creator: [Alexandr Zhelanov](https://opengameart.org/users/alexandr-zhelanov)
+    - [Music](https://opengameart.org/content/unused-music)
+    - [Licnese](https://creativecommons.org/licenses/by/3.0/)
+
 * Music for the secret racing game:
     - Creator: [Wolfgang_](https://opengameart.org/users/wolfgang)
     - [Music](https://opengameart.org/content/skeleton-waltz-theme)

@@ -1,6 +1,4 @@
-import socket
 import time
-
 from .stratego_types import (
     parse_piece_from_encoded_str, 
     get_piece_value, 
@@ -17,7 +15,9 @@ from .stratego_types import (
 from .stratego_player import StrategoPlayer
 from .stratego_game_result import StrategoGameResult
 
-from server_types import BUF_SIZE, row_col_to_flat_index, get_sign, ColorCode
+from server_types import row_col_to_flat_index, get_sign, ColorCode
+
+from command_reader import ClientCommandReader
 
 class StrategoGame:
     """
@@ -44,6 +44,13 @@ class StrategoGame:
         self.turn_map: dict[StrategoColor, StrategoPlayer] = { player.color: player for player in self.players } # type: ignore
 
         self.result: StrategoGameResult | None = None
+
+        self.command_reader = ClientCommandReader(
+            connections=[p.conn for p in self.players],
+            valid_cmd_prefixes=(
+                '!move',
+            ),
+        )
 
         self.add_player_starting_decks_to_board()
         self.add_lakes_to_board()
@@ -183,11 +190,11 @@ class StrategoGame:
             try:
                 # There is a winner.
                 if self.result.winner is not None:
-                    player.conn.sendall(f"?game-over:stratego:winner-determined:{self.result.winner}".encode())
+                    player.conn.sendall(f"?game-over:stratego:winner-determined:{self.result.winner}\\".encode())
 
                 # The game abruptly ended before finishing normally.
                 elif self.result.abrupt_end:
-                    player.conn.sendall("?game-over:stratego:abrupt-end".encode())
+                    player.conn.sendall("?game-over:stratego:abrupt-end\\".encode())
 
                 else:
                     print("ERROR: Unknown win condition")
@@ -203,14 +210,14 @@ class StrategoGame:
         while self.is_running:
             # Send turn info.
             for player in self.players:
-                data = f"?turn-info:{self.turn}:{self.get_board_socket_repr()}"
+                data = f"?turn-info:{self.turn}:{self.get_board_socket_repr()}\\"
                 player.conn.sendall(data.encode())
 
             move_result: StrategoMoveResult | None = None
 
             while move_result is None:
-                for player in self.players:
-                    move_result = self.handle_player_client_response(player)
+                for player_idx in range(len(self.players)):
+                    move_result = self.handle_player_client_response(player_idx)
 
                     if move_result is not None:
                         break # early-exit out of for loop
@@ -222,19 +229,16 @@ class StrategoGame:
                 player.conn.sendall(move_result_to_command(move_result).encode())
             
             # Wait a duration so that the client has time to display the sent move result to the user.
-            if move_result.kind == 'movement':
-                time.sleep(MOVE_RESULT_VIEW_DURATION_SECS / 2)
-            else:
+            if move_result.kind != 'movement':
                 time.sleep(MOVE_RESULT_VIEW_DURATION_SECS)
-
+                
             # Toggle the turn.
             self.toggle_turn()
 
 
-    def handle_player_client_response(self, player: StrategoPlayer) -> StrategoMoveResult | None:
-        try:
-            conn_to_process = player.conn
-            data = conn_to_process.recv(BUF_SIZE).decode()
+    def handle_player_client_response(self, player_idx: int) -> StrategoMoveResult | None:
+        for data in self.command_reader.yield_commands(player_idx):
+            player = self.get_current_player()
 
             if data.startswith("!move"):
                 if player.color != self.turn:
@@ -258,9 +262,6 @@ class StrategoGame:
             else:
                 print(f"ERROR: Invalid response '{data}'")
                 return None # unknown command from client
-
-        except socket.timeout:
-            return None # no response
 
 
     # TODO: This function needs more testing.

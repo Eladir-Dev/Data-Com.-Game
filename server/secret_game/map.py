@@ -1,5 +1,10 @@
+from pathlib import Path
+import random
 from secret_game.tile import Tile, parse_tile_kind
 from secret_game.secret_game_types import real_position_from_map_position
+
+MAPS_FOLDER = Path(__file__).parent / "maps"
+MAP_AMT = sum(1 for item in MAPS_FOLDER.iterdir() if item.is_file() and item.name.startswith("map_"))
 
 class Map:
     def __init__(self, file_name: str):
@@ -47,3 +52,10 @@ class Map:
             return self.grid[r][c]
         else:
             return None
+        
+
+def pick_random_map() -> tuple[int, Map]:
+    chosen_map_id = random.randint(1, MAP_AMT)
+    map_ =  Map(f"{MAPS_FOLDER}/map_{str(chosen_map_id).zfill(3)}.txt")
+
+    return (chosen_map_id, map_)

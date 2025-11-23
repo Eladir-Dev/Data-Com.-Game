@@ -12,11 +12,11 @@ MAIN_UI_WIDTH = SYMBOL_SIZE * WORD_LEN
 WORD_GOLF_MAIN_UI_START_POS = ((SCREEN_WIDTH - MAIN_UI_WIDTH) // 2, 40)
 
 def gen_guess_cmd(guess: str) -> str:
-    return f"!guess:{guess}"
+    return f"!guess:{guess}\\"
 
 
 def gen_stashed_word_cmd(stashed_word: str) -> str:
-    return f"!send-stashed-word:{stashed_word}"
+    return f"!send-stashed-word:{stashed_word}\\"
 
 
 def draw_all_ui(surface: Surface, global_game_data: WordGolfGlobalState) -> list[RenderedStashedWord]:
