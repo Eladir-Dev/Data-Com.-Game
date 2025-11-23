@@ -64,6 +64,38 @@ def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
     return f"!move:{components_str}\\"
 
 
+def draw_ui_text(surface: Surface, global_game_data: StrategoGlobalState):
+    heading_font_size = 100
+    drawing_utils.draw_text(surface, "Stratego", heading_font_size, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
+
+    info_string_font_size = 40
+
+    player_info_string = f"{global_game_data.own_username} ({global_game_data.own_color}) VS {global_game_data.opp_username} ({global_game_data.opp_color})"
+    drawing_utils.draw_text(surface, player_info_string, info_string_font_size, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+
+    turn_info_string = f"Current Turn: ({global_game_data.turn})"
+    drawing_utils.draw_text(surface, turn_info_string, info_string_font_size, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+
+    selected_piece_font_size = 40
+
+    if global_game_data.last_selected_piece is not None:
+        # NOTE: we can get index 1 as `last_selected_piece` cannot be an empty tile which is `""`.
+        piece_name = parse_piece_from_encoded_str(global_game_data.last_selected_piece.str_encoding[1])
+        r, c = global_game_data.last_selected_piece.board_location
+        selected_piece_str = f"{piece_name.title()} (row {r + 1}, column {c + 1})"
+
+    else:
+        selected_piece_str = "None"
+
+    drawing_utils.draw_text(
+        surface,
+        f"Selected Piece: {selected_piece_str}",
+        selected_piece_font_size,
+        (SCREEN_WIDTH // 2, 210 + ROWS * SPRITE_HEIGHT), 
+        (0, 0, 0),
+    )
+
+
 def stratego_update(events: list[Event], surface: Surface, global_game_data: StrategoGlobalState) -> str | None:
     """
     Updates the screen during a Stratego game.
@@ -87,15 +119,7 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: Str
         elif move_result.kind != 'movement':
             surface.fill((0, 0, 0))
 
-    # Draw UI text.
-    drawing_utils.draw_text(surface, "Stratego", 100, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
-
-    player_info_string = f"{global_game_data.own_username} ({global_game_data.own_color}) VS {global_game_data.opp_username} ({global_game_data.opp_color})"
-    drawing_utils.draw_text(surface, player_info_string, 40, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
-
-    turn_info_string = f"Current Turn: ({global_game_data.turn})"
-    drawing_utils.draw_text(surface, turn_info_string, 40, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
-
+    draw_ui_text(surface, global_game_data)
 
     rendered_tiles = render_board_tiles(surface, global_game_data)
 
@@ -111,10 +135,6 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: Str
                 sprite_rect = rendered_tile.sprite_rect
 
                 if sprite_rect.collidepoint(mouse_pos):
-                    # TODO: Do not print these out in an actual game, it 
-                    # would ruin the entire point of hiding the opponent's pieces.
-                    print(rendered_tile.str_encoding)
-
                     if global_game_data.last_selected_piece is None:
                         # Empty and lake tiles are not selectable.
                         if encoded_str_is_empty(rendered_tile.str_encoding) or encoded_str_is_lake(rendered_tile.str_encoding):
