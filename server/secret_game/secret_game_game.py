@@ -1,8 +1,6 @@
 from secret_game.secret_game_types import SecretGamePlayer, Vector, SecretGameResult, assert_str_is_turn_state, MAP_RESOLUTION, DEFAULT_SPEED, TURN_SPEED
 from secret_game.map import Map
-from server_types import BUF_SIZE
 from command_reader import ClientCommandReader
-import socket
 import time
 import math
 

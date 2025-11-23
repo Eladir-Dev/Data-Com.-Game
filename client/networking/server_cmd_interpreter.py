@@ -1,7 +1,7 @@
 from common_types.global_state import GlobalClientState, SecretGameGlobalState, StrategoGlobalState, WordGolfGlobalState, ValidState, SecretGamePlayer
 from typing import Callable
 from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color, ROWS, COLS
-from games.secret_game.secret_game_types import Map, get_default_map_path
+from games.secret_game.secret_game_types import Map, get_map_path
 
 import networking.validator as validator
 
@@ -37,15 +37,17 @@ class ServerCommandInterpreter:
                 self.game_start_word_golf(opponent_username)
 
             elif game == 'secret_game':
-                own_idx = int(fields[2])
-                player_1_username = validator.assert_valid_username(fields[3])
-                player_1_x = int(fields[4])
-                player_1_y = int(fields[5])
-                player_2_username = validator.assert_valid_username(fields[6])
-                player_2_x = int(fields[7])
-                player_2_y = int(fields[8])
+                map_idx = int(fields[2])
+                own_idx = int(fields[3])
+                player_1_username = validator.assert_valid_username(fields[4])
+                player_1_x = int(fields[5])
+                player_1_y = int(fields[6])
+                player_2_username = validator.assert_valid_username(fields[7])
+                player_2_x = int(fields[8])
+                player_2_y = int(fields[9])
 
                 self.game_start_secret_game(
+                    map_idx,
                     own_idx, 
                     player_1_username, 
                     (player_1_x, player_1_y),
@@ -199,6 +201,7 @@ class ServerCommandInterpreter:
 
     def game_start_secret_game(
         self, 
+        map_idx: int,
         own_idx: int, 
         player_1_username: str, 
         player_1_start_pos: tuple[int, int],
@@ -213,7 +216,7 @@ class ServerCommandInterpreter:
         self.client_state.secret_game_state = SecretGameGlobalState(
             own_idx,
             players,
-            Map(file_name=get_default_map_path()) # TODO: make this dynamic instead of hardcoding a single map
+            Map(file_name=get_map_path(map_idx)),
         )
         self.change_game_state('in_secret_game')
 

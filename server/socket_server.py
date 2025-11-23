@@ -16,7 +16,7 @@ from word_golf.word_golf_game import WordGolfGame
 
 from secret_game.secret_game_types import SecretGamePlayer
 from secret_game.secret_game_game import SecretGameGame
-from secret_game.map import Map
+from secret_game.map import pick_random_map
 
 # Standard loopback interface address (localhost).
 # 127.0.0.1 makes it so that the server is only accesible from the same machine.
@@ -33,8 +33,6 @@ WAITING_STRATEGO_PLAYERS: list[StrategoPlayer] = []
 WAITING_WORD_GOLF_PLAYERS: list[WordGolfPlayer] = []
 
 WAITING_SECRET_GAME_PLAYERS: list[SecretGamePlayer] = []
-
-SECRET_GAME_MAPS_FOLDER = Path(__file__).parent / "secret_game" / "maps"
 
 CLIENT_SOCKET_TIMEOUT = 0.001 # seconds
 
@@ -187,15 +185,14 @@ def start_secret_game_game(player_1: SecretGamePlayer, player_2: SecretGamePlaye
 
     players = [player_1, player_2]
 
-    # TODO: Pick one (of various) map randomly.
-    map_ =  Map(f"{SECRET_GAME_MAPS_FOLDER}/map_01.txt")
+    chosen_map_id, map_ = pick_random_map()
 
     player_1.position = map_.p1_spawn_map_pos
     player_2.position = map_.p2_spawn_map_pos
 
     # Send a message to both players to start the game.
     for i in range(len(players)):
-        cmd = f"?game-start:secret_game:{i}" + \
+        cmd = f"?game-start:secret_game:{chosen_map_id}:{i}" + \
             f":{player_1.username}:{player_1.position.x}:{player_1.position.y}" + \
             f":{player_2.username}:{player_2.position.x}:{player_2.position.y}"
         
