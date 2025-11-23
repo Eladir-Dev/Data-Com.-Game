@@ -14,6 +14,7 @@ from games.secret_game.secret_game_background_activator import SecretGameBackgro
 from networking.server_cmd_interpreter import ServerCommandInterpreter
 from games.secret_dlc_store.secret_dlc_store import start_getting_dlc
 from games.secret_dlc_store.secret_dlc_store_update import SecretDLCStoreUpdate
+from ui import music_player
 
 class MainGameUI:
     def __init__(self):
@@ -75,16 +76,18 @@ class MainGameUI:
         """
         self.client_state.game_state = new_state
 
-        # If starting a Secret Game, then start the background music.
-        if new_state == 'in_secret_game':
-            from pathlib import Path
-            SECRET_GAME_MUSIC_PATH = Path(__file__).parent.parent / "games" / "secret_game" / "assets" / "Bone Yard Waltz - Loopable.ogg"
-            pygame.mixer.music.load(SECRET_GAME_MUSIC_PATH)
-            pygame.mixer.music.play(-1)
+        if new_state == 'in_stratego_game':
+            music_player.play_stratego_bg_music()
+
+        elif new_state == 'in_word_golf_game':
+            music_player.play_word_golf_bg_music()
+
+        elif new_state == 'in_secret_game':
+            music_player.play_secret_game_bg_music()
 
         # Stop the music (if any was playing) if a game ended.
         elif new_state == 'finished_game':
-            pygame.mixer.music.stop()
+            music_player.stop_all_bg_music()
     
 
     def start(self):
