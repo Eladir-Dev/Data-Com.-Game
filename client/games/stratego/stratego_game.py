@@ -10,7 +10,7 @@ from pathlib import Path
 from common_types.global_state import StrategoGlobalState
 
 from .stratego_types import (StrategoRenderedTile, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
-                             SPRITE_HEIGHT, StrategoColor, StrategoPieceName, get_full_color_name, parse_piece_from_encoded_str)
+                             SPRITE_HEIGHT, StrategoColor, StrategoPieceName, get_full_color_name, parse_piece_from_encoded_str, assert_str_is_color, encoded_str_is_empty, encoded_str_is_lake)
 
 from common_types.game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
 import ui.drawing_utils as drawing_utils
@@ -116,6 +116,15 @@ def stratego_update(events: list[Event], surface: Surface, global_game_data: Str
                     print(rendered_tile.str_encoding)
 
                     if global_game_data.last_selected_piece is None:
+                        # Empty and lake tiles are not selectable.
+                        if encoded_str_is_empty(rendered_tile.str_encoding) or encoded_str_is_lake(rendered_tile.str_encoding):
+                            continue
+
+                        # The opponent's pieces are non-selectable.
+                        piece_color: StrategoColor = assert_str_is_color(rendered_tile.str_encoding[0])
+                        if global_game_data.own_color != piece_color:
+                            continue
+
                         # Select the tile.
                         global_game_data.last_selected_piece = rendered_tile
 
@@ -170,24 +179,20 @@ def render_board_tiles(surface: Surface, global_game_data: StrategoGlobalState) 
                 and (r, c) in { move_result.attacking_pos, move_result.defending_pos }
             )
 
-            if encoded_element_str == "":
+            if encoded_str_is_empty(encoded_element_str):
                 sprite = draw_empty_grid_slot(surface, location)
 
-            elif encoded_element_str == "XX":
+            elif encoded_str_is_lake(encoded_element_str):
                 sprite = draw_lake_slot(surface, location)
 
-            elif len(encoded_element_str) >= 2 and (should_draw_own_piece_outside_of_attack or should_draw_pieces_involved_in_attack):
-                color: StrategoColor = encoded_element_str[0] # type: ignore
+            elif (should_draw_own_piece_outside_of_attack or should_draw_pieces_involved_in_attack):
+                color: StrategoColor = assert_str_is_color(encoded_element_str[0])
                 encoded_piece_str = encoded_element_str[1] # just the piece encoding without the color
 
                 piece_name = parse_piece_from_encoded_str(encoded_piece_str)
                 sprite = draw_piece(surface, piece_name, color, location)
 
             # Hide the opponent's pieces.
-            elif len(encoded_element_str) >= 2:
-                sprite = draw_hidden_slot(surface, location)
-
-            # Fallback.
             else:
                 sprite = draw_hidden_slot(surface, location)
 
