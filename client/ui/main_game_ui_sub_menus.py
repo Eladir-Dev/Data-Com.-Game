@@ -7,7 +7,7 @@ import pygame
 import pygame_menu
 from pygame_menu import themes
 
-from common_types.global_state import GlobalClientState, ValidState
+from common_types.global_state import GlobalClientState, ValidState, apply_ui_scale_pair
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from typing import Callable
 
@@ -73,7 +73,7 @@ class MainGameSubMenus:
         self.settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.settings_menu.add.selector(
             'UI Scale: ', 
-            [('Normal', 1), ('Small', 0.5), ('Larger', 1.5), ('Large', 2)], 
+            [('Normal', 1.0), ('Small', 0.5), ('Larger', 1.5), ('Large', 2.0)], 
             onchange=lambda _, value: self.set_ui_scale(value),
         )
         self.settings_menu.add.range_slider(
@@ -82,6 +82,10 @@ class MainGameSubMenus:
             range_values=(0, 100),
             increment=1,
             onchange=lambda value: self.set_volume(value),
+        )
+        self.settings_menu.add.button(
+            'Apply Changes',
+            lambda: self.apply_settings_changes(),
         )
 
         self.loading = pygame_menu.Menu('Loading the Game...', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_DARK)
@@ -142,7 +146,12 @@ class MainGameSubMenus:
 
 
     def set_volume(self, value: float):
-        pygame.mixer.music.set_volume(value / 100)
+        self.client_state.volume = value
+
+
+    def apply_settings_changes(self):
+        pygame.display.set_mode(apply_ui_scale_pair((SCREEN_WIDTH, SCREEN_HEIGHT), self.client_state.ui_scale))
+        pygame.mixer.music.set_volume(self.client_state.volume / 100)
 
 
     def set_game_over_message(self, game_over_message: str):

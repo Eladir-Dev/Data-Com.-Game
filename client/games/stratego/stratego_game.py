@@ -12,7 +12,7 @@ from common_types.global_state import StrategoGlobalState
 from .stratego_types import (StrategoRenderedTile, ROWS, COLS, GRID_START_LOCATION, SPRITE_WIDTH, 
                              SPRITE_HEIGHT, StrategoColor, StrategoPieceName, get_full_color_name, parse_piece_from_encoded_str, assert_str_is_color, encoded_str_is_empty, encoded_str_is_lake)
 
-from common_types.game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
+from common_types.game_types import Pair, row_col_to_flat_index
 import ui.drawing_utils as drawing_utils
 
 
@@ -66,15 +66,15 @@ def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
 
 def draw_ui_text(surface: Surface, global_game_data: StrategoGlobalState):
     heading_font_size = 100
-    drawing_utils.draw_text(surface, "Stratego", heading_font_size, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
+    drawing_utils.draw_text(surface, "Stratego", heading_font_size, (surface.get_width() // 2, 50), (0, 0, 0))
 
     info_string_font_size = 40
 
     player_info_string = f"{global_game_data.own_username} ({global_game_data.own_color}) VS {global_game_data.opp_username} ({global_game_data.opp_color})"
-    drawing_utils.draw_text(surface, player_info_string, info_string_font_size, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+    drawing_utils.draw_text(surface, player_info_string, info_string_font_size, (surface.get_width() // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
 
     turn_info_string = f"Current Turn: ({global_game_data.turn})"
-    drawing_utils.draw_text(surface, turn_info_string, info_string_font_size, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+    drawing_utils.draw_text(surface, turn_info_string, info_string_font_size, (surface.get_width() // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
 
     selected_piece_font_size = 40
 
@@ -91,7 +91,7 @@ def draw_ui_text(surface: Surface, global_game_data: StrategoGlobalState):
         surface,
         f"Selected Piece: {selected_piece_str}",
         selected_piece_font_size,
-        (SCREEN_WIDTH // 2, 210 + ROWS * SPRITE_HEIGHT), 
+        (surface.get_width() // 2, 210 + ROWS * SPRITE_HEIGHT), 
         (0, 0, 0),
     )
 

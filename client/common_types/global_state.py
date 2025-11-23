@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal
+from common_types.game_types import Pair
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
 from games.secret_game.secret_game_types import SecretGamePlayer, Map, TurnState
 
@@ -123,7 +124,16 @@ class GlobalClientState:
     """
 
     ui_scale: float = 1.0
+    volume: float = 100.0
 
     can_see_secret_dlc_store: bool = False
     secret_dlc_download_percentage: float = 0.0
     is_already_downloading_dlc: bool = False
+
+
+def apply_ui_scale_int(value: int, ui_scale: float) -> int:
+    return int(value * ui_scale)
+
+
+def apply_ui_scale_pair(pair: Pair, ui_scale: float) -> Pair:
+    return (int(pair[0] * ui_scale), int(pair[1] * ui_scale))
