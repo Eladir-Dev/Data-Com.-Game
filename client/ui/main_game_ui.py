@@ -79,6 +79,9 @@ class MainGameUI:
         if new_state == 'in_stratego_game':
             music_player.play_stratego_bg_music()
 
+        elif new_state == 'in_word_golf_game':
+            music_player.play_word_golf_bg_music()
+
         elif new_state == 'in_secret_game':
             music_player.play_secret_game_bg_music()
 

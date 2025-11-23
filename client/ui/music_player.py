@@ -4,10 +4,15 @@ from pathlib import Path
 GAMES_DIR = Path(__file__).parent.parent / "games"
 
 STRATEGO_MUSIC_PATH = GAMES_DIR / "stratego" / "sfx" / "Brirfing_theme.mp3"
+WORD_GOLF_MUSIC_PATH = GAMES_DIR / "word_golf" / "sfx" / "b423b42.wav"
 SECRET_GAME_MUSIC_PATH = GAMES_DIR / "secret_game" / "assets" / "Bone Yard Waltz - Loopable.ogg"
 
 def play_stratego_bg_music():
     _play_looping_bg_music(STRATEGO_MUSIC_PATH)
+
+
+def play_word_golf_bg_music():
+    _play_looping_bg_music(WORD_GOLF_MUSIC_PATH)
 
 
 def play_secret_game_bg_music():
