@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Literal
-from common_types.game_types import Pair
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
-from games.secret_game.secret_game_types import SecretGamePlayer, Map, TurnState
+from games.secret_game.secret_game_types import SecretGamePlayer, SecretGameMap, TurnState
+from games.lore.lore_types import LoreKind, LoreMap
 
 ValidState = Literal[
     'main_menu', 
@@ -16,6 +16,7 @@ ValidState = Literal[
     'in_deck_selection_state',
     'in_secret_dlc_store',
     'in_secret_dlc_game',
+    'in_lore',
 ]
 
 class StrategoGlobalState:
@@ -62,7 +63,7 @@ class WordGolfGlobalState:
 
     
 class SecretGameGlobalState:
-    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: Map, ui_scale: float):
+    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: SecretGameMap, ui_scale: float):
         self.own_idx = own_idx
         self.players = players
         self.map = map
@@ -79,6 +80,14 @@ class SecretGameGlobalState:
 
     def get_opp_data(self) -> SecretGamePlayer:
         return self.players[(self.own_idx + 1) % 2]
+
+
+class LoreGlobalState:
+    def __init__(self, username: str, ui_scale: float, kind: LoreKind):
+        self.username = username
+        self.ui_scale = ui_scale
+        self.kind = kind
+        self.map = LoreMap(kind)
 
 
 @dataclass
@@ -115,6 +124,10 @@ class GlobalClientState:
     """
     Holds Secret Game-specific game state.
     """
+    lore_state: LoreGlobalState | None = None
+    """
+    Holds Lore-specific state.
+    """
 
     # Socket-representation of the starting deck.
     stratego_starting_deck_repr: str | None = None
@@ -138,4 +151,6 @@ class GlobalClientState:
     can_see_secret_dlc_store: bool = False
     secret_dlc_download_percentage: float = 0.0
     is_already_downloading_dlc: bool = False
+
+    lore_eligiblity: LoreKind | None = None
 

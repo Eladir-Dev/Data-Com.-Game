@@ -20,7 +20,7 @@ class SecretGamePlayer:
     completed_laps: int
 
 
-class Map:
+class SecretGameMap:
     def __init__(self, file_name: str):
         self.tiles = _load_map(file_name)
 

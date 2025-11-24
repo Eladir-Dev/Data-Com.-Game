@@ -9,6 +9,7 @@ from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 import games.stratego.stratego_game as stratego_game
 import games.word_golf.word_golf_game as word_golf_game
 import games.secret_game.secret_game_game as secret_game_game
+import games.lore.lore_update as lore_update
 from ui.main_game_ui_sub_menus import MainGameSubMenus
 from games.secret_game.secret_game_background_activator import SecretGameBackgroundActivator
 from networking.server_cmd_interpreter import ServerCommandInterpreter
@@ -170,6 +171,11 @@ class MainGameUI:
             elif game_state == 'in_secret_dlc_game':
                 # Blank screen since the (secret) DLC runs as another executable.
                 self.surface.fill((0, 0, 0))
+
+            elif game_state == 'in_lore':
+                assert self.client_state.lore_state, "Lore state was None"
+
+                lore_update.lore_update(events, self.surface, self.client_state.lore_state)
 
             elif game_state == 'finished_game':
                 game_over_msg = self.client_state.game_over_message

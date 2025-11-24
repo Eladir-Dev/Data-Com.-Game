@@ -1,7 +1,7 @@
 from common_types.global_state import GlobalClientState, SecretGameGlobalState, StrategoGlobalState, WordGolfGlobalState, ValidState, SecretGamePlayer
 from typing import Callable
 from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color, ROWS, COLS
-from games.secret_game.secret_game_types import Map, get_map_path
+from games.secret_game.secret_game_types import SecretGameMap, get_map_path
 
 import networking.validator as validator
 
@@ -218,7 +218,7 @@ class ServerCommandInterpreter:
         self.client_state.secret_game_state = SecretGameGlobalState(
             own_idx,
             players,
-            Map(file_name=get_map_path(map_idx)),
+            SecretGameMap(file_name=get_map_path(map_idx)),
             ui_scale=self.client_state.ui_scale,
         )
         self.change_game_state('in_secret_game')
