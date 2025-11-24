@@ -39,3 +39,14 @@ def draw_text(surface: Surface, ui_scale: float, text: str, font_size: int, loca
     surface.blit(text_surface, text_rect)
     return text_rect
 
+
+def draw_colored_rect(surface: Surface, ui_scale: float, location: Pair, width: int, height: int, color: tuple[int, int, int]) -> Rect:
+    location = apply_ui_scale_pair(location, ui_scale)
+    width, height = apply_ui_scale_pair((width, height), ui_scale)
+
+    rect_data = (location[0] - width // 2, location[1] - height // 2, width, height)
+    return pygame.draw.rect(
+        surface,
+        color,
+        rect_data,
+    )
