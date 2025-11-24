@@ -1,6 +1,6 @@
 from pygame.event import Event
 from pygame import Surface
-from common_types.global_state import SecretGameGlobalState, apply_ui_scale_int, apply_ui_scale_pair
+from common_types.global_state import SecretGameGlobalState
 import pygame
 from pathlib import Path
 from ui.drawing_utils import draw_sprite_on_surface, draw_text
@@ -36,15 +36,10 @@ def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_o
 
             draw_sprite_on_surface(
                 surface,
+                global_game_data.ui_scale,
                 tile_sprite,
-                apply_ui_scale_pair(
-                    (real_pos[0] + camera_offset[0], real_pos[1] + camera_offset[1]),
-                    global_game_data.ui_scale,
-                ),
-                apply_ui_scale_pair(
-                    (MAP_RESOLUTION, MAP_RESOLUTION),
-                    global_game_data.ui_scale,
-                ),
+                (real_pos[0] + camera_offset[0], real_pos[1] + camera_offset[1]),
+                (MAP_RESOLUTION, MAP_RESOLUTION),
                 rect_origin='top_left',
             )
 
@@ -64,17 +59,19 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
 
     draw_sprite_on_surface(
         surface,
+        global_game_data.ui_scale,
         p1_sprite,
-        location=apply_ui_scale_pair(p1_draw_location, global_game_data.ui_scale),
-        target_dimensions=apply_ui_scale_pair((MAP_RESOLUTION, MAP_RESOLUTION), global_game_data.ui_scale),
+        location=p1_draw_location,
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
         rotation_deg=p1_angle_deg,
     )
 
     draw_sprite_on_surface(
         surface,
+        global_game_data.ui_scale,
         p2_sprite,
-        location=apply_ui_scale_pair(p2_draw_location, global_game_data.ui_scale),
-        target_dimensions=apply_ui_scale_pair((MAP_RESOLUTION, MAP_RESOLUTION), global_game_data.ui_scale),
+        location=p2_draw_location,
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
         rotation_deg=p2_angle_deg,
     )
 
@@ -90,12 +87,10 @@ def draw_player_nametags(surface: Surface, global_game_data: SecretGameGlobalSta
     for player_idx in range(len(global_game_data.players)):
         draw_text(
             surface,
+            global_game_data.ui_scale,
             text=global_game_data.players[player_idx].username,
-            font_size=apply_ui_scale_int(MAP_RESOLUTION * 2 // 3, global_game_data.ui_scale),
-            location=apply_ui_scale_pair(
-                (player_draw_locations[player_idx][0], player_draw_locations[player_idx][1] - MAP_RESOLUTION),
-                global_game_data.ui_scale,
-            ),
+            font_size=MAP_RESOLUTION * 2 // 3,
+            location=(player_draw_locations[player_idx][0], player_draw_locations[player_idx][1] - MAP_RESOLUTION),
             color=COLORS[player_idx],
         )
 
@@ -106,19 +101,21 @@ def draw_race_start_countdown(surface: Surface, global_game_data: SecretGameGlob
 
         draw_text(
             surface,
+            global_game_data.ui_scale,
             text=screen_text,
-            font_size=apply_ui_scale_int(MAP_RESOLUTION * 4, global_game_data.ui_scale),
-            location=apply_ui_scale_pair((SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), global_game_data.ui_scale),
+            font_size=MAP_RESOLUTION * 4,
+            location=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
             color=(255, 255, 255),
         )
 
 
 def draw_lap_ui(surface, global_game_data: SecretGameGlobalState):
     text = f"LAP: {global_game_data.get_own_data().completed_laps + 1}/3"
-    font_size = apply_ui_scale_int(MAP_RESOLUTION, global_game_data.ui_scale)
+    font_size = MAP_RESOLUTION
 
     draw_text(
         surface,
+        global_game_data.ui_scale,
         text=text,
         font_size=font_size,
         location=(len(text) * font_size // 4, font_size // 2),
