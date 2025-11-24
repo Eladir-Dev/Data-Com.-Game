@@ -19,7 +19,7 @@ ValidState = Literal[
 ]
 
 class StrategoGlobalState:
-    def __init__(self, own_color: StrategoColor, own_username: str, opponent_username: str):
+    def __init__(self, own_color: StrategoColor, own_username: str, opponent_username: str, ui_scale: float):
         self.own_color: StrategoColor = own_color
         self.opp_color: StrategoColor = toggle_color(own_color)
 
@@ -36,9 +36,11 @@ class StrategoGlobalState:
 
         self.current_move_result: StrategoMoveResult | None = None
 
+        self.ui_scale = ui_scale
+
 
 class WordGolfGlobalState:
-    def __init__(self, own_username: str, opponent_username: str):
+    def __init__(self, own_username: str, opponent_username: str, ui_scale: float):
         self.own_username = own_username
         self.opp_username = opponent_username
 
@@ -56,15 +58,19 @@ class WordGolfGlobalState:
 
         self.received_alerts: list[str] = []
 
+        self.ui_scale = ui_scale
+
     
 class SecretGameGlobalState:
-    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: Map):
+    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: Map, ui_scale: float):
         self.own_idx = own_idx
         self.players = players
         self.map = map
         self.turn_state: TurnState = 'straight'
 
         self.countdown: int | None = None
+
+        self.ui_scale = ui_scale
 
 
     def get_own_data(self) -> SecretGamePlayer:
