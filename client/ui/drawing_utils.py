@@ -5,9 +5,8 @@ from typing import Literal
 
 RectOrigin = Literal['center', 'top_left']
 
-def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair | None = None, rect_origin: RectOrigin = 'center') -> Rect:
-    if target_dimensions is not None:
-        sprite = pygame.transform.scale(sprite, target_dimensions)
+def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair, rotation_deg: float = 0.0, rect_origin: RectOrigin = 'center') -> Rect:
+    sprite = pygame.transform.rotate(pygame.transform.scale(sprite, target_dimensions), rotation_deg)
 
     if rect_origin == 'top_left':
         sprite_rect = sprite.get_rect(topleft=location)

@@ -44,8 +44,8 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     p1_angle_deg = -(p1.facing_angle * 180 / math.pi)
     p2_angle_deg = -(p2.facing_angle * 180 / math.pi)
 
-    p1_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_01.png"), p1_angle_deg)
-    p2_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_02.png"), p2_angle_deg)
+    p1_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_01.png")
+    p2_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_02.png")
 
     p1_draw_location = (p1.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p1.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
     p2_draw_location = (p2.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p2.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
@@ -54,12 +54,16 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
         surface,
         p1_sprite,
         location=p1_draw_location,
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
+        rotation_deg=p1_angle_deg,
     )
 
     draw_sprite_on_surface(
         surface,
         p2_sprite,
         location=p2_draw_location,
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
+        rotation_deg=p2_angle_deg,
     )
 
     draw_player_nametags(surface, global_game_data, [p1_draw_location, p2_draw_location])
