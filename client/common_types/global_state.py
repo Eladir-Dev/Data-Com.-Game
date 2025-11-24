@@ -139,10 +139,3 @@ class GlobalClientState:
     secret_dlc_download_percentage: float = 0.0
     is_already_downloading_dlc: bool = False
 
-
-def apply_ui_scale_int(value: int, ui_scale: float) -> int:
-    return int(value * ui_scale)
-
-
-def apply_ui_scale_pair(pair: Pair, ui_scale: float) -> Pair:
-    return (int(pair[0] * ui_scale), int(pair[1] * ui_scale))
