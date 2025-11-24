@@ -123,7 +123,10 @@ class GlobalClientState:
     A game-agnostic game over message that needs to be set after a game finishes.
     """
 
+    pending_ui_scale: float = 1.0
     ui_scale: float = 1.0
+
+    pending_volume: float = 100.0
     volume: float = 100.0
 
     can_see_secret_dlc_store: bool = False
