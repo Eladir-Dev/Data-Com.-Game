@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal
+from common_types.game_types import Pair
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
 from games.secret_game.secret_game_types import SecretGamePlayer, Map, TurnState
 
@@ -18,7 +19,7 @@ ValidState = Literal[
 ]
 
 class StrategoGlobalState:
-    def __init__(self, own_color: StrategoColor, own_username: str, opponent_username: str):
+    def __init__(self, own_color: StrategoColor, own_username: str, opponent_username: str, ui_scale: float):
         self.own_color: StrategoColor = own_color
         self.opp_color: StrategoColor = toggle_color(own_color)
 
@@ -35,9 +36,11 @@ class StrategoGlobalState:
 
         self.current_move_result: StrategoMoveResult | None = None
 
+        self.ui_scale = ui_scale
+
 
 class WordGolfGlobalState:
-    def __init__(self, own_username: str, opponent_username: str):
+    def __init__(self, own_username: str, opponent_username: str, ui_scale: float):
         self.own_username = own_username
         self.opp_username = opponent_username
 
@@ -55,15 +58,19 @@ class WordGolfGlobalState:
 
         self.received_alerts: list[str] = []
 
+        self.ui_scale = ui_scale
+
     
 class SecretGameGlobalState:
-    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: Map):
+    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: Map, ui_scale: float):
         self.own_idx = own_idx
         self.players = players
         self.map = map
         self.turn_state: TurnState = 'straight'
 
         self.countdown: int | None = None
+
+        self.ui_scale = ui_scale
 
 
     def get_own_data(self) -> SecretGamePlayer:
@@ -122,6 +129,20 @@ class GlobalClientState:
     A game-agnostic game over message that needs to be set after a game finishes.
     """
 
+    pending_ui_scale: float = 1.0
+    ui_scale: float = 1.0
+
+    pending_volume: float = 100.0
+    volume: float = 100.0
+
     can_see_secret_dlc_store: bool = False
     secret_dlc_download_percentage: float = 0.0
     is_already_downloading_dlc: bool = False
+
+
+def apply_ui_scale_int(value: int, ui_scale: float) -> int:
+    return int(value * ui_scale)
+
+
+def apply_ui_scale_pair(pair: Pair, ui_scale: float) -> Pair:
+    return (int(pair[0] * ui_scale), int(pair[1] * ui_scale))

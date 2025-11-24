@@ -187,6 +187,7 @@ class ServerCommandInterpreter:
             own_color=own_color,
             own_username=self.client_state.username,
             opponent_username=opponent_username,
+            ui_scale=self.client_state.ui_scale,
         )
         self.change_game_state('in_stratego_game')
 
@@ -195,6 +196,7 @@ class ServerCommandInterpreter:
         self.client_state.word_golf_state = WordGolfGlobalState(
             own_username=self.client_state.username,
             opponent_username=opponent_username,
+            ui_scale=self.client_state.ui_scale,
         )
         self.change_game_state('in_word_golf_game')
 
@@ -217,6 +219,7 @@ class ServerCommandInterpreter:
             own_idx,
             players,
             Map(file_name=get_map_path(map_idx)),
+            ui_scale=self.client_state.ui_scale,
         )
         self.change_game_state('in_secret_game')
 

@@ -4,7 +4,7 @@ from pygame import Surface
 
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from .word_golf_types import WORD_LEN, MAX_FEEDBACK_HIST_SIZE, Color, RenderedStashedWord, WordGolfUpdateResult
-from common_types.global_state import WordGolfGlobalState
+from common_types.global_state import WordGolfGlobalState, apply_ui_scale_int, apply_ui_scale_pair
 import ui.drawing_utils as drawing_utils
 
 SYMBOL_SIZE = 60
@@ -48,9 +48,12 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
             else:
                 color = Color.MAGENTA
 
-            draw_location = (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + y * SYMBOL_SIZE)
+            draw_location = apply_ui_scale_pair(
+                (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + y * SYMBOL_SIZE),
+                global_game_data.ui_scale,
+            )
 
-            rect_size = SYMBOL_SIZE * 8 // 9
+            rect_size = apply_ui_scale_int(SYMBOL_SIZE * 8 // 9, global_game_data.ui_scale)
 
             # left, top, width, height
             rect_data = (draw_location[0] - rect_size // 2, draw_location[1] - rect_size // 2, rect_size, rect_size)
@@ -63,7 +66,7 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
             drawing_utils.draw_text(
                 surface,
                 letter,
-                SYMBOL_SIZE,
+                apply_ui_scale_int(SYMBOL_SIZE, global_game_data.ui_scale),
                 draw_location,
                 color=Color.BLACK,
             )
@@ -74,16 +77,22 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
         drawing_utils.draw_text(
             surface, 
             global_game_data.typed_letters[i].upper(), 
-            SYMBOL_SIZE, 
-            (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + feedback_amt * SYMBOL_SIZE), 
+            apply_ui_scale_int(SYMBOL_SIZE, global_game_data.ui_scale), 
+            apply_ui_scale_pair(
+                (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + feedback_amt * SYMBOL_SIZE),
+                global_game_data.ui_scale,
+            ), 
             color=Color.WHITE,
         )
     
 
 def draw_points_and_queued_word_ui(surface: Surface, global_game_data: WordGolfGlobalState):
     # Draw the points and queued words UI after the main UI.
-    points_ui_start_location = (SCREEN_WIDTH // 2, WORD_GOLF_MAIN_UI_START_POS[1] + MAX_FEEDBACK_HIST_SIZE * SYMBOL_SIZE)
-    font_size = SYMBOL_SIZE * 3 // 4
+    points_ui_start_location = apply_ui_scale_pair(
+        (SCREEN_WIDTH // 2, WORD_GOLF_MAIN_UI_START_POS[1] + MAX_FEEDBACK_HIST_SIZE * SYMBOL_SIZE),
+        global_game_data.ui_scale,
+    )
+    font_size = apply_ui_scale_int(SYMBOL_SIZE * 3 // 4, global_game_data.ui_scale)
 
     drawing_utils.draw_text(
         surface,
@@ -108,8 +117,11 @@ def draw_most_recent_alert_ui(surface: Surface, global_game_data: WordGolfGlobal
     if len(alerts) == 0:
         return
     
-    font_size = SYMBOL_SIZE * 3 // 5
-    most_recent_alert_ui_start_location = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 2 * font_size)
+    font_size = apply_ui_scale_int(SYMBOL_SIZE * 3 // 5, global_game_data.ui_scale)
+    most_recent_alert_ui_start_location = apply_ui_scale_pair(
+        (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 2 * font_size),
+        global_game_data.ui_scale,
+    )
 
     most_recent_alert_text = alerts[-1]
 
@@ -124,8 +136,11 @@ def draw_most_recent_alert_ui(surface: Surface, global_game_data: WordGolfGlobal
 
 def draw_stashed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState) -> list[RenderedStashedWord]:
     # Draw the stashed words UI after the points UI.
-    font_size = SYMBOL_SIZE * 3 // 5
-    stashed_word_ui_start_location = (0, SCREEN_HEIGHT - font_size)
+    font_size = apply_ui_scale_int(SYMBOL_SIZE * 3 // 5, global_game_data.ui_scale)
+    stashed_word_ui_start_location = apply_ui_scale_pair(
+        (0, SCREEN_HEIGHT - font_size),
+        global_game_data.ui_scale,
+    )
 
     rendered_stashed_words: list[RenderedStashedWord] = []
 
