@@ -8,13 +8,7 @@ from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, Pair
 from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, real_position_to_map_pos, MAP_RESOLUTION, TurnState
 import math
 
-SPITE_FOLDER = Path(__file__).parent / "assets"
-
-# NOTE: For the Secret Game logic we use `SCREEN_WIDTH`, `SCREEN_HEIGHT` instead of 
-# `surface.get_width()` and `surface.get_height()` (respectively) and use `MAP_RESOLUTION` directly 
-# since the tiles on the server also use `MAP_RESOLUTION`. Converting to and from the map positions
-# and the scaled map resolution in intermediate calculations breaks the code completely. The UI scale 
-# can only be applied just before drawing, it cannot be used for calculations unless extreme care is taken.    
+SPITE_FOLDER = Path(__file__).parent / "assets" 
 
 def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_offset: Pair):
     tiles = global_game_data.map.tiles
