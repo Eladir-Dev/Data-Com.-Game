@@ -36,6 +36,8 @@ class MainGameUI:
 
         pygame.init()
         pygame.mixer.init()
+        music_player.play_main_menu_bg_music()
+
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # ======Stratego menus (before game start)======#
@@ -77,7 +79,10 @@ class MainGameUI:
         """
         self.client_state.game_state = new_state
 
-        if new_state == 'in_stratego_game':
+        if new_state == 'main_menu':
+            music_player.play_main_menu_bg_music()
+
+        elif new_state == 'in_stratego_game':
             music_player.play_stratego_bg_music()
 
         elif new_state == 'in_word_golf_game':
