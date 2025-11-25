@@ -9,7 +9,7 @@ class LoreMap:
     def __init__(self, lore_kind: LoreKind):
         # Load the map from the file corresponding to the lore kind.
         self.tiles = []
-        file_name = f"{MAPS_DIR}/{lore_kind}.txt"
+        file_name = f"{MAPS_DIR}/map_{lore_kind}.txt"
 
         with open(file_name, "r") as f:
             for raw_line in f.readlines():
