@@ -478,6 +478,7 @@ class StrategoSettingsWindow():
         """
         self.deck = self.create_random_deck()
         self.empty_pieces()
+
         inverted_array = self.deck[::-1]
         flattened_deck = stratego_types.flatten_2d_array(inverted_array)
         global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)

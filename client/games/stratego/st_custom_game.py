@@ -337,65 +337,24 @@ class StrategoCustomsWindow():
         Sets the ip of the host
         """
         self.ip = ip
+
     def get_public_ip(self):
         """
-        return the public ip of the machine
+        Returns the local IP address of the machine.
         """
-        print("Getting local public IP")
+        import socket
         try:
-            response = requests.get('https://api.ipify.org?format=json')
-            return response.json()['ip']
-        except requests.RequestException as e:
-            print("Getting local public IP X2")
-            urls = [
-                ('https://api.ipify.org?format=json', 'json', 'ip'),
-                ('https://checkip.amazonaws.com', 'text', None),
-                ('https://ifconfig.me/ip', 'text', None)
-            ]
+            # Create a socket and connect to an external server to get the local IP.
+            # This doesn't actually send data, it just establishes a route.
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect(("8.8.8.8", 80))
+                local_ip = s.getsockname()[0]
 
-            for url, mode, key in urls:
-                try:
-                    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
-                    response.raise_for_status()
-                    if mode == 'json':
-                        return response.json().get(key)
-                    elif mode == 'text':
-                        return response.text.strip()
-                except requests.RequestException as e:
-                    import socket
-                    print("Getting local public IP X3")
-                    try:
+            return local_ip
 
-                        hostname = socket.gethostname()
-                        local_ip = socket.gethostbyname(hostname)
-                        return local_ip
-                    except socket.error as e:
-                        print(f"Error getting local IP: {e}")
-                        return None
-                    # print(f"Failed with {url}: {e}")
-                    # return None
-                except ValueError as ve:
-                    import socket
-                    print("Getting local public IP X3")
-                    try:
-
-                        hostname = socket.gethostname()
-                        local_ip = socket.gethostbyname(hostname)
-                        return local_ip
-                    except socket.error as e:
-                        print(f"Error getting local IP: {e}")
-                        return None
-
-                    # print(f"JSON parsing error from {url}: {ve}")
-                    # return None
-
-
-            # print("All public IP services failed.")
-            # return None
-
-            print(f"Error geting local public IP: {e}")
-            # print(f"Error: {e}")
-            return None
+        except Exception as e:
+            print(f"ERROR: Could not get local IP: {e}")
+            return "127.0.0.1"
 
 
     def go_back(self):
