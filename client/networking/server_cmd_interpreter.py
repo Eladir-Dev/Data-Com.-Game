@@ -1,7 +1,9 @@
-from common_types.global_state import GlobalClientState, SecretGameGlobalState, StrategoGlobalState, WordGolfGlobalState, ValidState, SecretGamePlayer
+from common_types.global_state import GlobalClientState, SecretGameGlobalState, StrategoGlobalState, WordGolfGlobalState, LoreGlobalState, ValidState, SecretGamePlayer
 from typing import Callable
 from games.stratego.stratego_types import StrategoBoard, StrategoColor, StrategoMoveResult, assert_str_is_color, ROWS, COLS
 from games.secret_game.secret_game_types import SecretGameMap, get_map_path
+from games.lore import lore_unlocking
+from common_types.game_types import GameKind
 
 import networking.validator as validator
 
@@ -23,7 +25,7 @@ class ServerCommandInterpreter:
     def interpret_server_command(self, data: str):
         if data.startswith("?game-start"):
             fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
-            game = fields[1]
+            game: GameKind = validator.assert_is_valid_game(fields[1])
 
             if game == 'stratego':
                 own_color = assert_str_is_color(fields[2])
@@ -170,13 +172,14 @@ class ServerCommandInterpreter:
 
         elif data.startswith("?game-over"):
             fields = validator.assert_field_min_amount_valid(data.split(':'), 3)
-            game = fields[1]
+            game: GameKind = validator.assert_is_valid_game(fields[1])
             reason = fields[2]
 
             game_over_message = self.get_game_over_message(reason, game, all_received_fields=fields)
-
             self.client_state.game_over_message = game_over_message
-            self.change_game_state('finished_game')
+
+            self.on_game_end(game)
+
 
         else:
             print(f"ERROR: Unknown server command: '{data}'")
@@ -329,7 +332,7 @@ class ServerCommandInterpreter:
         self.client_state.secret_game_state.players[player_idx].completed_laps = completed_laps
 
 
-    def get_game_over_message(self, reason: str, game: str, all_received_fields: list[str]):
+    def get_game_over_message(self, reason: str, game: str, all_received_fields: list[str]) -> str:
         if reason == "winner-determined":
             if game == "stratego":
                 winning_color = all_received_fields[3]
@@ -341,11 +344,6 @@ class ServerCommandInterpreter:
             
             elif game == "secret_game":
                 winner_idx = int(all_received_fields[3])
-
-                # Check if the player can unlock the secret DLC store based on 
-                # the results of the Secret Game.
-                self.try_unlocking_secret_dlc_store(winner_idx)
-
                 return f"Player #{winner_idx + 1} has won!"
 
             else:
@@ -361,11 +359,20 @@ class ServerCommandInterpreter:
         else:
             print(f"ERROR: The game unexpectedly ended after server sent `{''.join(all_received_fields)}`.")
             return "MISSING GAME OVER MESSAGE"
+        
 
+    def on_game_end(self, game: GameKind):
+        lore_kind = lore_unlocking.determine_lore_kind_after_game(game)
 
-    def try_unlocking_secret_dlc_store(self, secret_game_winner_idx: int):
-        assert self.client_state.secret_game_state, "Secret Game state was None"
+        if lore_kind is None:
+            self.client_state.lore_state = None
 
-        # If the player won the Secret Game, then they unlock the Secret DLC store.
-        if self.client_state.secret_game_state.own_idx == secret_game_winner_idx:
-            self.client_state.can_see_secret_dlc_store = True
+        else:
+            self.client_state.lore_state = LoreGlobalState(
+                username=self.client_state.username,
+                ui_scale=self.client_state.ui_scale,
+                kind=lore_kind,
+            )
+
+        self.change_game_state('finished_game')
+

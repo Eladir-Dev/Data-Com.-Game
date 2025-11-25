@@ -152,5 +152,3 @@ class GlobalClientState:
     secret_dlc_download_percentage: float = 0.0
     is_already_downloading_dlc: bool = False
 
-    lore_eligiblity: LoreKind | None = None
-

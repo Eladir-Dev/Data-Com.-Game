@@ -2,6 +2,8 @@
 This module is for types and constants that are shared between games (client-side).
 """
 
+from typing import Literal
+
 # Dimensions in common for all games.
 SCREEN_WIDTH = 900
 """
@@ -17,6 +19,8 @@ Pair = tuple[int, int]
 """
 Utility type for a position in the game screen.
 """
+
+GameKind = Literal['stratego', 'word_golf', 'secret_game']
 
 # == Utility functions ==
 def row_col_to_flat_index(r: int, c: int, logical_cols: int) -> int:

@@ -73,7 +73,7 @@ class MainGameSubMenus:
 
         self.game_over_menu = pygame_menu.Menu('Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
         self.game_over_menu.add.label('PLACEHOLDER TEXT', 'game_over_label')
-        self.game_over_menu.add.button('Go To Main Menu', self.go_to_main_menu)
+        self.game_over_menu.add.button('Go To Main Menu', self.on_exit_game_over_menu)
         self.game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
         self.menus.append(self.game_over_menu)
 
@@ -113,8 +113,12 @@ class MainGameSubMenus:
             self.title_screen_secret_dlc_button.hide()
 
 
-    def go_to_main_menu(self):
-        self.change_game_state('main_menu')
+    def on_exit_game_over_menu(self):
+        if self.client_state.lore_state is None:
+            self.change_game_state('main_menu')
+
+        else:
+            self.change_game_state('in_lore')
 
 
     def set_username(self, new_username: str):
