@@ -6,6 +6,7 @@ GAMES_DIR = Path(__file__).parent.parent / "games"
 STRATEGO_MUSIC_PATH = GAMES_DIR / "stratego" / "sfx" / "Brirfing_theme.mp3"
 WORD_GOLF_MUSIC_PATH = GAMES_DIR / "word_golf" / "sfx" / "b423b42.wav"
 SECRET_GAME_MUSIC_PATH = GAMES_DIR / "secret_game" / "assets" / "Bone Yard Waltz - Loopable.ogg"
+LORE_MUSIC_PATH = GAMES_DIR / "lore" / "sfx" / "Snowfall (Looped ver.).ogg"
 
 def play_stratego_bg_music():
     _play_looping_bg_music(STRATEGO_MUSIC_PATH)
@@ -17,6 +18,10 @@ def play_word_golf_bg_music():
 
 def play_secret_game_bg_music():
     _play_looping_bg_music(SECRET_GAME_MUSIC_PATH)
+
+
+def play_lore_bg_music():
+    _play_looping_bg_music(LORE_MUSIC_PATH)
 
 
 def _play_looping_bg_music(path: Path):
