@@ -478,14 +478,16 @@ class StrategoSettingsWindow():
         """
         self.deck = self.create_random_deck()
         self.empty_pieces()
-        flattened_deck = stratego_types.flatten_2d_array(self.deck)
+        inverted_array = self.deck[::-1]
+        flattened_deck = stratego_types.flatten_2d_array(inverted_array)
         global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)
 
     def set_deck(self, global_data: GlobalClientState):
         """
         This method sets the deck.
         """
-        flattened_deck = stratego_types.flatten_2d_array(self.deck)
+        inverted_array = self.deck[::-1]
+        flattened_deck = stratego_types.flatten_2d_array(inverted_array)
         global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)
 
 
