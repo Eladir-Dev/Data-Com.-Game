@@ -197,7 +197,7 @@ class DeckSelector():
         pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Grid backgrounds
 
         # Render main text
-        draw_text(surface, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
+        draw_text(surface, 1, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
 
 
         # Top grid outline: Horizontal/vertical lines for visual slots.

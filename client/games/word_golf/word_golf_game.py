@@ -52,16 +52,18 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
 
             rect_size = SYMBOL_SIZE * 8 // 9
 
-            # left, top, width, height
-            rect_data = (draw_location[0] - rect_size // 2, draw_location[1] - rect_size // 2, rect_size, rect_size)
-            pygame.draw.rect(
+            drawing_utils.draw_colored_rect(
                 surface,
+                global_game_data.ui_scale,
+                draw_location,
+                rect_size, # width
+                rect_size, # height
                 color,
-                rect_data,
             )
 
             drawing_utils.draw_text(
                 surface,
+                global_game_data.ui_scale,
                 letter,
                 SYMBOL_SIZE,
                 draw_location,
@@ -73,6 +75,7 @@ def draw_feedback_and_typed_word_ui(surface: Surface, global_game_data: WordGolf
         x = i
         drawing_utils.draw_text(
             surface, 
+            global_game_data.ui_scale,
             global_game_data.typed_letters[i].upper(), 
             SYMBOL_SIZE, 
             (WORD_GOLF_MAIN_UI_START_POS[0] + x * SYMBOL_SIZE, WORD_GOLF_MAIN_UI_START_POS[1] + feedback_amt * SYMBOL_SIZE), 
@@ -87,6 +90,7 @@ def draw_points_and_queued_word_ui(surface: Surface, global_game_data: WordGolfG
 
     drawing_utils.draw_text(
         surface,
+        global_game_data.ui_scale,
         f"{global_game_data.own_username}: ({global_game_data.own_queued_word_amt} words queued) - ({global_game_data.own_points} pts)",
         font_size,
         points_ui_start_location,
@@ -95,6 +99,7 @@ def draw_points_and_queued_word_ui(surface: Surface, global_game_data: WordGolfG
 
     drawing_utils.draw_text(
         surface,
+        global_game_data.ui_scale,
         f"{global_game_data.opp_username} ({global_game_data.opp_queued_word_amt} words queued) ({global_game_data.opp_points} pts)",
         font_size,
         location=(points_ui_start_location[0], points_ui_start_location[1] + font_size),
@@ -115,6 +120,7 @@ def draw_most_recent_alert_ui(surface: Surface, global_game_data: WordGolfGlobal
 
     drawing_utils.draw_text(
         surface,
+        global_game_data.ui_scale,
         most_recent_alert_text,
         font_size,
         most_recent_alert_ui_start_location,
@@ -137,6 +143,7 @@ def draw_stashed_word_ui(surface: Surface, global_game_data: WordGolfGlobalState
 
         text_rect = drawing_utils.draw_text(
             surface,
+            global_game_data.ui_scale,
             word,
             font_size,
             (stashed_word_ui_start_location[0] + word_offset, stashed_word_ui_start_location[1]),

@@ -8,7 +8,7 @@ from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, Pair
 from games.secret_game.secret_game_types import get_map_tile_sprite_name, map_pos_to_real_position, real_position_to_map_pos, MAP_RESOLUTION, TurnState
 import math
 
-SPITE_FOLDER = Path(__file__).parent / "assets"
+SPITE_FOLDER = Path(__file__).parent / "assets" 
 
 def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_offset: Pair):
     tiles = global_game_data.map.tiles
@@ -30,6 +30,7 @@ def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_o
 
             draw_sprite_on_surface(
                 surface,
+                global_game_data.ui_scale,
                 tile_sprite,
                 (real_pos[0] + camera_offset[0], real_pos[1] + camera_offset[1]),
                 (MAP_RESOLUTION, MAP_RESOLUTION),
@@ -44,22 +45,28 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     p1_angle_deg = -(p1.facing_angle * 180 / math.pi)
     p2_angle_deg = -(p2.facing_angle * 180 / math.pi)
 
-    p1_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_01.png"), p1_angle_deg)
-    p2_sprite = pygame.transform.rotate(pygame.image.load(f"{SPITE_FOLDER}/player_02.png"), p2_angle_deg)
+    p1_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_01.png")
+    p2_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_02.png")
 
     p1_draw_location = (p1.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p1.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
     p2_draw_location = (p2.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p2.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
 
     draw_sprite_on_surface(
         surface,
+        global_game_data.ui_scale,
         p1_sprite,
         location=p1_draw_location,
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
+        rotation_deg=p1_angle_deg,
     )
 
     draw_sprite_on_surface(
         surface,
+        global_game_data.ui_scale,
         p2_sprite,
         location=p2_draw_location,
+        target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
+        rotation_deg=p2_angle_deg,
     )
 
     draw_player_nametags(surface, global_game_data, [p1_draw_location, p2_draw_location])
@@ -74,6 +81,7 @@ def draw_player_nametags(surface: Surface, global_game_data: SecretGameGlobalSta
     for player_idx in range(len(global_game_data.players)):
         draw_text(
             surface,
+            global_game_data.ui_scale,
             text=global_game_data.players[player_idx].username,
             font_size=MAP_RESOLUTION * 2 // 3,
             location=(player_draw_locations[player_idx][0], player_draw_locations[player_idx][1] - MAP_RESOLUTION),
@@ -87,6 +95,7 @@ def draw_race_start_countdown(surface: Surface, global_game_data: SecretGameGlob
 
         draw_text(
             surface,
+            global_game_data.ui_scale,
             text=screen_text,
             font_size=MAP_RESOLUTION * 4,
             location=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
@@ -100,6 +109,7 @@ def draw_lap_ui(surface, global_game_data: SecretGameGlobalState):
 
     draw_text(
         surface,
+        global_game_data.ui_scale,
         text=text,
         font_size=font_size,
         location=(len(text) * font_size // 4, font_size // 2),

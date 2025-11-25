@@ -16,43 +16,67 @@ from common_types.game_types import Pair, row_col_to_flat_index, SCREEN_WIDTH
 import ui.drawing_utils as drawing_utils
 
 
-def draw_sprite_on_surface(surface: Surface, sprite: Surface, location: Pair, target_dimensions: Pair = (SPRITE_WIDTH, SPRITE_HEIGHT)) -> Rect:
-    return drawing_utils.draw_sprite_on_surface(surface, sprite, location, target_dimensions)
+def get_sprite_dimensions() -> Pair:
+    return (SPRITE_WIDTH, SPRITE_HEIGHT)
 
 
 SPRITE_FOLDER = Path(__file__).parent / "assets"
 
 
-def draw_empty_grid_slot(surface: Surface, location: Pair) -> Rect:
+def draw_empty_grid_slot(surface: Surface, location: Pair, ui_scale: float) -> Rect:
     """
     Draws an empty grid slot at :py:attr:`location`.
     """
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/empty_space.png")
-    return draw_sprite_on_surface(surface, empty_space_sprite, location)
+    return drawing_utils.draw_sprite_on_surface(
+        surface, 
+        ui_scale,
+        empty_space_sprite, 
+        location, 
+        get_sprite_dimensions(),
+    )
 
 
-def draw_lake_slot(surface: Surface, location: Pair) -> Rect:
+def draw_lake_slot(surface: Surface, location: Pair, ui_scale: float) -> Rect:
     """
     Draws a lake slot at :py:attr:`location`.
     """
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/lake.png")
-    return draw_sprite_on_surface(surface, empty_space_sprite, location)
+    return drawing_utils.draw_sprite_on_surface(
+        surface, 
+        ui_scale,
+        empty_space_sprite, 
+        location, 
+        get_sprite_dimensions(),
+    )
 
 
-def draw_hidden_slot(surface: Surface, location: Pair) -> Rect:
+def draw_hidden_slot(surface: Surface, location: Pair, ui_scale: float) -> Rect:
     """
     Draws a hidden slot at :py:attr:`location`.
     """
     empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/hidden.png")
-    return draw_sprite_on_surface(surface, empty_space_sprite, location)
+    return drawing_utils.draw_sprite_on_surface(
+        surface, 
+        ui_scale,
+        empty_space_sprite, 
+        location, 
+        get_sprite_dimensions(),
+    )
 
 
-def draw_piece(surface: Surface, piece_name: StrategoPieceName, color: StrategoColor, location: Pair) -> Rect:
+def draw_piece(surface: Surface, piece_name: StrategoPieceName, color: StrategoColor, location: Pair, ui_scale: float) -> Rect:
     """
     Draws the sprite corresponding with :py:attr:`piece_name` at :py:attr:`location`.
     """
     piece_sprite = pygame.image.load(f"{SPRITE_FOLDER}/{get_full_color_name(color)}_{piece_name}.png")
-    return draw_sprite_on_surface(surface, piece_sprite, location)
+    return drawing_utils.draw_sprite_on_surface(
+        surface, 
+        ui_scale,
+        piece_sprite, 
+        location, 
+        get_sprite_dimensions(),
+    )
 
 
 def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
@@ -66,15 +90,36 @@ def gen_move_cmd(from_pos: Pair, to_pos: Pair) -> str:
 
 def draw_ui_text(surface: Surface, global_game_data: StrategoGlobalState):
     heading_font_size = 100
-    drawing_utils.draw_text(surface, "Stratego", heading_font_size, (SCREEN_WIDTH // 2, 50), (0, 0, 0))
+    drawing_utils.draw_text(
+        surface, 
+        global_game_data.ui_scale,
+        "Stratego", 
+        heading_font_size, 
+        (SCREEN_WIDTH // 2, 50), 
+        (0, 0, 0),
+    )
 
     info_string_font_size = 40
 
     player_info_string = f"{global_game_data.own_username} ({global_game_data.own_color}) VS {global_game_data.opp_username} ({global_game_data.opp_color})"
-    drawing_utils.draw_text(surface, player_info_string, info_string_font_size, (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+    drawing_utils.draw_text(
+        surface, 
+        global_game_data.ui_scale,
+        player_info_string, 
+        info_string_font_size, 
+        (SCREEN_WIDTH // 2, 120 + ROWS * SPRITE_HEIGHT), 
+        (0, 0, 0),
+    )
 
     turn_info_string = f"Current Turn: ({global_game_data.turn})"
-    drawing_utils.draw_text(surface, turn_info_string, info_string_font_size, (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), (0, 0, 0))
+    drawing_utils.draw_text(
+        surface, 
+        global_game_data.ui_scale,
+        turn_info_string, 
+        info_string_font_size, 
+        (SCREEN_WIDTH // 2, 170 + ROWS * SPRITE_HEIGHT), 
+        (0, 0, 0),
+    )
 
     selected_piece_font_size = 40
 
@@ -89,6 +134,7 @@ def draw_ui_text(surface: Surface, global_game_data: StrategoGlobalState):
 
     drawing_utils.draw_text(
         surface,
+        global_game_data.ui_scale,
         f"Selected Piece: {selected_piece_str}",
         selected_piece_font_size,
         (SCREEN_WIDTH // 2, 210 + ROWS * SPRITE_HEIGHT), 
@@ -200,21 +246,35 @@ def render_board_tiles(surface: Surface, global_game_data: StrategoGlobalState) 
             )
 
             if encoded_str_is_empty(encoded_element_str):
-                sprite = draw_empty_grid_slot(surface, location)
+                sprite = draw_empty_grid_slot(
+                    surface, 
+                    location, 
+                    global_game_data.ui_scale,
+                )
 
             elif encoded_str_is_lake(encoded_element_str):
-                sprite = draw_lake_slot(surface, location)
+                sprite = draw_lake_slot(
+                    surface, 
+                    location, 
+                    global_game_data.ui_scale,
+                )
 
             elif (should_draw_own_piece_outside_of_attack or should_draw_pieces_involved_in_attack):
                 color: StrategoColor = assert_str_is_color(encoded_element_str[0])
                 encoded_piece_str = encoded_element_str[1] # just the piece encoding without the color
 
                 piece_name = parse_piece_from_encoded_str(encoded_piece_str)
-                sprite = draw_piece(surface, piece_name, color, location)
+                sprite = draw_piece(
+                    surface, 
+                    piece_name, 
+                    color, 
+                    location, 
+                    global_game_data.ui_scale,
+                )
 
             # Hide the opponent's pieces.
             else:
-                sprite = draw_hidden_slot(surface, location)
+                sprite = draw_hidden_slot(surface, location, global_game_data.ui_scale)
 
             rendered_tiles.append(StrategoRenderedTile(sprite, encoded_element_str, (r, c)))
 
