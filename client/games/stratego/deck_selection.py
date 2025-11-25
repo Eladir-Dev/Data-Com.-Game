@@ -362,6 +362,7 @@ class StrategoSettingsWindow():
         """
         if self.deck_full():
             print("Caling start_local_server...")
+            self.set_deck(self.player_data)
             self.go_to_start()
 
     def fill_pieces(self, rows, cols,debug):
@@ -478,6 +479,13 @@ class StrategoSettingsWindow():
         """
         self.deck = self.create_random_deck()
         self.empty_pieces()
+        flattened_deck = stratego_types.flatten_2d_array(self.deck)
+        global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)
+
+    def set_deck(self, global_data: GlobalClientState):
+        """
+        This method sets the deck.
+        """
         flattened_deck = stratego_types.flatten_2d_array(self.deck)
         global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)
 
