@@ -86,7 +86,7 @@ class LoreGlobalState:
     def __init__(self, username: str, ui_scale: float, kind: LoreKind):
         self.username = username
         self.ui_scale = ui_scale
-        self.kind = kind
+        self.kind: LoreKind = kind
         self.map = LoreMap(kind)
 
 
