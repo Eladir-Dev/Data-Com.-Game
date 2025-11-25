@@ -95,6 +95,7 @@ class DeckSelector():
             # Check if click is in top grid
             if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
                 X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                self.placment_effect.play(0,0,0.2)
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
                 if top_grid[row][col] != "":  # There's a piece here
@@ -110,6 +111,7 @@ class DeckSelector():
             # Check if click is in bottom grid
             elif (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
                   X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                self.placment_effect.play(0,0,0.2)
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
                 if bottom_grid[row][col] != "":  # There's a piece here
@@ -127,9 +129,12 @@ class DeckSelector():
             mouse_x, mouse_y = event.pos
             dropped = False
 
+            self.pic_up_effect.play(0, 0, 0.2)
+
             # Check if mouse is over bottom grid
             if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
                 X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                self.pic_up_effect.play(0, 0, 0.2)
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
                 if bottom_grid[row][col] == "":  # Only drop if the cell is empty
@@ -139,6 +144,7 @@ class DeckSelector():
             # Check if mouse is over top grid
             if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
                 X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
+                self.pic_up_effect.play(0, 0, 0.2)
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
                 if top_grid[row][col] == "":  # Only drop if the cell is empty
@@ -255,6 +261,8 @@ class StrategoSettingsWindow():
         self.st_custom_game_menu = None
         self.in_custom_game = False
 
+        self.placment_effect = pygame.mixer.Sound("games/stratego/sfx/placment.wav")
+        self.pic_up_effect = pygame.mixer.Sound("games/stratego/sfx/pick_up.wav")
         #======================Custom theme======================#
         self.theme = pygame_menu.themes.THEME_DARK.copy()
         self.theme.widget_alignment = pygame_menu.locals.ALIGN_LEFT
