@@ -345,7 +345,6 @@ class StrategoSettingsWindow():
 
                 self.join_button.set_selection_effect(red_selection)
 
-
     def deck_full(self):
         """
         This method verifies if the deck is full.
