@@ -17,8 +17,11 @@ def apply_ui_scale_pair(pair: Pair, ui_scale: float) -> Pair:
 def draw_sprite_on_surface(surface: Surface, ui_scale: float, sprite: Surface, location: Pair, target_dimensions: Pair, rotation_deg: float = 0.0, rect_origin: RectOrigin = 'center') -> Rect:
     location = apply_ui_scale_pair(location, ui_scale)
     target_dimensions = apply_ui_scale_pair(target_dimensions, ui_scale)
+
+    sprite = pygame.transform.scale(sprite, target_dimensions)
     
-    sprite = pygame.transform.rotate(pygame.transform.scale(sprite, target_dimensions), rotation_deg)
+    if rotation_deg != 0.0:
+        sprite = pygame.transform.rotate(sprite, rotation_deg)
 
     if rect_origin == 'top_left':
         sprite_rect = sprite.get_rect(topleft=location)

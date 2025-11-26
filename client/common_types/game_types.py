@@ -20,6 +20,8 @@ Pair = tuple[int, int]
 Utility type for a position in the game screen.
 """
 
+CLIENT_FPS = 30
+
 GameKind = Literal['stratego', 'word_golf', 'secret_game']
 
 # == Utility functions ==

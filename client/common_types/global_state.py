@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal
+from common_types.game_types import Pair
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
 from games.secret_game.secret_game_types import SecretGamePlayer, SecretGameMap, TurnState
 from games.lore.lore_types import LoreKind, LoreMap, map_pos_to_real_pos
@@ -89,7 +90,12 @@ class LoreGlobalState:
         self.kind: LoreKind = kind
         self.map = LoreMap(kind)
 
-        self.player_pos = map_pos_to_real_pos(self.map.player_spawn_map_pos)
+        self.player_pos: tuple[float, float] = map_pos_to_real_pos(self.map.player_spawn_map_pos)
+        self.player_speed: float = 2.0
+
+    
+    def get_player_pos(self) -> Pair:
+        return (int(self.player_pos[0]), int(self.player_pos[1]))
 
 
 @dataclass

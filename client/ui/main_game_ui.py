@@ -5,7 +5,7 @@ import threading
 from games.stratego.deck_selection import StrategoSettingsWindow
 from common_types.global_state import GlobalClientState, ValidState
 import networking.socket_client as socket_client
-from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, CLIENT_FPS
 import games.stratego.stratego_game as stratego_game
 import games.word_golf.word_golf_game as word_golf_game
 import games.secret_game.secret_game_game as secret_game_game
@@ -39,6 +39,8 @@ class MainGameUI:
         music_player.play_main_menu_bg_music()
 
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        self.clock = pygame.time.Clock()
 
         # ======Stratego menus (before game start)======#
 
@@ -101,6 +103,9 @@ class MainGameUI:
 
     def start(self):
         while True:
+            # `deltatime` is in seconds.
+            deltatime = self.clock.tick(CLIENT_FPS) / 1000
+
             self.receive_server_commands()
 
             self.receive_secret_dlc_store_updates()
@@ -183,7 +188,7 @@ class MainGameUI:
             elif game_state == 'in_lore':
                 assert self.client_state.lore_state, "Lore state was None"
 
-                lore_update.lore_update(events, self.surface, self.client_state.lore_state)
+                lore_update.lore_update(events, self.surface, self.client_state.lore_state, deltatime)
 
             elif game_state == 'finished_game':
                 game_over_msg = self.client_state.game_over_message

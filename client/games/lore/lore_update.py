@@ -7,34 +7,27 @@ from common_types.game_types import Pair, SCREEN_WIDTH, SCREEN_HEIGHT
 from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_name
 from ui.drawing_utils import draw_sprite_on_surface
 from pathlib import Path
+import functools
 
 SPRITE_FOLDER = Path(__file__).parent / "assets"
+PLAYER_SPRITE_FILE_NAME = 'player.png'
 
-
-import time
 
 class LoreEngine:
     def __init__(self, client_state: LoreGlobalState):
         self.client_state = client_state
-        self.deltatime = 0.1
-        self._last_timestamp: float | None = None
 
 
-    def calc_deltatime(self):
-        if self._last_timestamp is None:
-            self.deltatime = 0.1
-            self._last_timestamp = time.perf_counter()
+    def tick(self, player_movement: Pair, deltatime: float):
+        print(f"DELTATIME: {deltatime}s")
 
-        else:
-            now = time.perf_counter()
-            self.deltatime = now - self._last_timestamp
-            self._last_timestamp = now
+        px, py = self.client_state.player_pos
+        dx, dy = player_movement
 
+        px += deltatime * dx * self.client_state.player_speed * TILE_SIZE
+        py += deltatime * dy * self.client_state.player_speed * TILE_SIZE
 
-    def tick(self):
-        pass
-
-        # time.sleep(0.5)
+        self.client_state.player_pos = (px, py)
 
 
 _LORE_ENGINE: LoreEngine | None = None
@@ -63,10 +56,21 @@ def get_lore_window_subtitle(global_game_data: LoreGlobalState):
         return "Unknown" # unreachable
 
 
+@functools.lru_cache(maxsize=None)
+def get_sprite(sprite_file_name: str) -> Surface:
+    sprite = pygame.image.load(f"{SPRITE_FOLDER}/{sprite_file_name}")
+
+    if sprite_file_name == PLAYER_SPRITE_FILE_NAME:
+        return sprite.convert_alpha()
+    
+    else:
+        return sprite.convert()
+
+
 def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset: Pair):
     tiles = global_game_data.map.tiles
 
-    own_map_pos = real_pos_to_map_pos(global_game_data.player_pos)
+    own_map_pos = real_pos_to_map_pos(global_game_data.get_player_pos())
 
     min_vis_map_x = max(0, own_map_pos[0] - SCREEN_WIDTH // 2 // TILE_SIZE - 1)
     max_vis_map_x = min(len(tiles[0]), own_map_pos[0] + SCREEN_WIDTH // 2 // TILE_SIZE + 1)
@@ -85,7 +89,7 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
             if tile_sprite_file_name is None:
                 continue
 
-            tile_sprite = pygame.image.load(f"{SPRITE_FOLDER}/{tile_sprite_file_name}")
+            tile_sprite = get_sprite(tile_sprite_file_name)
 
             real_pos = map_pos_to_real_pos((x, y))
 
@@ -100,36 +104,59 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
 
 
 def draw_player(surface: Surface, global_game_data: LoreGlobalState, camera_offset: Pair):
+    player_pos = global_game_data.get_player_pos()
+
     draw_pos = (
-        global_game_data.player_pos[0] + camera_offset[0], 
+        player_pos[0] + camera_offset[0], 
         # `player_pos` denotes the player's foot position, so we render the sprite slightly above this position.
-        global_game_data.player_pos[1] + camera_offset[1] - TILE_SIZE,
+        player_pos[1] + camera_offset[1] - TILE_SIZE,
     )
-    player_sprite = pygame.image.load(f"{SPRITE_FOLDER}/player.png")
 
     draw_sprite_on_surface(
         surface, 
         global_game_data.ui_scale,
-        player_sprite,
+        get_sprite(PLAYER_SPRITE_FILE_NAME),
         draw_pos,
         (TILE_SIZE, TILE_SIZE),
         rect_origin='center',
     )
 
 
-def lore_update(events: list[Event], surface: Surface, global_game_data: LoreGlobalState) -> str | None:
+def get_player_input() -> Pair:
+    keys = pygame.key.get_pressed()
+
+    x_movement = 0
+    if keys[pygame.K_a]:
+        x_movement -= 1
+
+    if keys[pygame.K_d]:
+        x_movement += 1
+
+    y_movement = 0
+    if keys[pygame.K_w]:
+        y_movement -= 1
+    
+    if keys[pygame.K_s]:
+        y_movement += 1
+
+    return (x_movement, y_movement)
+
+
+def lore_update(events: list[Event], surface: Surface, global_game_data: LoreGlobalState, deltatime: float) -> str | None:
     surface.fill((0, 0, 0))
 
     subtitle = get_lore_window_subtitle(global_game_data)
     pygame.display.set_caption(f"Lore - {subtitle} - {global_game_data.player_pos}")
 
-    lore_engine = get_lore_engine(global_game_data)
-    lore_engine.tick()
-
-    player_pos = global_game_data.player_pos
-    camera_offset = (SCREEN_WIDTH // 2 - player_pos[0], SCREEN_HEIGHT // 2 - player_pos[1])
+    player_pos = global_game_data.get_player_pos()
+    camera_offset: Pair = (SCREEN_WIDTH // 2 - player_pos[0], SCREEN_HEIGHT // 2 - player_pos[1])
 
     draw_map(surface, global_game_data, camera_offset)
     draw_player(surface, global_game_data, camera_offset)
+
+    movement = get_player_input()
+
+    lore_engine = get_lore_engine(global_game_data)
+    lore_engine.tick(movement, deltatime)
 
     # TODO: actually add the lore
