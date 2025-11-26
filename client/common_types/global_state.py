@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Literal
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
 from games.secret_game.secret_game_types import SecretGamePlayer, SecretGameMap, TurnState
-from games.lore.lore_types import LoreKind, LoreMap
+from games.lore.lore_types import LoreKind, LoreMap, map_pos_to_real_pos
 
 ValidState = Literal[
     'main_menu', 
@@ -88,6 +88,8 @@ class LoreGlobalState:
         self.ui_scale = ui_scale
         self.kind: LoreKind = kind
         self.map = LoreMap(kind)
+
+        self.player_pos = map_pos_to_real_pos(self.map.player_spawn_map_pos)
 
 
 @dataclass
