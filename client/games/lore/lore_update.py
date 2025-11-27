@@ -4,7 +4,7 @@ from pygame import Surface
 
 from common_types.global_state import LoreGlobalState
 from common_types.game_types import Pair, SCREEN_WIDTH, SCREEN_HEIGHT
-from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_name
+from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_name, LoreMapTile, LoreResult
 from ui.drawing_utils import draw_sprite_on_surface
 from pathlib import Path
 import functools
@@ -16,6 +16,7 @@ PLAYER_SPRITE_FILE_NAME = 'player.png'
 class LoreEngine:
     def __init__(self, client_state: LoreGlobalState):
         self.client_state = client_state
+        self.result: LoreResult | None = None
 
 
     def tick(self, player_movement: Pair, deltatime: float):
@@ -27,7 +28,46 @@ class LoreEngine:
         px += deltatime * dx * self.client_state.player_speed * TILE_SIZE
         py += deltatime * dy * self.client_state.player_speed * TILE_SIZE
 
+        collisions = self.get_collisions((px, py))
+        if self.check_tile_collision(collisions, 'wall'):
+            return
+        
+        elif (
+            self.check_tile_collision(collisions, 'secret_game_car') or 
+            self.check_tile_collision(collisions, 'secret_dlc_store_coin') or 
+            self.check_tile_collision(collisions, 'secret_paint_bucket')
+        ):
+            self.result = 'finished'
+            return
+
         self.client_state.player_pos = (px, py)
+
+
+    def get_collisions(self, new_pos: tuple[float, float]) -> set[LoreMapTile]:
+        # Player is drawn from the center.
+        corners: list[tuple[float, float]] = [
+            (new_pos[0] + TILE_SIZE // 2, new_pos[1] + TILE_SIZE // 2),
+            (new_pos[0] + TILE_SIZE // 2, new_pos[1] - TILE_SIZE // 2),
+            (new_pos[0] - TILE_SIZE // 2, new_pos[1] + TILE_SIZE // 2),
+            (new_pos[0] - TILE_SIZE // 2, new_pos[1] - TILE_SIZE // 2),
+        ]
+
+        collsions: set[LoreMapTile] = set()
+
+        for corner_pos in corners:
+            corner_map_pos = real_pos_to_map_pos((int(corner_pos[0]), int(corner_pos[1])))
+            tile = self.client_state.map.get_tile_by_map_pos(corner_map_pos)
+
+            if tile is None:
+                continue
+
+            collsions.add(tile)
+        
+        return collsions
+    
+
+    def check_tile_collision(self, collisions: set[LoreMapTile], tile_kind: LoreMapTile) -> bool:
+        return tile_kind in collisions
 
 
 _LORE_ENGINE: LoreEngine | None = None
@@ -80,6 +120,8 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
     for x in range(min_vis_map_x, max_vis_map_x):
         for y in range(min_vis_map_y, max_vis_map_y):
             tile = global_game_data.map.get_tile_by_map_pos((x, y))
+            if tile is None:
+                raise ValueError(f"ERROR: out of bounds map tile at position{(x, y)}")
 
             tile_sprite_file_name = get_tile_sprite_file_name(tile)
             if tile_sprite_file_name is None:
@@ -105,7 +147,7 @@ def draw_player(surface: Surface, global_game_data: LoreGlobalState, camera_offs
     draw_pos = (
         player_pos[0] + camera_offset[0], 
         # `player_pos` denotes the player's foot position, so we render the sprite slightly above this position.
-        player_pos[1] + camera_offset[1] - TILE_SIZE,
+        player_pos[1] + camera_offset[1],
     )
 
     draw_sprite_on_surface(
@@ -138,11 +180,11 @@ def get_player_input() -> Pair:
     return (x_movement, y_movement)
 
 
-def lore_update(events: list[Event], surface: Surface, global_game_data: LoreGlobalState, deltatime: float) -> str | None:
+def lore_update(events: list[Event], surface: Surface, global_game_data: LoreGlobalState, deltatime: float) -> LoreResult | None:
     surface.fill((0, 0, 0))
 
     subtitle = get_lore_window_subtitle(global_game_data)
-    pygame.display.set_caption(f"Lore - {subtitle} - {global_game_data.player_pos}")
+    pygame.display.set_caption(f"Lore - {subtitle}")
 
     player_pos = global_game_data.get_player_pos()
     camera_offset: Pair = (SCREEN_WIDTH // 2 - player_pos[0], SCREEN_HEIGHT // 2 - player_pos[1])
@@ -155,4 +197,4 @@ def lore_update(events: list[Event], surface: Surface, global_game_data: LoreGlo
     lore_engine = get_lore_engine(global_game_data)
     lore_engine.tick(movement, deltatime)
 
-    # TODO: actually add the lore
+    return lore_engine.result

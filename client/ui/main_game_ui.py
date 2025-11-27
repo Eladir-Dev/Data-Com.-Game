@@ -57,6 +57,7 @@ class MainGameUI:
             change_game_state=self.change_game_state,
             start_loading_stratego_game=self.start_loading_stratego_game,
             start_loading_word_wolf_game=self.start_loading_word_wolf_game,
+            start_loading_secret_game=self.start_loading_secret_game,
             start_intalling_secret_dlc_game=self.start_intalling_secret_dlc_game,
         )
 
@@ -188,7 +189,25 @@ class MainGameUI:
             elif game_state == 'in_lore':
                 assert self.client_state.lore_state, "Lore state was None"
 
-                lore_update.lore_update(events, self.surface, self.client_state.lore_state, deltatime)
+                lore_result = lore_update.lore_update(events, self.surface, self.client_state.lore_state, deltatime)
+                if lore_result is not None:
+                    if lore_result == 'finished':
+                        kind = self.client_state.lore_state.kind
+                        
+                        if kind == 'secret_game':
+                            self.client_state.can_see_secret_game_menu = True
+                            
+                        elif kind == 'secret_dlc_store':
+                            self.client_state.can_see_secret_dlc_store = True
+
+                        elif kind == 'secret_paint_game':
+                            self.client_state.can_see_secret_web_game_menu = True
+
+                        else:
+                            print(f"ERROR: Unknown lore kind '{kind}'")
+
+                    self.change_game_state('main_menu')
+                    self.client_state.lore_state = None
 
             elif game_state == 'finished_game':
                 game_over_msg = self.client_state.game_over_message

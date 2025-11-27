@@ -362,7 +362,7 @@ class ServerCommandInterpreter:
         
 
     def on_game_end(self, game: GameKind):
-        lore_kind = lore_unlocking.determine_lore_kind_after_game(game)
+        lore_kind = lore_unlocking.determine_lore_kind_after_game(self.client_state, game)
 
         if lore_kind is None:
             self.client_state.lore_state = None

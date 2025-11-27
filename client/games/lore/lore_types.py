@@ -14,6 +14,8 @@ LoreMapTile = Literal[
     'secret_paint_bucket',
 ]
 
+LoreResult = Literal['finished', 'failed']
+
 MAPS_DIR = Path(__file__).parent / "maps"
 TILE_SIZE = 32
 
@@ -75,9 +77,12 @@ class LoreMap:
         #     print("".join([t[0] for t in row]))
 
 
-    def get_tile_by_map_pos(self, map_pos: Pair) -> LoreMapTile:
+    def get_tile_by_map_pos(self, map_pos: Pair) -> LoreMapTile | None:
         x, y = map_pos
         r, c = y, x
+        if r >= len(self.tiles) or r < 0 or c > len(self.tiles[0]) or c < 0:
+            return None
+
         return self.tiles[r][c]
 
 
