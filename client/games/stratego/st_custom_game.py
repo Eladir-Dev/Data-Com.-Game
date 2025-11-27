@@ -263,6 +263,7 @@ class StrategoCustomsWindow():
         self.host = host
         self.deck_selector_data = deck_selector_data
 
+        self.first_run = True
         #======================Custom theme======================#
         self.theme = pygame_menu.themes.THEME_DARK.copy()
         self.theme.widget_alignment = pygame_menu.locals.ALIGN_LEFT
@@ -562,5 +563,7 @@ class StrategoCustomsWindow():
         self.menu.draw(self.surface)
         # for event in events:
         #     DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
-        DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck)
+        if self.first_run:
+            DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck)
+            self.first_run = False
         pygame.display.flip()
