@@ -18,7 +18,8 @@ def draw_sprite_on_surface(surface: Surface, ui_scale: float, sprite: Surface, l
     location = apply_ui_scale_pair(location, ui_scale)
     target_dimensions = apply_ui_scale_pair(target_dimensions, ui_scale)
 
-    sprite = pygame.transform.scale(sprite, target_dimensions)
+    # TODO: remove this and do the scaling separately. scaling each frame is laggy.
+    # sprite = pygame.transform.scale(sprite, target_dimensions)
     
     if rotation_deg != 0.0:
         sprite = pygame.transform.rotate(sprite, rotation_deg)

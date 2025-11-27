@@ -60,11 +60,7 @@ def get_lore_window_subtitle(global_game_data: LoreGlobalState):
 def get_sprite(sprite_file_name: str) -> Surface:
     sprite = pygame.image.load(f"{SPRITE_FOLDER}/{sprite_file_name}")
 
-    if sprite_file_name == PLAYER_SPRITE_FILE_NAME:
-        return sprite.convert_alpha()
-    
-    else:
-        return sprite.convert()
+    return sprite.convert_alpha()
 
 
 def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset: Pair):
