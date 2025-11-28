@@ -98,6 +98,10 @@ class MainGameUI:
         elif new_state == 'in_lore':
             music_player.play_lore_bg_music()
 
+        # The DLC game has its own music.
+        elif new_state == 'in_secret_dlc_game':
+            music_player.stop_all_bg_music()
+
         # Stop the music (if any was playing) if a game ended.
         elif new_state == 'finished_game':
             music_player.stop_all_bg_music()
