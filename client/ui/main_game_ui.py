@@ -10,6 +10,7 @@ import games.stratego.stratego_game as stratego_game
 import games.word_golf.word_golf_game as word_golf_game
 import games.secret_game.secret_game_game as secret_game_game
 import games.lore.lore_update as lore_update
+import games.lore.lore_unlocking as lore_unlocking
 from ui.main_game_ui_sub_menus import MainGameSubMenus
 from games.secret_game.secret_game_background_activator import SecretGameBackgroundActivator
 from networking.server_cmd_interpreter import ServerCommandInterpreter
@@ -241,7 +242,13 @@ class MainGameUI:
 
             elif update.kind == 'game_finish':
                 self.client_state.is_already_downloading_dlc = False
-                self.change_game_state('main_menu')
+
+                if not self.client_state.can_see_secret_web_game_menu:
+                    lore_unlocking.initialize_lore_state(self.client_state, 'secret_paint_game')
+                    self.change_game_state('in_lore')
+
+                else:
+                    self.change_game_state('main_menu')
             
             elif update.kind == 'error':
                 print("ERROR: Could not install DLC.")

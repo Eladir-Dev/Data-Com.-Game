@@ -1,7 +1,7 @@
 import random
 from common_types.game_types import GameKind
 from games.lore.lore_types import LoreKind
-from common_types.global_state import GlobalClientState
+from common_types.global_state import GlobalClientState, LoreGlobalState
 
 # TODO: These are currently set to 100% for testing purposes; they should be set to a lower percent in practice.
 _SECRET_GAME_CUTSCENE_UNLOCK_CHANCE = 1.0
@@ -30,3 +30,13 @@ def determine_lore_kind_after_game(client_state: GlobalClientState, game: GameKi
     
     else:
         return None
+
+
+def initialize_lore_state(client_state: GlobalClientState, lore_kind: LoreKind):
+    assert client_state.lore_state is None, "Client had pre-exisitng lore data."
+
+    client_state.lore_state = LoreGlobalState(
+        username=client_state.username,
+        ui_scale=client_state.ui_scale,
+        kind=lore_kind,
+    )

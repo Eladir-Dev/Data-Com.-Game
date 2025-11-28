@@ -368,11 +368,7 @@ class ServerCommandInterpreter:
             self.client_state.lore_state = None
 
         else:
-            self.client_state.lore_state = LoreGlobalState(
-                username=self.client_state.username,
-                ui_scale=self.client_state.ui_scale,
-                kind=lore_kind,
-            )
+            lore_unlocking.initialize_lore_state(self.client_state, lore_kind)
 
         self.change_game_state('finished_game')
 
