@@ -10,3 +10,8 @@ dependencies = [
     "pygame-menu>=4.5.2",
     "sphinx>=8.2.3",
 ]
+
+[tool.uv.workspace]
+members = [
+    "games/secret_paint_game/web_game_runner",
+]

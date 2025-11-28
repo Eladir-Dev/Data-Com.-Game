@@ -335,5 +335,5 @@ class MainGameUI:
 
     def start_secret_paint_game(self):
         self.change_game_state('in_secret_paint_game')
-        launch_secret_paint_game(self.secret_paint_game_update_queue)
+        launch_secret_paint_game(self.secret_paint_game_update_queue, self.client_state.ui_scale)
 
