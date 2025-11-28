@@ -130,6 +130,8 @@ class MainGameUI:
             self.sub_menus.general_update()
 
             if game_state == 'main_menu':
+                pygame.display.set_caption("Data Communications Game")
+
                 self.sub_menus.title_screen.update(events)
                 self.sub_menus.title_screen.draw(self.surface)
                 if (self.sub_menus.title_screen.get_current().get_selected_widget()):
@@ -150,10 +152,12 @@ class MainGameUI:
                     self.client_cmd_queue.put(move_cmd)
 
             elif game_state == 'loading_stratego_game':
+                pygame.display.set_caption("Loading a Stratego game...")
                 self.sub_menus.loading_window_stratego.update(events)
                 self.sub_menus.loading_window_stratego.draw(self.surface)
 
             elif game_state == 'loading_word_golf_game':
+                pygame.display.set_caption("Loading a Word Golf game...")
                 self.sub_menus.loading_window_word_golf.update(events)
                 self.sub_menus.loading_window_word_golf.draw(self.surface)
 
@@ -172,6 +176,7 @@ class MainGameUI:
                     self.client_cmd_queue.put(update_result.stashed_word_cmd)
 
             elif game_state == 'loading_secret_game':
+                pygame.display.set_caption("Loading Secret (Racing) game...")
                 self.sub_menus.loading_window_secret_game.update(events)
                 self.sub_menus.loading_window_secret_game.draw(self.surface)
 
@@ -184,10 +189,13 @@ class MainGameUI:
                     self.client_cmd_queue.put(car_turn_cmd)
 
             elif game_state == 'in_secret_dlc_store':
+                pygame.display.set_caption("DLC Store")
                 self.sub_menus.secret_dlc_store_menu.update(events)
                 self.sub_menus.secret_dlc_store_menu.draw(self.surface)
 
             elif game_state == 'in_secret_dlc_game':
+                pygame.display.set_caption("Running DLC game in another window...")
+
                 # Blank screen since the (secret) DLC runs as another executable.
                 self.surface.fill((0, 0, 0))
 
@@ -214,7 +222,15 @@ class MainGameUI:
                     self.change_game_state('main_menu')
                     self.client_state.lore_state = None
 
+            elif game_state == 'in_secret_paint_game':
+                pygame.display.set_caption("Running Secret (Paint) game in another window...")
+
+                # Blank screen since the (secret) paint game runs in another window.
+                self.surface.fill((0, 0, 0))
+
             elif game_state == 'finished_game':
+                pygame.display.set_caption("Finished Game")
+
                 game_over_msg = self.client_state.game_over_message
                 assert game_over_msg, "Game Over Message was None"
                 self.sub_menus.set_game_over_message(game_over_msg)
