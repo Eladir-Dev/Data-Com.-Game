@@ -32,7 +32,7 @@ class MainGameUI:
         self.client_cmd_queue: queue.Queue[str] = queue.Queue()
 
         self.secret_dlc_store_update_queue: queue.Queue[SecretDLCStoreUpdate] = queue.Queue()
-        self.secret_paint_game_update_queue: queue.Queue[SecretPaintGameUpdate]
+        self.secret_paint_game_update_queue: queue.Queue[SecretPaintGameUpdate] = queue.Queue()
 
         SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(self.server_cmd_queue, self.client_cmd_queue))
         SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
