@@ -17,6 +17,7 @@ ValidState = Literal[
     'in_deck_selection_state',
     'in_secret_dlc_store',
     'in_secret_dlc_game',
+    'in_secret_paint_game',
     'in_lore',
 ]
 

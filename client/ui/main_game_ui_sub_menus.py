@@ -21,7 +21,8 @@ class MainGameSubMenus:
         start_loading_stratego_game: Callable[[], None],
         start_loading_word_wolf_game: Callable[[], None],
         start_loading_secret_game: Callable[[], None],
-        start_intalling_secret_dlc_game: Callable[[], None]
+        start_intalling_secret_dlc_game: Callable[[], None],
+        start_secret_paint_game: Callable[[], None],
     ):
         # Reference to the client state.
         self.client_state = client_state
@@ -32,6 +33,7 @@ class MainGameSubMenus:
         self.start_loading_word_wolf_game = start_loading_word_wolf_game
         self.start_loading_secret_game = start_loading_secret_game
         self.start_intalling_secret_dlc_game = start_intalling_secret_dlc_game
+        self.start_secret_paint_game = start_secret_paint_game
 
         # Declare the sub menus.
         self.menus: list[pygame_menu.Menu] = []
@@ -51,6 +53,7 @@ class MainGameSubMenus:
         self.game_select_menu.add.button('Stratego', self.show_deck_selection)
         self.game_select_menu.add.button('Word Golf', self.show_word_golf_menu)
         self.game_select_secret_game_select_button = self.game_select_menu.add.button('Secret Racing Game', self.show_secret_game_menu)
+        self.game_select_secret_paint_game_button = self.game_select_menu.add.button('Secret Web Game', self.start_secret_paint_game)
         self.menus.append(self.game_select_menu)
 
         self.stratego_menu = pygame_menu.Menu('Play Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)

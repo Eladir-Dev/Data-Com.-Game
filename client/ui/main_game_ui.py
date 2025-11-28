@@ -16,6 +16,8 @@ from games.secret_game.secret_game_background_activator import SecretGameBackgro
 from networking.server_cmd_interpreter import ServerCommandInterpreter
 from games.secret_dlc_store.secret_dlc_store import start_getting_dlc
 from games.secret_dlc_store.secret_dlc_store_update import SecretDLCStoreUpdate
+from games.secret_paint_game.secret_paint_game_launcher import launch_secret_paint_game
+from games.secret_paint_game.secret_paint_game_updates import SecretPaintGameUpdate
 from ui import music_player
 
 class MainGameUI:
@@ -30,6 +32,7 @@ class MainGameUI:
         self.client_cmd_queue: queue.Queue[str] = queue.Queue()
 
         self.secret_dlc_store_update_queue: queue.Queue[SecretDLCStoreUpdate] = queue.Queue()
+        self.secret_paint_game_update_queue: queue.Queue[SecretPaintGameUpdate]
 
         SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(self.server_cmd_queue, self.client_cmd_queue))
         SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
@@ -60,6 +63,7 @@ class MainGameUI:
             start_loading_word_wolf_game=self.start_loading_word_wolf_game,
             start_loading_secret_game=self.start_loading_secret_game,
             start_intalling_secret_dlc_game=self.start_intalling_secret_dlc_game,
+            start_secret_paint_game=self.start_secret_paint_game,
         )
 
         self.server_cmd_interpreter = ServerCommandInterpreter(
@@ -113,8 +117,8 @@ class MainGameUI:
             deltatime = self.clock.tick(CLIENT_FPS) / 1000
 
             self.receive_server_commands()
-
             self.receive_secret_dlc_store_updates()
+            self.receive_secret_paint_game_updates()
 
             events = pygame.event.get()
             for event in events:
@@ -278,6 +282,17 @@ class MainGameUI:
             else:
                 print(f"Error: unknown secret DLC store update: '{update}'")
 
+    
+    def receive_secret_paint_game_updates(self):
+        while not self.secret_paint_game_update_queue.empty():
+            update = self.secret_paint_game_update_queue.get()
+
+            if update == 'finished':
+                self.change_game_state('main_menu')
+
+            else:
+                print(f"Error: unknown secret paint game update: '{update}'")
+
 
     def start_loading_stratego_game(self):
         deck = self.client_state.stratego_starting_deck_repr
@@ -316,3 +331,9 @@ class MainGameUI:
 
         self.client_state.is_already_downloading_dlc = True
         start_getting_dlc(self.secret_dlc_store_update_queue)
+
+
+    def start_secret_paint_game(self):
+        self.change_game_state('in_secret_paint_game')
+        launch_secret_paint_game(self.secret_paint_game_update_queue)
+
