@@ -41,6 +41,8 @@ from pathlib import Path
 SPRITE_FOLDER = Path(__file__).parent / "assets"
 """Sprite folder address"""
 
+SFX_FOLDER = Path(__file__).parent / "sfx"
+
 #=========================High Lights=============================#
 class RedHighlight(Selection):
     """
@@ -261,8 +263,8 @@ class StrategoSettingsWindow():
         self.st_custom_game_menu = None
         self.in_custom_game = False
 
-        self.placment_effect = pygame.mixer.Sound("games/stratego/sfx/placment.wav")
-        self.pic_up_effect = pygame.mixer.Sound("games/stratego/sfx/pick_up.wav")
+        self.placment_effect = pygame.mixer.Sound(f"{SFX_FOLDER}/placment.wav")
+        self.pic_up_effect = pygame.mixer.Sound(f"{SFX_FOLDER}/pick_up.wav")
         #======================Custom theme======================#
         self.theme = pygame_menu.themes.THEME_DARK.copy()
         self.theme.widget_alignment = pygame_menu.locals.ALIGN_LEFT
