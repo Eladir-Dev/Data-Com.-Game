@@ -4,7 +4,7 @@ from pygame import Surface
 
 from common_types.global_state import LoreGlobalState
 from common_types.game_types import Pair, SCREEN_WIDTH, SCREEN_HEIGHT
-from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_name, LoreMapTile, LoreResult
+from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_name, LoreMapTile, LoreResult, PLAYER_WIDTH
 from ui.drawing_utils import draw_sprite_on_surface
 from pathlib import Path
 import functools
@@ -46,10 +46,10 @@ class LoreEngine:
     def get_collisions(self, new_pos: tuple[float, float]) -> set[LoreMapTile]:
         # Player is drawn from the center.
         corners: list[tuple[float, float]] = [
-            (new_pos[0] + TILE_SIZE // 2, new_pos[1] + TILE_SIZE // 2),
-            (new_pos[0] + TILE_SIZE // 2, new_pos[1] - TILE_SIZE // 2),
-            (new_pos[0] - TILE_SIZE // 2, new_pos[1] + TILE_SIZE // 2),
-            (new_pos[0] - TILE_SIZE // 2, new_pos[1] - TILE_SIZE // 2),
+            (new_pos[0] + PLAYER_WIDTH // 2, new_pos[1] + PLAYER_WIDTH // 2),
+            (new_pos[0] + PLAYER_WIDTH // 2, new_pos[1] - PLAYER_WIDTH // 2),
+            (new_pos[0] - PLAYER_WIDTH // 2, new_pos[1] + PLAYER_WIDTH // 2),
+            (new_pos[0] - PLAYER_WIDTH // 2, new_pos[1] - PLAYER_WIDTH // 2),
         ]
 
         collsions: set[LoreMapTile] = set()

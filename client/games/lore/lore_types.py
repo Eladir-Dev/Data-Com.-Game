@@ -18,6 +18,7 @@ LoreResult = Literal['finished', 'failed']
 
 MAPS_DIR = Path(__file__).parent / "maps"
 TILE_SIZE = 32
+PLAYER_WIDTH = TILE_SIZE * 3 // 4
 
 def str_to_lore_map_tile(s: str) -> LoreMapTile:
     match s:
