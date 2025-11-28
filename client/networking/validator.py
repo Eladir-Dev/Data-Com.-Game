@@ -1,4 +1,4 @@
-
+from common_types.game_types import GameKind
 
 MAX_USERNAME_LEN = 20
 
@@ -11,6 +11,13 @@ def assert_valid_username(username: str) -> str:
         raise ValueError(f"username '{username}' is invalid")
     
     return username
+
+
+def assert_is_valid_game(game: str) -> GameKind:
+    if game != 'stratego' and game != 'word_golf' and game != 'secret_game':
+        raise ValueError(f"game '{game}' is invalid")
+    
+    return game
 
 
 def assert_field_amount_valid(fields: list[str], expected_length: int) -> list[str]:

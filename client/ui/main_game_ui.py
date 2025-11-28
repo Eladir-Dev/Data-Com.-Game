@@ -5,10 +5,12 @@ import threading
 from games.stratego.deck_selection import StrategoSettingsWindow
 from common_types.global_state import GlobalClientState, ValidState
 import networking.socket_client as socket_client
-from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT, CLIENT_FPS
 import games.stratego.stratego_game as stratego_game
 import games.word_golf.word_golf_game as word_golf_game
 import games.secret_game.secret_game_game as secret_game_game
+import games.lore.lore_update as lore_update
+import games.lore.lore_unlocking as lore_unlocking
 from ui.main_game_ui_sub_menus import MainGameSubMenus
 from games.secret_game.secret_game_background_activator import SecretGameBackgroundActivator
 from networking.server_cmd_interpreter import ServerCommandInterpreter
@@ -35,7 +37,11 @@ class MainGameUI:
 
         pygame.init()
         pygame.mixer.init()
+        music_player.play_main_menu_bg_music()
+
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        self.clock = pygame.time.Clock()
 
         # ======Stratego menus (before game start)======#
 
@@ -52,6 +58,7 @@ class MainGameUI:
             change_game_state=self.change_game_state,
             start_loading_stratego_game=self.start_loading_stratego_game,
             start_loading_word_wolf_game=self.start_loading_word_wolf_game,
+            start_loading_secret_game=self.start_loading_secret_game,
             start_intalling_secret_dlc_game=self.start_intalling_secret_dlc_game,
         )
 
@@ -76,7 +83,10 @@ class MainGameUI:
         """
         self.client_state.game_state = new_state
 
-        if new_state == 'in_stratego_game':
+        if new_state == 'main_menu':
+            music_player.play_main_menu_bg_music()
+
+        elif new_state == 'in_stratego_game':
             music_player.play_stratego_bg_music()
 
         elif new_state == 'in_word_golf_game':
@@ -85,6 +95,13 @@ class MainGameUI:
         elif new_state == 'in_secret_game':
             music_player.play_secret_game_bg_music()
 
+        elif new_state == 'in_lore':
+            music_player.play_lore_bg_music()
+
+        # The DLC game has its own music.
+        elif new_state == 'in_secret_dlc_game':
+            music_player.stop_all_bg_music()
+
         # Stop the music (if any was playing) if a game ended.
         elif new_state == 'finished_game':
             music_player.stop_all_bg_music()
@@ -92,6 +109,9 @@ class MainGameUI:
 
     def start(self):
         while True:
+            # `deltatime` is in seconds.
+            deltatime = self.clock.tick(CLIENT_FPS) / 1000
+
             self.receive_server_commands()
 
             self.receive_secret_dlc_store_updates()
@@ -171,6 +191,29 @@ class MainGameUI:
                 # Blank screen since the (secret) DLC runs as another executable.
                 self.surface.fill((0, 0, 0))
 
+            elif game_state == 'in_lore':
+                assert self.client_state.lore_state, "Lore state was None"
+
+                lore_result = lore_update.lore_update(events, self.surface, self.client_state.lore_state, deltatime)
+                if lore_result is not None:
+                    if lore_result == 'finished':
+                        kind = self.client_state.lore_state.kind
+                        
+                        if kind == 'secret_game':
+                            self.client_state.can_see_secret_game_menu = True
+                            
+                        elif kind == 'secret_dlc_store':
+                            self.client_state.can_see_secret_dlc_store = True
+
+                        elif kind == 'secret_paint_game':
+                            self.client_state.can_see_secret_web_game_menu = True
+
+                        else:
+                            print(f"ERROR: Unknown lore kind '{kind}'")
+
+                    self.change_game_state('main_menu')
+                    self.client_state.lore_state = None
+
             elif game_state == 'finished_game':
                 game_over_msg = self.client_state.game_over_message
                 assert game_over_msg, "Game Over Message was None"
@@ -203,7 +246,13 @@ class MainGameUI:
 
             elif update.kind == 'game_finish':
                 self.client_state.is_already_downloading_dlc = False
-                self.change_game_state('main_menu')
+
+                if not self.client_state.can_see_secret_web_game_menu:
+                    lore_unlocking.initialize_lore_state(self.client_state, 'secret_paint_game')
+                    self.change_game_state('in_lore')
+
+                else:
+                    self.change_game_state('main_menu')
             
             elif update.kind == 'error':
                 print("ERROR: Could not install DLC.")

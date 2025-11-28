@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Literal
 from common_types.game_types import Pair
 from games.stratego.stratego_types import StrategoColor, StrategoBoard, StrategoMoveResult, StrategoRenderedTile, toggle_color
-from games.secret_game.secret_game_types import SecretGamePlayer, Map, TurnState
+from games.secret_game.secret_game_types import SecretGamePlayer, SecretGameMap, TurnState
+from games.lore.lore_types import LoreKind, LoreMap, map_pos_to_real_pos
 
 ValidState = Literal[
     'main_menu', 
@@ -16,6 +17,7 @@ ValidState = Literal[
     'in_deck_selection_state',
     'in_secret_dlc_store',
     'in_secret_dlc_game',
+    'in_lore',
 ]
 
 class StrategoGlobalState:
@@ -62,7 +64,7 @@ class WordGolfGlobalState:
 
     
 class SecretGameGlobalState:
-    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: Map, ui_scale: float):
+    def __init__(self, own_idx: int, players: list[SecretGamePlayer], map: SecretGameMap, ui_scale: float):
         self.own_idx = own_idx
         self.players = players
         self.map = map
@@ -79,6 +81,21 @@ class SecretGameGlobalState:
 
     def get_opp_data(self) -> SecretGamePlayer:
         return self.players[(self.own_idx + 1) % 2]
+
+
+class LoreGlobalState:
+    def __init__(self, username: str, ui_scale: float, kind: LoreKind):
+        self.username = username
+        self.ui_scale = ui_scale
+        self.kind: LoreKind = kind
+        self.map = LoreMap(kind)
+
+        self.player_pos: tuple[float, float] = map_pos_to_real_pos(self.map.player_spawn_map_pos)
+        self.player_speed: float = 5.0 # tiles per second
+
+    
+    def get_player_pos(self) -> Pair:
+        return (int(self.player_pos[0]), int(self.player_pos[1]))
 
 
 @dataclass
@@ -115,6 +132,10 @@ class GlobalClientState:
     """
     Holds Secret Game-specific game state.
     """
+    lore_state: LoreGlobalState | None = None
+    """
+    Holds Lore-specific state.
+    """
 
     # Socket-representation of the starting deck.
     stratego_starting_deck_repr: str | None = None
@@ -135,7 +156,10 @@ class GlobalClientState:
     pending_volume: float = 100.0
     volume: float = 100.0
 
+    can_see_secret_game_menu: bool = False
     can_see_secret_dlc_store: bool = False
+    can_see_secret_web_game_menu: bool = False
+
     secret_dlc_download_percentage: float = 0.0
     is_already_downloading_dlc: bool = False
 

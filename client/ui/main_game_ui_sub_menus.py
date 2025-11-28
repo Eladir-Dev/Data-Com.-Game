@@ -19,6 +19,7 @@ class MainGameSubMenus:
         change_game_state: Callable[[ValidState], None],
         start_loading_stratego_game: Callable[[], None],
         start_loading_word_wolf_game: Callable[[], None],
+        start_loading_secret_game: Callable[[], None],
         start_intalling_secret_dlc_game: Callable[[], None]
     ):
         # Reference to the client state.
@@ -28,6 +29,7 @@ class MainGameSubMenus:
         self.change_game_state = change_game_state
         self.start_loading_stratego_game = start_loading_stratego_game
         self.start_loading_word_wolf_game = start_loading_word_wolf_game
+        self.start_loading_secret_game = start_loading_secret_game
         self.start_intalling_secret_dlc_game = start_intalling_secret_dlc_game
 
         # Declare the sub menus.
@@ -47,6 +49,7 @@ class MainGameSubMenus:
         self.game_select_menu = pygame_menu.Menu('Game Select', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.game_select_menu.add.button('Stratego', self.show_deck_selection)
         self.game_select_menu.add.button('Word Golf', self.show_word_golf_menu)
+        self.game_select_secret_game_select_button = self.game_select_menu.add.button('Secret Racing Game', self.show_secret_game_menu)
         self.menus.append(self.game_select_menu)
 
         self.stratego_menu = pygame_menu.Menu('Play Stratego', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
@@ -67,13 +70,18 @@ class MainGameSubMenus:
         self.loading_window_word_golf.add.label('Connecting...')
         self.menus.append(self.loading_window_word_golf)
 
+        self.secret_game_menu = pygame_menu.Menu('Play Secret (Racing) Game', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
+        self.secret_game_menu.add.button('Find Game', self.start_loading_secret_game)
+        self.secret_game_menu.add.button('Local Game', lambda: print("LOG: hosting Secret Racing games is not implemented"))
+        self.menus.append(self.secret_game_menu)
+
         self.loading_window_secret_game = pygame_menu.Menu('Secret Game', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.loading_window_secret_game.add.label('Connecting...')
         self.menus.append(self.loading_window_secret_game)
 
         self.game_over_menu = pygame_menu.Menu('Game Over', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
         self.game_over_menu.add.label('PLACEHOLDER TEXT', 'game_over_label')
-        self.game_over_menu.add.button('Go To Main Menu', self.go_to_main_menu)
+        self.game_over_menu.add.button('Go To Main Menu', self.on_exit_game_over_menu)
         self.game_over_menu.add.button('Quit', pygame_menu.events.EXIT)
         self.menus.append(self.game_over_menu)
 
@@ -107,14 +115,23 @@ class MainGameSubMenus:
     def general_update(self):
         self.secret_dlc_store_download_progress_bar.set_value(int(self.client_state.secret_dlc_download_percentage * 100))
 
+        if self.client_state.can_see_secret_game_menu:
+            self.game_select_secret_game_select_button.show()
+        else:
+            self.game_select_secret_game_select_button.hide()
+
         if self.client_state.can_see_secret_dlc_store:
             self.title_screen_secret_dlc_button.show()
         else:
             self.title_screen_secret_dlc_button.hide()
 
 
-    def go_to_main_menu(self):
-        self.change_game_state('main_menu')
+    def on_exit_game_over_menu(self):
+        if self.client_state.lore_state is None:
+            self.change_game_state('main_menu')
+
+        else:
+            self.change_game_state('in_lore')
 
 
     def set_username(self, new_username: str):
@@ -143,6 +160,10 @@ class MainGameSubMenus:
 
     def show_word_golf_menu(self):
         self.game_select_menu._open(self.word_golf_menu)
+
+
+    def show_secret_game_menu(self):
+        self.game_select_menu._open(self.secret_game_menu)
 
     
     def show_secret_dlc_store(self):
