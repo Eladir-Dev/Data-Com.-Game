@@ -102,6 +102,9 @@ class MainGameUI:
         elif new_state == 'in_lore':
             music_player.play_lore_bg_music()
 
+        elif new_state == 'in_secret_paint_game':
+            music_player.play_secret_paint_game_bg_music()
+
         # The DLC game has its own music.
         elif new_state == 'in_secret_dlc_game':
             music_player.stop_all_bg_music()

@@ -27,7 +27,7 @@ def _run_secret_paint_game(update_queue: Queue[SecretPaintGameUpdate], ui_scale:
             'Secret Paint Game',
             'https://paint-chess.onrender.com/',
         ],
-        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW,
         shell=False,
         cwd=WEB_RUNNER_PATH,
     )

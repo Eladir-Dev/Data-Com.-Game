@@ -159,7 +159,7 @@ class GlobalClientState:
 
     can_see_secret_game_menu: bool = False
     can_see_secret_dlc_store: bool = False
-    can_see_secret_web_game_menu: bool = True
+    can_see_secret_web_game_menu: bool = False
 
     secret_dlc_download_percentage: float = 0.0
     is_already_downloading_dlc: bool = False
