@@ -27,11 +27,10 @@ def draw_empty_grid_slot(surface: Surface, location: Pair, ui_scale: float) -> R
     """
     Draws an empty grid slot at :py:attr:`location`.
     """
-    empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/empty_space.png")
     return drawing_utils.draw_sprite_on_surface(
         surface, 
         ui_scale,
-        empty_space_sprite, 
+        f"{SPRITE_FOLDER}/empty_space.png", 
         location, 
         get_sprite_dimensions(),
     )
@@ -41,11 +40,10 @@ def draw_lake_slot(surface: Surface, location: Pair, ui_scale: float) -> Rect:
     """
     Draws a lake slot at :py:attr:`location`.
     """
-    empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/lake.png")
     return drawing_utils.draw_sprite_on_surface(
         surface, 
         ui_scale,
-        empty_space_sprite, 
+        f"{SPRITE_FOLDER}/lake.png", 
         location, 
         get_sprite_dimensions(),
     )
@@ -55,11 +53,10 @@ def draw_hidden_slot(surface: Surface, location: Pair, ui_scale: float) -> Rect:
     """
     Draws a hidden slot at :py:attr:`location`.
     """
-    empty_space_sprite = pygame.image.load(f"{SPRITE_FOLDER}/hidden.png")
     return drawing_utils.draw_sprite_on_surface(
         surface, 
         ui_scale,
-        empty_space_sprite, 
+        f"{SPRITE_FOLDER}/hidden.png", 
         location, 
         get_sprite_dimensions(),
     )
@@ -69,11 +66,10 @@ def draw_piece(surface: Surface, piece_name: StrategoPieceName, color: StrategoC
     """
     Draws the sprite corresponding with :py:attr:`piece_name` at :py:attr:`location`.
     """
-    piece_sprite = pygame.image.load(f"{SPRITE_FOLDER}/{get_full_color_name(color)}_{piece_name}.png")
     return drawing_utils.draw_sprite_on_surface(
         surface, 
         ui_scale,
-        piece_sprite, 
+        f"{SPRITE_FOLDER}/{get_full_color_name(color)}_{piece_name}.png", 
         location, 
         get_sprite_dimensions(),
     )

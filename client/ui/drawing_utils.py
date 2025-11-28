@@ -2,6 +2,7 @@ import pygame
 from pygame import Surface, Rect
 from common_types.game_types import Pair
 from typing import Literal
+from ui import sprite_repository
 
 RectOrigin = Literal['center', 'top_left']
 
@@ -14,15 +15,16 @@ def apply_ui_scale_pair(pair: Pair, ui_scale: float) -> Pair:
     return (int(pair[0] * ui_scale), int(pair[1] * ui_scale))
 
 
-def draw_sprite_on_surface(surface: Surface, ui_scale: float, sprite: Surface, location: Pair, target_dimensions: Pair, rotation_deg: float = 0.0, rect_origin: RectOrigin = 'center') -> Rect:
+def draw_sprite_on_surface(surface: Surface, ui_scale: float, sprite_path: str, location: Pair, target_dimensions: Pair, rotation_deg: float = 0.0, rect_origin: RectOrigin = 'center') -> Rect:
     location = apply_ui_scale_pair(location, ui_scale)
     target_dimensions = apply_ui_scale_pair(target_dimensions, ui_scale)
 
-    # TODO: remove this and do the scaling separately. scaling each frame is laggy.
-    # sprite = pygame.transform.scale(sprite, target_dimensions)
+    sprite = sprite_repository.get_sprite(sprite_path, target_dimensions)
     
     if rotation_deg != 0.0:
-        sprite = pygame.transform.rotate(sprite, rotation_deg)
+        # NOTE: Rotated sprites are not cached. Instead we apply the rotation to the 
+        # sprite we get out of the cache.
+        sprite = pygame.transform.rotate(sprite, rotation_deg).convert_alpha()
 
     if rect_origin == 'top_left':
         sprite_rect = sprite.get_rect(topleft=location)
