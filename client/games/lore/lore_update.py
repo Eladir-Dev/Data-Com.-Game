@@ -16,6 +16,7 @@ PLAYER_SPRITE_FILE_NAME = 'player.png'
 class LoreEngine:
     def __init__(self, client_state: LoreGlobalState):
         self.client_state = client_state
+        self.current_kind = self.client_state.kind
         self.result: LoreResult | None = None
 
 
@@ -76,7 +77,7 @@ _LORE_ENGINE: LoreEngine | None = None
 def get_lore_engine(client_state: LoreGlobalState) -> LoreEngine:
     global _LORE_ENGINE
 
-    if _LORE_ENGINE is None:
+    if _LORE_ENGINE is None or _LORE_ENGINE.current_kind != client_state.kind:
         _LORE_ENGINE = LoreEngine(client_state)
 
     return _LORE_ENGINE
@@ -103,6 +104,17 @@ def get_sprite(sprite_file_name: str) -> Surface:
     return sprite.convert_alpha()
 
 
+def draw_extra_floor_tile(surface: Surface, ui_scale: float, tile_draw_pos: Pair):
+    draw_sprite_on_surface(
+        surface,
+        ui_scale,
+        get_sprite(get_tile_sprite_file_name('floor')),
+        tile_draw_pos,
+        (TILE_SIZE, TILE_SIZE),
+        rect_origin='top_left',
+    )
+
+
 def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset: Pair):
     tiles = global_game_data.map.tiles
 
@@ -114,9 +126,6 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
     min_vis_map_y = max(0, own_map_pos[1] - SCREEN_HEIGHT // 2 // TILE_SIZE - 1)
     max_vis_map_y = min(len(tiles), own_map_pos[1] + SCREEN_HEIGHT // 2 // TILE_SIZE + 2) # the +2 is intentional
 
-    # print(min_vis_map_x, max_vis_map_x, min_vis_map_y, max_vis_map_y)
-    # print(f"REAL DIM: {len(global_game_data.map.tiles[0])}, {len(global_game_data.map.tiles)}")
-
     for x in range(min_vis_map_x, max_vis_map_x):
         for y in range(min_vis_map_y, max_vis_map_y):
             tile = global_game_data.map.get_tile_by_map_pos((x, y))
@@ -127,15 +136,23 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
             if tile_sprite_file_name is None:
                 continue
 
+            tile_real_pos = map_pos_to_real_pos((x, y))
+            tile_draw_pos = (tile_real_pos[0] + camera_offset[0], tile_real_pos[1] + camera_offset[1])
+
+            # Draw the floor underneath the unlock tiles. This is only for better visuals.
+            if tile == 'secret_game_car' or tile == 'secret_dlc_store_coin' or tile == 'secret_paint_bucket':
+                draw_extra_floor_tile(
+                    surface, 
+                    global_game_data.ui_scale, 
+                    tile_draw_pos,
+                )
+
             tile_sprite = get_sprite(tile_sprite_file_name)
-
-            real_pos = map_pos_to_real_pos((x, y))
-
             draw_sprite_on_surface(
                 surface,
                 global_game_data.ui_scale,
                 tile_sprite,
-                (real_pos[0] + camera_offset[0], real_pos[1] + camera_offset[1]),
+                tile_draw_pos,
                 (TILE_SIZE, TILE_SIZE),
                 rect_origin='top_left',
             )
