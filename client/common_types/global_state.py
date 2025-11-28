@@ -91,7 +91,7 @@ class LoreGlobalState:
         self.map = LoreMap(kind)
 
         self.player_pos: tuple[float, float] = map_pos_to_real_pos(self.map.player_spawn_map_pos)
-        self.player_speed: float = 2.0
+        self.player_speed: float = 5.0 # tiles per second
 
     
     def get_player_pos(self) -> Pair:
