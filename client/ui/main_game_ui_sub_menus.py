@@ -129,6 +129,11 @@ class MainGameSubMenus:
         else:
             self.title_screen_secret_dlc_button.hide()
 
+        if self.client_state.can_see_secret_web_game_menu:
+            self.game_select_secret_paint_game_button.show()
+        else:
+            self.game_select_secret_paint_game_button.hide()
+
 
     def on_exit_game_over_menu(self):
         if self.client_state.lore_state is None:
