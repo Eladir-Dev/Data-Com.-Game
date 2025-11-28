@@ -16,6 +16,8 @@ from games.secret_game.secret_game_background_activator import SecretGameBackgro
 from networking.server_cmd_interpreter import ServerCommandInterpreter
 from games.secret_dlc_store.secret_dlc_store import start_getting_dlc
 from games.secret_dlc_store.secret_dlc_store_update import SecretDLCStoreUpdate
+from games.secret_paint_game.secret_paint_game_launcher import launch_secret_paint_game
+from games.secret_paint_game.secret_paint_game_updates import SecretPaintGameUpdate
 from ui import music_player
 
 class MainGameUI:
@@ -30,6 +32,7 @@ class MainGameUI:
         self.client_cmd_queue: queue.Queue[str] = queue.Queue()
 
         self.secret_dlc_store_update_queue: queue.Queue[SecretDLCStoreUpdate] = queue.Queue()
+        self.secret_paint_game_update_queue: queue.Queue[SecretPaintGameUpdate] = queue.Queue()
 
         SOCKET_CLIENT_THREAD = threading.Thread(target=socket_client.connect, args=(self.server_cmd_queue, self.client_cmd_queue))
         SOCKET_CLIENT_THREAD.daemon = True # Allows the program to exit even if the thread is running.
@@ -60,6 +63,7 @@ class MainGameUI:
             start_loading_word_wolf_game=self.start_loading_word_wolf_game,
             start_loading_secret_game=self.start_loading_secret_game,
             start_intalling_secret_dlc_game=self.start_intalling_secret_dlc_game,
+            start_secret_paint_game=self.start_secret_paint_game,
         )
 
         self.server_cmd_interpreter = ServerCommandInterpreter(
@@ -98,6 +102,9 @@ class MainGameUI:
         elif new_state == 'in_lore':
             music_player.play_lore_bg_music()
 
+        elif new_state == 'in_secret_paint_game':
+            music_player.play_secret_paint_game_bg_music()
+
         # The DLC game has its own music.
         elif new_state == 'in_secret_dlc_game':
             music_player.stop_all_bg_music()
@@ -113,8 +120,8 @@ class MainGameUI:
             deltatime = self.clock.tick(CLIENT_FPS) / 1000
 
             self.receive_server_commands()
-
             self.receive_secret_dlc_store_updates()
+            self.receive_secret_paint_game_updates()
 
             events = pygame.event.get()
             for event in events:
@@ -130,6 +137,8 @@ class MainGameUI:
             self.sub_menus.general_update()
 
             if game_state == 'main_menu':
+                pygame.display.set_caption("Data Communications Game")
+
                 self.sub_menus.title_screen.update(events)
                 self.sub_menus.title_screen.draw(self.surface)
                 if (self.sub_menus.title_screen.get_current().get_selected_widget()):
@@ -150,10 +159,12 @@ class MainGameUI:
                     self.client_cmd_queue.put(move_cmd)
 
             elif game_state == 'loading_stratego_game':
+                pygame.display.set_caption("Loading a Stratego game...")
                 self.sub_menus.loading_window_stratego.update(events)
                 self.sub_menus.loading_window_stratego.draw(self.surface)
 
             elif game_state == 'loading_word_golf_game':
+                pygame.display.set_caption("Loading a Word Golf game...")
                 self.sub_menus.loading_window_word_golf.update(events)
                 self.sub_menus.loading_window_word_golf.draw(self.surface)
 
@@ -172,6 +183,7 @@ class MainGameUI:
                     self.client_cmd_queue.put(update_result.stashed_word_cmd)
 
             elif game_state == 'loading_secret_game':
+                pygame.display.set_caption("Loading Secret (Racing) game...")
                 self.sub_menus.loading_window_secret_game.update(events)
                 self.sub_menus.loading_window_secret_game.draw(self.surface)
 
@@ -184,10 +196,13 @@ class MainGameUI:
                     self.client_cmd_queue.put(car_turn_cmd)
 
             elif game_state == 'in_secret_dlc_store':
+                pygame.display.set_caption("DLC Store")
                 self.sub_menus.secret_dlc_store_menu.update(events)
                 self.sub_menus.secret_dlc_store_menu.draw(self.surface)
 
             elif game_state == 'in_secret_dlc_game':
+                pygame.display.set_caption("Running DLC game in another window...")
+
                 # Blank screen since the (secret) DLC runs as another executable.
                 self.surface.fill((0, 0, 0))
 
@@ -214,7 +229,15 @@ class MainGameUI:
                     self.change_game_state('main_menu')
                     self.client_state.lore_state = None
 
+            elif game_state == 'in_secret_paint_game':
+                pygame.display.set_caption("Running Secret (Paint) game in another window...")
+
+                # Blank screen since the (secret) paint game runs in another window.
+                self.surface.fill((0, 0, 0))
+
             elif game_state == 'finished_game':
+                pygame.display.set_caption("Finished Game")
+
                 game_over_msg = self.client_state.game_over_message
                 assert game_over_msg, "Game Over Message was None"
                 self.sub_menus.set_game_over_message(game_over_msg)
@@ -262,6 +285,17 @@ class MainGameUI:
             else:
                 print(f"Error: unknown secret DLC store update: '{update}'")
 
+    
+    def receive_secret_paint_game_updates(self):
+        while not self.secret_paint_game_update_queue.empty():
+            update = self.secret_paint_game_update_queue.get()
+
+            if update == 'finished':
+                self.change_game_state('main_menu')
+
+            else:
+                print(f"Error: unknown secret paint game update: '{update}'")
+
 
     def start_loading_stratego_game(self):
         deck = self.client_state.stratego_starting_deck_repr
@@ -300,3 +334,9 @@ class MainGameUI:
 
         self.client_state.is_already_downloading_dlc = True
         start_getting_dlc(self.secret_dlc_store_update_queue)
+
+
+    def start_secret_paint_game(self):
+        self.change_game_state('in_secret_paint_game')
+        launch_secret_paint_game(self.secret_paint_game_update_queue, self.client_state.ui_scale)
+
