@@ -4,13 +4,11 @@ from pygame import Surface
 
 from common_types.global_state import LoreGlobalState
 from common_types.game_types import Pair, SCREEN_WIDTH, SCREEN_HEIGHT
-from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_name, LoreMapTile, LoreResult, PLAYER_WIDTH
+from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_path, LoreMapTile, LoreResult, PLAYER_WIDTH, PLAYER_SPRITE_FILE_PATH
 from ui.drawing_utils import draw_sprite_on_surface
+from ui import sprite_repository
 from pathlib import Path
 import functools
-
-SPRITE_FOLDER = Path(__file__).parent / "assets"
-PLAYER_SPRITE_FILE_NAME = 'player.png'
 
 
 class LoreEngine:
@@ -97,18 +95,14 @@ def get_lore_window_subtitle(global_game_data: LoreGlobalState):
         return "Unknown" # unreachable
 
 
-@functools.lru_cache(maxsize=None)
-def get_sprite(sprite_file_name: str) -> Surface:
-    sprite = pygame.image.load(f"{SPRITE_FOLDER}/{sprite_file_name}")
-
-    return sprite.convert_alpha()
-
-
 def draw_extra_floor_tile(surface: Surface, ui_scale: float, tile_draw_pos: Pair):
+    floor_sprite_path = get_tile_sprite_file_path('floor')
+    assert floor_sprite_path, "Lore floor sprite was not found"
+
     draw_sprite_on_surface(
         surface,
         ui_scale,
-        get_sprite(get_tile_sprite_file_name('floor')),
+        floor_sprite_path,
         tile_draw_pos,
         (TILE_SIZE, TILE_SIZE),
         rect_origin='top_left',
@@ -132,8 +126,8 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
             if tile is None:
                 raise ValueError(f"ERROR: out of bounds map tile at position{(x, y)}")
 
-            tile_sprite_file_name = get_tile_sprite_file_name(tile)
-            if tile_sprite_file_name is None:
+            tile_sprite_path = get_tile_sprite_file_path(tile)
+            if tile_sprite_path is None:
                 continue
 
             tile_real_pos = map_pos_to_real_pos((x, y))
@@ -147,11 +141,10 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
                     tile_draw_pos,
                 )
 
-            tile_sprite = get_sprite(tile_sprite_file_name)
             draw_sprite_on_surface(
                 surface,
                 global_game_data.ui_scale,
-                tile_sprite,
+                tile_sprite_path,
                 tile_draw_pos,
                 (TILE_SIZE, TILE_SIZE),
                 rect_origin='top_left',
@@ -170,7 +163,7 @@ def draw_player(surface: Surface, global_game_data: LoreGlobalState, camera_offs
     draw_sprite_on_surface(
         surface, 
         global_game_data.ui_scale,
-        get_sprite(PLAYER_SPRITE_FILE_NAME),
+        str(PLAYER_SPRITE_FILE_PATH),
         draw_pos,
         (TILE_SIZE, TILE_SIZE),
         rect_origin='center',

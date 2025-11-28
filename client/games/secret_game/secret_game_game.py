@@ -24,14 +24,14 @@ def draw_map(surface: Surface, global_game_data: SecretGameGlobalState, camera_o
     for x in range(min_vis_map_x, max_vis_map_x):
         for y in range(min_vis_map_y, max_vis_map_y):
             r, c = y, x
-            tile_sprite = pygame.image.load(f"{SPITE_FOLDER}/{get_map_tile_sprite_name(tiles[r][c])}")
-
+            
+            tile_sprite_path = f"{SPITE_FOLDER}/{get_map_tile_sprite_name(tiles[r][c])}"
             real_pos = map_pos_to_real_position((x, y))
 
             draw_sprite_on_surface(
                 surface,
                 global_game_data.ui_scale,
-                tile_sprite,
+                tile_sprite_path,
                 (real_pos[0] + camera_offset[0], real_pos[1] + camera_offset[1]),
                 (MAP_RESOLUTION, MAP_RESOLUTION),
                 rect_origin='top_left',
@@ -45,8 +45,8 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     p1_angle_deg = -(p1.facing_angle * 180 / math.pi)
     p2_angle_deg = -(p2.facing_angle * 180 / math.pi)
 
-    p1_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_01.png")
-    p2_sprite = pygame.image.load(f"{SPITE_FOLDER}/player_02.png")
+    p1_sprite_path = f"{SPITE_FOLDER}/player_01.png"
+    p2_sprite_path = f"{SPITE_FOLDER}/player_02.png"
 
     p1_draw_location = (p1.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p1.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
     p2_draw_location = (p2.position[0] + camera_offset[0] + MAP_RESOLUTION // 2, p2.position[1] + camera_offset[1] + MAP_RESOLUTION // 2)
@@ -54,7 +54,7 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     draw_sprite_on_surface(
         surface,
         global_game_data.ui_scale,
-        p1_sprite,
+        p1_sprite_path,
         location=p1_draw_location,
         target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
         rotation_deg=p1_angle_deg,
@@ -63,7 +63,7 @@ def draw_players(surface: Surface, global_game_data: SecretGameGlobalState, came
     draw_sprite_on_surface(
         surface,
         global_game_data.ui_scale,
-        p2_sprite,
+        p2_sprite_path,
         location=p2_draw_location,
         target_dimensions=(MAP_RESOLUTION, MAP_RESOLUTION),
         rotation_deg=p2_angle_deg,

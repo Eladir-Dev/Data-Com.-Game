@@ -10,6 +10,7 @@ from pygame_menu import themes
 from common_types.global_state import GlobalClientState, ValidState
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from ui.drawing_utils import apply_ui_scale_pair, apply_ui_scale_int
+from ui import sprite_repository
 from typing import Callable
 
 class MainGameSubMenus:
@@ -181,6 +182,9 @@ class MainGameSubMenus:
     def apply_settings_changes(self):
         self.client_state.ui_scale = self.client_state.pending_ui_scale
         self.client_state.volume = self.client_state.pending_volume
+
+        # Clear the sprite repository cache since the UI scaled changed.
+        sprite_repository.get_sprite.cache_clear()
 
         pygame.display.set_mode(apply_ui_scale_pair((SCREEN_WIDTH, SCREEN_HEIGHT), self.client_state.ui_scale))
         pygame.mixer.music.set_volume(self.client_state.volume / 100)

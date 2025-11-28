@@ -19,6 +19,8 @@ LoreResult = Literal['finished', 'failed']
 MAPS_DIR = Path(__file__).parent / "maps"
 TILE_SIZE = 32
 PLAYER_WIDTH = TILE_SIZE * 3 // 4
+SPRITE_FOLDER = Path(__file__).parent / "assets"
+PLAYER_SPRITE_FILE_PATH = SPRITE_FOLDER / 'player.png'
 
 def str_to_lore_map_tile(s: str) -> LoreMapTile:
     match s:
@@ -87,7 +89,7 @@ class LoreMap:
         return self.tiles[r][c]
 
 
-def get_tile_sprite_file_name(tile: LoreMapTile) -> str | None:
+def _get_tile_sprite_name(tile: LoreMapTile) -> str | None:
     match tile:
         case 'floor': return 'floor.png'
         case 'player_spawn_pos': return 'floor.png'
@@ -96,3 +98,11 @@ def get_tile_sprite_file_name(tile: LoreMapTile) -> str | None:
         case 'secret_paint_bucket': return 'paint_game_unlocker.png'
         case 'void': return None
         case 'wall': return 'wall.png'
+
+
+def get_tile_sprite_file_path(tile: LoreMapTile) -> str | None:
+    sprite_name = _get_tile_sprite_name(tile)
+    if sprite_name is None:
+        return None
+    
+    return f"{SPRITE_FOLDER}/{sprite_name}"
