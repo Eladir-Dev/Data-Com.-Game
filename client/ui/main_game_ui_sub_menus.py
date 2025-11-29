@@ -97,7 +97,7 @@ class MainGameSubMenus:
         self.settings_menu = pygame_menu.Menu('Settings Menu', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.settings_menu.add.selector(
             'UI Scale: ', 
-            [('Default (x1 size)', 1.0), ('Small (x0.5 size)', 0.5), ('Medium (x1.5 size)', 1.5), ('Large (x2 size)', 2.0)], 
+            [('Default (x1 size)', 1.0), ('Small (x1.25 size)', 1.25), ('Medium (x1.5 size)', 1.5), ('Large (x2 size)', 2.0), ('Small (x0.5 size)', 0.5)],
             onchange=lambda _, value: self.set_ui_scale(value),
         )
         self.settings_menu.add.range_slider(

@@ -85,12 +85,12 @@ class DeckSelector():
         """
         This function handles mouse events when a mouse button is pressed.
         """
-        CELL_SIZE = 50 * self.scale_modification
-        GRID_COLS = 10* self.scale_modification
-        GRID_ROWS = 4* self.scale_modification
-        TOP_GRID_Y = 70* self.scale_modification
-        BOTTOM_GRID_Y = 340* self.scale_modification
-        X_START = 336* self.scale_modification
+        CELL_SIZE = int(50 * self.scale_modification)
+        GRID_COLS = 10
+        GRID_ROWS = 4
+        TOP_GRID_Y = int(70* self.scale_modification)
+        BOTTOM_GRID_Y = int(340* self.scale_modification)
+        X_START = int(336* self.scale_modification)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button down
             mouse_x, mouse_y = event.pos
@@ -301,13 +301,14 @@ class StrategoSettingsWindow():
         }
         # =========================================================#
         self.scale_modification = self.player_data.ui_scale # Scale modification
+        self.prev_scale = self.scale_modification
         # =========================================================#
 
         # Create menu with left-side layout
-        self.menu_hight = 600
+        self.menu_height = 600
         self.menu_width = 275
         self.menu = pygame_menu.Menu(
-            height=self.menu_hight,
+            height=self.menu_height,
             width=self.menu_width,  # Sidebar width
             title='Game Options',
             theme=self.theme,
@@ -315,14 +316,14 @@ class StrategoSettingsWindow():
         )
         self.menu.set_relative_position(0, 10)
         # Add widgets with manual positioning
-        self.menu.add.label('==Game Options==', float=True).translate(5, 35)
+        self.menu_title = self.menu.add.label('==Game Options==', float=True).translate(5, 35)
         button_spacing = 60
         self.label = self.menu.add.text_input('Name: ', default=self.player_data.username, float=True).translate(20, 100)
-        self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
-        self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
+        self.start_button= self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
+        self.random_deck = self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
         self.host_button = self.menu.add.button('Host Game', lambda: self.custom_game(True), float=True).translate(20, 100 + button_spacing * 3)
         self.join_button = self.menu.add.button('Join Game', lambda: self.custom_game(False), float=True).translate(20, 100 + button_spacing * 4)
-        self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, self.menu_hight - 60)
+        self.return_b = self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, self.menu_height - 60)
         self.in_custom_game = False
         #red highlight for start_button
         red_selection = RedHighlight()
@@ -511,6 +512,35 @@ class StrategoSettingsWindow():
             for col in range(len(self.pieces[row])):
                 self.pieces[row][col] = ''
 
+    def layout_menu_widgets(self):
+        """
+        This method lays out the menu widget.
+        """
+        # After any resize, recompute widget positions
+        w, h = self.menu.get_size()  # current menu size
+        pad = int(20 * self.scale_modification)
+        top = int(100 * self.scale_modification)
+        spacing = int(60 * self.scale_modification)
+
+        # left padding stays within menu
+        self.menu_title.translate(pad, int(37 * self.scale_modification))
+        self.label.translate(pad, top)
+        self.start_button.translate(pad, top + spacing)
+        self.random_deck.translate(pad, top + spacing*2)
+        self.host_button.translate(pad, top + spacing*3)
+        self.join_button.translate(pad, top + spacing*4)
+        self.return_b.translate(pad, h - int(60 * self.scale_modification))
+
+    def rescale_sprites(self):
+        """
+        Rescales the size of the sprites
+        """
+        target = int(50 * self.scale_modification)
+        if target != self.CELL_SIZE:
+            self.CELL_SIZE = target
+            for k in list(self.sprites.keys()):
+                self.sprites[k] = pygame.transform.scale(self.sprites[k], (self.CELL_SIZE, self.CELL_SIZE))
+
     def update(self, events: list[Event]):
         """
         Updates the UI.
@@ -520,10 +550,28 @@ class StrategoSettingsWindow():
             self.st_custom_game_menu.update(events)
 
         else:
+            # sync username and scale
             self.label.set_value(self.player_data.username)
             self.scale_modification = self.player_data.ui_scale
 
-            # self.menu.resize(self.menu_width * self.scale_modification,self.menu_hight * self.scale_modification)
+
+            # rescale sprites only if scale changed
+            if self.prev_scale != self.scale_modification:
+
+
+                # compute new menu size (clamped)
+                new_w = max(200, int(self.menu_width * self.scale_modification))
+                new_h = max(200, int(self.menu_height * self.scale_modification))
+
+                # resize menu
+                self.menu.resize(new_w, new_h)
+                self.menu.set_relative_position(0, int(10 * self.scale_modification))
+
+                # recompute widget positions for the new size
+                self.layout_menu_widgets()
+
+                self.rescale_sprites()
+                self.prev_scale = self.scale_modification
 
             if self.deck_full():
                 green_selection = GreenHighlight()
@@ -537,6 +585,7 @@ class StrategoSettingsWindow():
             for event in events:
                 DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
             DeckSelector.draw(self, surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
+
             pygame.display.flip()
 
 
