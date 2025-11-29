@@ -35,7 +35,7 @@ from . import stratego_types
 #from stratego_types import *
 from .stratego_types import StrategoRenderedTile
 from common_types.global_state import GlobalClientState
-from common_types.game_types import SCREEN_WIDTH
+from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from pathlib import Path
 #=================================================================#
 SPRITE_FOLDER = Path(__file__).parent / "assets"
@@ -85,12 +85,12 @@ class DeckSelector():
         """
         This function handles mouse events when a mouse button is pressed.
         """
-        CELL_SIZE = 50
-        GRID_COLS = 10
-        GRID_ROWS = 4
-        TOP_GRID_Y = 70
-        BOTTOM_GRID_Y = 340
-        X_START = 336
+        CELL_SIZE = 50 * self.scale_modification
+        GRID_COLS = 10* self.scale_modification
+        GRID_ROWS = 4* self.scale_modification
+        TOP_GRID_Y = 70* self.scale_modification
+        BOTTOM_GRID_Y = 340* self.scale_modification
+        X_START = 336* self.scale_modification
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button down
             mouse_x, mouse_y = event.pos
@@ -98,8 +98,8 @@ class DeckSelector():
             if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
                 X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
                 # self.placment_effect.play(0,0,0.2)
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
+                col = int((mouse_x - X_START) // CELL_SIZE)
+                row = int((mouse_y - TOP_GRID_Y) // CELL_SIZE)
                 if top_grid[row][col] != "":  # There's a piece here
                     self.dragging = True
                     self.dragged_piece = top_grid[row][col]
@@ -114,8 +114,8 @@ class DeckSelector():
             elif (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
                   X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
                 # self.placment_effect.play(0,0,0.2)
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
+                col = int((mouse_x - X_START) // CELL_SIZE)
+                row = int((mouse_y - BOTTOM_GRID_Y) // CELL_SIZE)
                 if bottom_grid[row][col] != "":  # There's a piece here
                     self.dragging = True
                     self.dragged_piece = bottom_grid[row][col]
@@ -137,8 +137,8 @@ class DeckSelector():
             if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
                 X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
                 # self.pic_up_effect.play(0, 0, 0.2)
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
+                col = int((mouse_x - X_START) // CELL_SIZE)
+                row = int((mouse_y - BOTTOM_GRID_Y) // CELL_SIZE)
                 if bottom_grid[row][col] == "":  # Only drop if the cell is empty
                     bottom_grid[row][col] = self.dragged_piece
                     dropped = True
@@ -147,8 +147,8 @@ class DeckSelector():
             if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
                 X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
                 # self.pic_up_effect.play(0, 0, 0.2)
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
+                col = int((mouse_x - X_START) // CELL_SIZE)
+                row = int((mouse_y - TOP_GRID_Y) // CELL_SIZE)
                 if top_grid[row][col] == "":  # Only drop if the cell is empty
                     top_grid[row][col] = self.dragged_piece
                     dropped = True
@@ -173,8 +173,6 @@ class DeckSelector():
         This function draws the grids and sprites for the Deck selection screen.
         """
 
-
-
         for key in self.sprites:
             self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
 
@@ -196,40 +194,40 @@ class DeckSelector():
         BLUE_BAR = (24, 43, 51)
         GRAY_BACKGROUND = (51, 49, 45)
 
-        pygame.draw.rect(surface, CREMA, (275, 30, 650, 600))  # Background
-        pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900, 40))  # Upper bar
+        pygame.draw.rect(surface, CREMA, (275* self.scale_modification, 30*self.scale_modification, 650*self.scale_modification, 600*self.scale_modification))  # Background
+        pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900* self.scale_modification, 40* self.scale_modification))  # Upper bar
 
-        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40, 900, 3))  # lines
+        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40* self.scale_modification, 900* self.scale_modification, 3* self.scale_modification))  # lines
 
-        pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Grid backgrounds
+        pygame.draw.rect(surface, (51, 49, 45), (300* self.scale_modification, 50* self.scale_modification, 575* self.scale_modification, 520* self.scale_modification))  # Grid backgrounds
 
         # Render main text
-        draw_text(surface, 1, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
+        draw_text(surface, 1, "Stratego", 36,(SCREEN_WIDTH* self.scale_modification//2, 20* self.scale_modification), (255, 255, 255))
 
 
         # Top grid outline: Horizontal/vertical lines for visual slots.
         for row in range(GRID_ROWS + 1):
-            y = TOP_GRID_Y + row * CELL_SIZE
-            pygame.draw.line(surface, WHITE, (X_START, y), (X_START + GRID_COLS * CELL_SIZE, y), 2)
+            y = TOP_GRID_Y* self.scale_modification + row * CELL_SIZE* self.scale_modification
+            pygame.draw.line(surface, WHITE, (X_START* self.scale_modification, y), (X_START* self.scale_modification + GRID_COLS * CELL_SIZE* self.scale_modification, y), 2)
         for col in range(GRID_COLS + 1):
-            x = X_START + col * CELL_SIZE
-            pygame.draw.line(surface, WHITE, (x, TOP_GRID_Y), (x, TOP_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
+            x = X_START* self.scale_modification + col * CELL_SIZE* self.scale_modification
+            pygame.draw.line(surface, WHITE, (x, TOP_GRID_Y* self.scale_modification), (x, TOP_GRID_Y* self.scale_modification + GRID_ROWS * CELL_SIZE* self.scale_modification), 2)
 
         # Bottom grid outline: Identical to top for consistency.
         for row in range(GRID_ROWS + 1):
-            y = BOTTOM_GRID_Y + row * CELL_SIZE
-            pygame.draw.line(surface, WHITE, (X_START, y), (X_START + GRID_COLS * CELL_SIZE, y), 2)
+            y = BOTTOM_GRID_Y* self.scale_modification + row * CELL_SIZE* self.scale_modification
+            pygame.draw.line(surface, WHITE, (X_START* self.scale_modification, y), (X_START* self.scale_modification + GRID_COLS * CELL_SIZE* self.scale_modification, y), 2)
         for col in range(GRID_COLS + 1):
-            x = X_START + col * CELL_SIZE
-            pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y), (x, BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
+            x = X_START* self.scale_modification + col * CELL_SIZE* self.scale_modification
+            pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y* self.scale_modification), (x, BOTTOM_GRID_Y* self.scale_modification + GRID_ROWS * CELL_SIZE* self.scale_modification), 2)
 
         # Draw pieces in the top grid based on self.top_grid
         for row in range(GRID_ROWS):
             for col in range(GRID_COLS):
                 piece = top_grid[row][col]
                 if piece != "":  # Only draw if there's a piece
-                    x = X_START + col * CELL_SIZE
-                    y = TOP_GRID_Y + row * CELL_SIZE
+                    x = X_START* self.scale_modification + col * CELL_SIZE* self.scale_modification
+                    y = TOP_GRID_Y* self.scale_modification + row * CELL_SIZE* self.scale_modification
                     surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
         # Draw pieces in the bottom grid based on self.bottom_grid
@@ -237,8 +235,8 @@ class DeckSelector():
             for col in range(GRID_COLS):
                 piece = bottom_grid[row][col]
                 if piece != "":  # Only draw if there's a piece
-                    x = X_START + col * CELL_SIZE
-                    y = BOTTOM_GRID_Y + row * CELL_SIZE
+                    x = X_START* self.scale_modification + col * CELL_SIZE* self.scale_modification
+                    y = BOTTOM_GRID_Y* self.scale_modification + row * CELL_SIZE* self.scale_modification
                     surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
         # If dragging, draw the dragged sprite at the mouse position (centered)
@@ -302,12 +300,15 @@ class StrategoSettingsWindow():
             "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
         }
         # =========================================================#
+        self.scale_modification = self.player_data.ui_scale # Scale modification
+        # =========================================================#
 
         # Create menu with left-side layout
-        menu_hight = 600
+        self.menu_hight = 600
+        self.menu_width = 275
         self.menu = pygame_menu.Menu(
-            height=menu_hight,
-            width=275,  # Sidebar width
+            height=self.menu_hight,
+            width=self.menu_width,  # Sidebar width
             title='Game Options',
             theme=self.theme,
             center_content=False  # Disable auto-centering
@@ -321,7 +322,7 @@ class StrategoSettingsWindow():
         self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
         self.host_button = self.menu.add.button('Host Game', lambda: self.custom_game(True), float=True).translate(20, 100 + button_spacing * 3)
         self.join_button = self.menu.add.button('Join Game', lambda: self.custom_game(False), float=True).translate(20, 100 + button_spacing * 4)
-        self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, menu_hight - 60)
+        self.menu.add.button('<- Return', go_to_prev_menu, float=True).translate(20, self.menu_hight - 60)
         self.in_custom_game = False
         #red highlight for start_button
         red_selection = RedHighlight()
@@ -520,6 +521,10 @@ class StrategoSettingsWindow():
 
         else:
             self.label.set_value(self.player_data.username)
+            self.scale_modification = self.player_data.ui_scale
+
+            # self.menu.resize(self.menu_width * self.scale_modification,self.menu_hight * self.scale_modification)
+
             if self.deck_full():
                 green_selection = GreenHighlight()
                 self.start_button.set_selection_effect(green_selection)
