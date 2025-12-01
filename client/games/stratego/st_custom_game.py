@@ -172,12 +172,12 @@ class DeckSelector():
             self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
 
         # Constants
-        CELL_SIZE = 50
+        CELL_SIZE = int(50 * self.scale_modification)
         GRID_COLS = 10
         GRID_ROWS = 4
         TOP_GRID_Y = 70
-        BOTTOM_GRID_Y = 340
-        X_START = 336
+        BOTTOM_GRID_Y = int(340 * self.scale_modification)
+        X_START = int(336 * self.scale_modification)
         # Colors
         WHITE = (255, 255, 255)
         BLACK = (0, 0, 0)
@@ -189,24 +189,33 @@ class DeckSelector():
         BLUE_BAR = (24, 43, 51)
         GRAY_BACKGROUND = (51, 49, 45)
 
-        pygame.draw.rect(surface, CREMA, (275, 30, 650, 600))  # Background
-        pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900, 40))  # Upper bar
+        # pygame.draw.rect(surface, CREMA, (275, 30, 650, 600))  # Background
+        # pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900, 40))  # Upper bar
+        #
+        # pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40, 900, 3))  # lines
+        #
+        # pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Grid backgrounds
+        #
+        # # Render main text
+        # draw_text(surface, 1, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
 
-        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40, 900, 3))  # lines
+        pygame.draw.rect(surface, CREMA,
+                         (275 * self.scale_modification, 30 * self.scale_modification, 650 * self.scale_modification,
+                          600 * self.scale_modification))  # Background
+        pygame.draw.rect(surface, BLUE_BAR,
+                         (0, 0, 900 * self.scale_modification, 40 * self.scale_modification))  # Upper bar
 
-        pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Grid backgrounds
+        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40 * self.scale_modification, 900 * self.scale_modification,
+                                                3 * self.scale_modification))  # lines
+
+        pygame.draw.rect(surface, (51, 49, 45),
+                         (300 * self.scale_modification, 50 * self.scale_modification, 575 * self.scale_modification,
+                          520 * self.scale_modification))  # Grid backgrounds
 
         # Render main text
-        draw_text(surface, 1, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
+        draw_text(surface, 1, "Stratego", 36,
+                  (SCREEN_WIDTH * self.scale_modification // 2, 20 * self.scale_modification), (255, 255, 255))
 
-
-        # Top grid outline: Horizontal/vertical lines for visual slots.
-        # for row in range(GRID_ROWS + 1):
-        #     y = TOP_GRID_Y + row * CELL_SIZE
-        #     pygame.draw.line(surface, WHITE, (X_START, y), (X_START + GRID_COLS * CELL_SIZE, y), 2)
-        # for col in range(GRID_COLS + 1):
-        #     x = X_START + col * CELL_SIZE
-        #     pygame.draw.line(surface, WHITE, (x, TOP_GRID_Y), (x, TOP_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
 
         # Bottom grid outline: Identical to top for consistency.
         for row in range(GRID_ROWS + 1):
@@ -216,14 +225,6 @@ class DeckSelector():
             x = X_START + col * CELL_SIZE
             pygame.draw.line(surface, WHITE, (x, BOTTOM_GRID_Y), (x, BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE), 2)
 
-        # Draw pieces in the top grid based on self.top_grid
-        # for row in range(GRID_ROWS):
-        #     for col in range(GRID_COLS):
-        #         piece = top_grid[row][col]
-        #         if piece != "":  # Only draw if there's a piece
-        #             x = X_START + col * CELL_SIZE
-        #             y = TOP_GRID_Y + row * CELL_SIZE
-        #             surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
         # Draw pieces in the bottom grid based on self.bottom_grid
         for row in range(GRID_ROWS):
@@ -233,13 +234,6 @@ class DeckSelector():
                     x = X_START + col * CELL_SIZE
                     y = BOTTOM_GRID_Y + row * CELL_SIZE
                     surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
-
-        # If dragging, draw the dragged sprite at the mouse position (centered)
-        # if self.dragging and self.dragged_piece:
-        #     mouse_x, mouse_y = pygame.mouse.get_pos()
-        #     drag_x = mouse_x - self.drag_offset[0]
-        #     drag_y = mouse_y - self.drag_offset[1]
-        #     surface.blit(self.sprites[self.dragged_piece], (drag_x, drag_y))
 
 class StrategoCustomsWindow():
     def __init__(self,
@@ -252,9 +246,9 @@ class StrategoCustomsWindow():
         deck_selector_data: StrategoSettingsWindow
     ):
 
-        pygame.mixer.music.load("games/stratego/sfx/game_music_v1.wav")
-        pygame.mixer.music.set_volume(.25)
-        pygame.mixer.music.play(-1, 0.0)
+        # pygame.mixer.music.load("games/stratego/sfx/game_music_v1.wav")
+        # pygame.mixer.music.set_volume(.25)
+        # pygame.mixer.music.play(-1, 0.0)
 
         self.surface = surface
         # Methods
@@ -301,26 +295,27 @@ class StrategoCustomsWindow():
             "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
         }
         # =========================================================#
+        self.scale_modification = self.player_data.ui_scale  # Scale modification
+        self.prev_scale = self.scale_modification
+        # =========================================================#
 
         # Create menu with left-side layout
-        menu_hight = 600
+        self.menu_height = 600
+        self.menu_width = 275
         self.menu = pygame_menu.Menu(
-            height=menu_hight,
-            width=275,  # Sidebar width
+            height=self.menu_height,
+            width=self.menu_width,  # Sidebar width
             title='Game Options',
             theme=self.theme,
             center_content=False  # Disable auto-centering
         )
         self.menu.set_relative_position(0, 10)
         # Add widgets with manual positioning
-        self.menu.add.label('==Custom Game==', float=True).translate(5, 35)
+        self.menu_title = self.menu.add.label('==Custom Game==', float=True).translate(5, 35)
         button_spacing = 60
         self.label = self.menu.add.text_input('Name: ', default=self.player_data.username, float=True).translate(20, 100)
         self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
-        # self.menu.add.button('Random Deck', lambda: self.set_rand_deck(player_data), float=True).translate(20, 100 + button_spacing * 2)
-        # self.menu.add.button('Host Game', print("host game"), float=True).translate(20, 100 + button_spacing * 3)
-        # self.menu.add.button('Join Game', print("join game"), float=True).translate(20, 100 + button_spacing * 4)
-        self.menu.add.button('<- Return', self.go_back, float=True).translate(20, menu_hight - 60)
+        self.return_b = self.menu.add.button('<- Return', self.go_back, float=True).translate(20, self.menu_height - 60)
 
 
         if host:
@@ -548,12 +543,52 @@ class StrategoCustomsWindow():
             for col in range(len(self.pieces[row])):
                 self.pieces[row][col] = ''
 
+    def layout_menu_widgets(self):
+        """
+        This method lays out the menu widget.
+        """
+        # After any resize, recompute widget positions
+        w, h = self.menu.get_size()  # current menu size
+        pad = int(20 * self.scale_modification)
+        top = int(100 * self.scale_modification)
+        spacing = int(60 * self.scale_modification)
 
+        # left padding stays within menu
+        self.menu_title.translate(pad, int(37 * self.scale_modification))
+        self.label.translate(pad, top)
+        self.start_button.translate(pad, top + spacing)
+        self.return_b.translate(pad, h - int(60 * self.scale_modification))
+
+    def rescale_sprites(self):
+        """
+        Rescales the size of the sprites
+        """
+        target = int(50 * self.scale_modification)
+        if target != self.CELL_SIZE:
+            self.CELL_SIZE = target
+            for k in list(self.sprites.keys()):
+                self.sprites[k] = pygame.transform.scale(self.sprites[k], (self.CELL_SIZE, self.CELL_SIZE))
     def update(self, events: list[Event]):
         """
         Updates the UI.
         """
         self.label.set_value(self.player_data.username)
+        self.scale_modification = self.player_data.ui_scale
+        # rescale sprites only if scale changed
+        if self.prev_scale != self.scale_modification:
+            # compute new menu size (clamped)
+            new_w = max(200, int(self.menu_width * self.scale_modification))
+            new_h = max(200, int(self.menu_height * self.scale_modification))
+
+            # resize menu
+            self.menu.resize(new_w, new_h)
+            self.menu.set_relative_position(0, int(10 * self.scale_modification))
+
+            # recompute widget positions for the new size
+            self.layout_menu_widgets()
+
+            self.rescale_sprites()
+            self.prev_scale = self.scale_modification
         if self.deck_full():
             green_selection = GreenHighlight()
             self.start_button.set_selection_effect(green_selection)
