@@ -32,6 +32,7 @@ from pygame.event import Event
 import pygame_menu
 import random
 from pygame_menu.widgets.core import Selection
+import pyperclip
 
 
 from . import stratego_types
@@ -189,32 +190,56 @@ class DeckSelector():
         BLUE_BAR = (24, 43, 51)
         GRAY_BACKGROUND = (51, 49, 45)
 
-        # pygame.draw.rect(surface, CREMA, (275, 30, 650, 600))  # Background
-        # pygame.draw.rect(surface, BLUE_BAR, (0, 0, 900, 40))  # Upper bar
-        #
-        # pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40, 900, 3))  # lines
-        #
-        # pygame.draw.rect(surface, (51, 49, 45), (300, 50, 575, 520))  # Grid backgrounds
-        #
-        # # Render main text
-        # draw_text(surface, 1, "Stratego", 36,(SCREEN_WIDTH//2, 20), (255, 255, 255))
 
-        pygame.draw.rect(surface, CREMA,
-                         (275 * self.scale_modification, 30 * self.scale_modification, 650 * self.scale_modification,
-                          600 * self.scale_modification))  # Background
         pygame.draw.rect(surface, BLUE_BAR,
                          (0, 0, 900 * self.scale_modification, 40 * self.scale_modification))  # Upper bar
 
         pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40 * self.scale_modification, 900 * self.scale_modification,
                                                 3 * self.scale_modification))  # lines
 
-        pygame.draw.rect(surface, (51, 49, 45),
-                         (300 * self.scale_modification, 50 * self.scale_modification, 575 * self.scale_modification,
-                          520 * self.scale_modification))  # Grid backgrounds
-
         # Render main text
         draw_text(surface, 1, "Stratego", 36,
                   (SCREEN_WIDTH * self.scale_modification // 2, 20 * self.scale_modification), (255, 255, 255))
+        if self.first_run:
+            pygame.draw.rect(surface, CREMA,
+                             (275 * self.scale_modification, 30 * self.scale_modification, 650 * self.scale_modification,
+                              600 * self.scale_modification))  # Background
+
+            pygame.draw.rect(surface, (51, 49, 45),
+                             (300 * self.scale_modification, 50 * self.scale_modification, 575 * self.scale_modification,
+                              520 * self.scale_modification))  # Grid backgrounds
+
+            join_msg = [
+                    "To be able to join a game you must write the host's",
+                    "code in the code box and wait for the host to start",
+                    "the server before joining."
+                    ]
+            host_msg = [
+                    "To be able to host a game you must give the code",
+                    "to the other player before starting the server.",
+                    "The other player can only join when server starts."
+                    ]
+            marg_mod = 50
+            if self.host:
+                # Render host game instructions
+                draw_text(surface, 1, host_msg[0], 30,
+                          (1175 * self.scale_modification // 2, marg_mod + 100 * self.scale_modification), (255, 255, 255))
+                draw_text(surface, 1, host_msg[1], 30,
+                          (1175 * self.scale_modification // 2, marg_mod + 125 * self.scale_modification), (255, 255, 255))
+                draw_text(surface, 1, host_msg[2], 30,
+                          (1175 * self.scale_modification // 2, marg_mod + 150 * self.scale_modification), (255, 255, 255))
+            else:
+                # Render join game instructions
+                draw_text(surface, 1, join_msg[0], 30,
+                          (1175 * self.scale_modification // 2, marg_mod + 100 * self.scale_modification),
+                          (255, 255, 255))
+                draw_text(surface, 1, join_msg[1], 30,
+                          (1175 * self.scale_modification // 2, marg_mod + 125 * self.scale_modification),
+                          (255, 255, 255))
+                draw_text(surface, 1, join_msg[2], 30,
+                          (1175 * self.scale_modification // 2, marg_mod + 150 * self.scale_modification),
+                          (255, 255, 255))
+            self.first_run = False
 
 
         # Bottom grid outline: Identical to top for consistency.
@@ -315,14 +340,18 @@ class StrategoCustomsWindow():
         button_spacing = 60
         self.label = self.menu.add.text_input('Name: ', default=self.player_data.username, float=True).translate(20, 100)
         self.start_button = self.menu.add.button('Start Game', self.start_game, float=True).translate(20, 100 + button_spacing)
-        self.return_b = self.menu.add.button('<- Return', self.go_back, float=True).translate(20, self.menu_height - 60)
-
 
         if host:
-            self.menu.add.label(f"Code: {self.get_public_ip()}", float=True).translate(20, SCREEN_HEIGHT // 2)
+            self.ip=self.menu.add.label(f"Code: {self.get_public_ip()}", float=True).translate(20, SCREEN_HEIGHT // 2)
             #draw_text(surface, f"{self.get_public_ip()}", 36, (SCREEN_WIDTH // 2, 100), (255, 255, 255))
+            self.copy_button = self.menu.add.button('Copy code',
+                                                   self.copy_code, float=True).translate(20,
+                                                            (SCREEN_HEIGHT // 2) + button_spacing)
         else:
             self.ip = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip ).translate(20,SCREEN_HEIGHT // 2)
+
+
+        self.return_b = self.menu.add.button('<- Return', self.go_back, float=True).translate(20, self.menu_height - 60)
 
         #red highlight for start_button
         red_selection = RedHighlight()
@@ -340,6 +369,12 @@ class StrategoCustomsWindow():
 
         self.rescale_sprites()
         self.prev_scale = self.scale_modification
+
+    def copy_code(self):
+        """
+        This method save the IP address to the clipboard.
+        """
+        pyperclip.copy(self.get_public_ip())
 
     def set_ip(self, ip):
         """
@@ -435,6 +470,9 @@ class StrategoCustomsWindow():
         self.menu_title.translate(pad, int(37 * self.scale_modification))
         self.label.translate(pad, top)
         self.start_button.translate(pad, top + spacing)
+        self.ip.translate(pad, h//2)
+        if self.host:
+            self.copy_button.translate(pad, (h//2) + spacing)
         self.return_b.translate(pad, h - int(60 * self.scale_modification))
 
     def rescale_sprites(self):
@@ -452,16 +490,10 @@ class StrategoCustomsWindow():
         """
         self.label.set_value(self.player_data.username)
 
-
-        # if self.deck_full():
-        #     green_selection = GreenHighlight()
-        #     self.start_button.set_selection_effect(green_selection)
-
         self.menu.update(events)
 
         self.menu.draw(self.surface)
-        # for event in events:
-        #     DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
+
         DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck)
 
         pygame.display.flip()
