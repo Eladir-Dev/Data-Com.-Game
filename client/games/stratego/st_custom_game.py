@@ -328,6 +328,19 @@ class StrategoCustomsWindow():
         red_selection = RedHighlight()
         self.start_button.set_selection_effect(red_selection)
 
+        new_w = max(200, int(self.menu_width * self.scale_modification))
+        new_h = max(200, int(self.menu_height * self.scale_modification))
+
+        # resize menu
+        self.menu.resize(new_w, new_h)
+        self.menu.set_relative_position(0, int(10 * self.scale_modification))
+
+        # recompute widget positions for the new size
+        self.layout_menu_widgets()
+
+        self.rescale_sprites()
+        self.prev_scale = self.scale_modification
+
     def set_ip(self, ip):
         """
         Sets the ip of the host
@@ -357,8 +370,8 @@ class StrategoCustomsWindow():
         """
         Retruns to the previous menu
         """
-        pygame.mixer.music.stop()
         self.deck_selector_data.in_custom_game = False
+
     def deck_full(self):
         """
         This method verifies if the deck is full.
@@ -376,15 +389,6 @@ class StrategoCustomsWindow():
         command = ["python", "../server/main.py", "host"]
         print("Trying to start server...")
 
-        # # Execute the command
-        # try:
-        #     print("Starting local server...")
-        #     subprocess.run(command)
-        # except subprocess.CalledProcessError as e:
-        #     print(f"Error running called_script: {e}")
-
-        # Use Popen for non-blocking execution
-        # command = [sys.executable, script_path, "host"]  # sys.executable ensures the right Python
         try:
             print("Starting local server in the background...")
             # Popen starts the process without waiting
@@ -417,132 +421,6 @@ class StrategoCustomsWindow():
                 self.start_local_server()
             self.go_to_start()
 
-    def fill_pieces(self, rows, cols,debug):
-        """
-        This method fills the pieces array were the player selects his deck.
-        """
-        """
-        Encoding legend:
-        * 'S' = Spy (1)
-        * '1' = Marshal (1)
-        * 'G' = General (1)
-        * '2' = Coronel (2)
-        * '3' = Major (3)
-        * 'C' = Captain (4)
-        * 'L' = Lieutenant (4)
-        * '4' = Sargeant (4)
-        * '8' = Scout (8)
-        * '5' = Miner (5)
-        * 'B' = Bomb (6)
-        * 'F' = Flag (1)
-        """
-        limits = {
-            'S': 1,
-            '1': 1,
-            'G': 1,
-            '2': 2,
-            '3': 3,
-            'C': 4,
-            'L': 4,
-            '4': 4,
-            '8': 8,
-            '5': 5,
-            'B': 6,
-            'F': 1
-        }
-
-        # Create the deck (2D array)
-        deck = [['' for _ in range(10)] for _ in range(4)]
-
-        # Flatten the deck for easier filling
-        flat_deck = [cell for row in deck for cell in row]
-
-        # Create a list of items to fill the deck based on limits
-        items_to_fill = []
-        for item, limit in limits.items():
-            items_to_fill.extend([item] * limit)
-
-        # Fill the deck
-        for i in range(len(flat_deck)):
-            if i < len(items_to_fill):
-                flat_deck[i] = items_to_fill[i]
-
-        # Convert the flat deck back to 2D
-        for i in range(4):
-            for j in range(10):
-                self.pieces[i][j] = flat_deck[i * 10 + j]
-
-        if debug:
-            for col in range(cols):
-                print(self.pieces[col])
-
-    def create_random_deck(self):
-        """
-          This method creats a random deck
-          Parameters:
-            Output:
-              deck (2D array)
-        """
-
-        limits = {
-            'S': 1,
-            '1': 1,
-            'G': 1,
-            '2': 2,
-            '3': 3,
-            'C': 4,
-            'L': 4,
-            '4': 4,
-            '8': 8,
-            '5': 5,
-            'B': 6,
-            'F': 1
-        }
-
-        # Create the deck (2D array)
-        deck = [['' for _ in range(10)] for _ in range(4)]
-
-        # Flatten the deck for easier filling
-        flat_deck = [cell for row in deck for cell in row]
-
-        # Create a list of items to fill the deck based on limits
-        items_to_fill = []
-        for item, limit in limits.items():
-            items_to_fill.extend([item] * limit)
-
-        # Shuffle the items to randomize their placement
-        random.shuffle(items_to_fill)
-
-        # Fill the deck
-        for i in range(len(flat_deck)):
-            if i < len(items_to_fill):
-                flat_deck[i] = items_to_fill[i]
-
-        # Convert the flat deck back to 2D
-        for i in range(4):
-            for j in range(10):
-                deck[i][j] = flat_deck[i * 10 + j]
-
-        return deck
-
-    def set_rand_deck(self, global_data: GlobalClientState):
-        """
-        This method sets the random deck.
-        """
-        self.deck = self.create_random_deck()
-        self.empty_pieces()
-        flattened_deck = stratego_types.flatten_2d_array(self.deck)
-        global_data.stratego_starting_deck_repr = stratego_types.deck_to_socket_message_repr(flattened_deck)
-
-
-    def empty_pieces(self):
-        """
-        This method empties the array of pieces from were the player selects his deck
-        """
-        for row in range(len(self.pieces)):
-            for col in range(len(self.pieces[row])):
-                self.pieces[row][col] = ''
-
     def layout_menu_widgets(self):
         """
         This method lays out the menu widget.
@@ -573,32 +451,17 @@ class StrategoCustomsWindow():
         Updates the UI.
         """
         self.label.set_value(self.player_data.username)
-        self.scale_modification = self.player_data.ui_scale
-        # rescale sprites only if scale changed
-        if self.prev_scale != self.scale_modification:
-            # compute new menu size (clamped)
-            new_w = max(200, int(self.menu_width * self.scale_modification))
-            new_h = max(200, int(self.menu_height * self.scale_modification))
 
-            # resize menu
-            self.menu.resize(new_w, new_h)
-            self.menu.set_relative_position(0, int(10 * self.scale_modification))
 
-            # recompute widget positions for the new size
-            self.layout_menu_widgets()
-
-            self.rescale_sprites()
-            self.prev_scale = self.scale_modification
-        if self.deck_full():
-            green_selection = GreenHighlight()
-            self.start_button.set_selection_effect(green_selection)
+        # if self.deck_full():
+        #     green_selection = GreenHighlight()
+        #     self.start_button.set_selection_effect(green_selection)
 
         self.menu.update(events)
 
         self.menu.draw(self.surface)
         # for event in events:
         #     DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
-        if self.first_run:
-            DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck)
-            self.first_run = False
+        DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck)
+
         pygame.display.flip()
