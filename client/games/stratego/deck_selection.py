@@ -81,7 +81,7 @@ class DeckSelector():
     This class take care of drawing the grids for the deck selection.
     """
 
-    def handle_mouse_event(self, event, top_grid, bottom_grid):
+    def handle_mouse_event(self, event, bottom_grid, top_grid):
         """
         This function handles mouse events when a mouse button is pressed.
         """
@@ -168,13 +168,13 @@ class DeckSelector():
 
 
 
-    def draw(self, surface, top_grid, bottom_grid):
+    def draw(self, surface, bottom_grid, top_grid):
         """
         This function draws the grids and sprites for the Deck selection screen.
         """
 
-        for key in self.sprites:
-            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
+        # for key in self.sprites:
+        #     self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
 
         # Constants
         CELL_SIZE = 50
@@ -286,7 +286,7 @@ class StrategoSettingsWindow():
         self.CELL_SIZE = 50
         # Sprite addreses
         self.sprites = {
-            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),  # Replace with real paths
+            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png"),
             "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png"),
             "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png"),
             "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png"),
@@ -299,6 +299,21 @@ class StrategoSettingsWindow():
             "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
             "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
         }
+        self.original_sprites = {
+            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png").convert_alpha(),
+            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png").convert_alpha(),
+            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png").convert_alpha(),
+            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png").convert_alpha(),
+            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png").convert_alpha(),
+            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png").convert_alpha(),
+            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png").convert_alpha(),
+            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png").convert_alpha(),
+            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png").convert_alpha(),
+            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png").convert_alpha(),
+            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png").convert_alpha(),
+            "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png").convert_alpha(),
+        }
+
         # =========================================================#
         self.scale_modification = self.player_data.ui_scale # Scale modification
         self.prev_scale = self.scale_modification
@@ -328,6 +343,9 @@ class StrategoSettingsWindow():
         #red highlight for start_button
         red_selection = RedHighlight()
         self.start_button.set_selection_effect(red_selection)
+
+        for key in self.sprites:
+            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
 
     def custom_game(self, host):
         print(f"inizializing custom game, host: {host}")
@@ -535,11 +553,18 @@ class StrategoSettingsWindow():
         """
         Rescales the size of the sprites
         """
+
         target = int(50 * self.scale_modification)
+
+        # Only scale if size changed
         if target != self.CELL_SIZE:
             self.CELL_SIZE = target
-            for k in list(self.sprites.keys()):
-                self.sprites[k] = pygame.transform.scale(self.sprites[k], (self.CELL_SIZE, self.CELL_SIZE))
+            self.sprites = {}
+
+            for key, image in self.original_sprites.items():
+                self.sprites[key] = pygame.transform.smoothscale(
+                    image, (self.CELL_SIZE, self.CELL_SIZE)
+                )
 
     def update(self, events: list[Event]):
         """
@@ -583,8 +608,8 @@ class StrategoSettingsWindow():
             self.menu.update(events)
             self.menu.draw(self.surface)
             for event in events:
-                DeckSelector.handle_mouse_event(self, event=event, top_grid=self.deck, bottom_grid=self.pieces)
-            DeckSelector.draw(self, surface=self.surface, top_grid=self.deck, bottom_grid=self.pieces)
+                DeckSelector.handle_mouse_event(self, event=event, bottom_grid=self.deck, top_grid=self.pieces)
+            DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck, top_grid=self.pieces)
 
             pygame.display.flip()
 

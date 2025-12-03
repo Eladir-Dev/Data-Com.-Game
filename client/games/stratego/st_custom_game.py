@@ -235,6 +235,20 @@ class StrategoCustomsWindow():
             "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png"),
             "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png"),
         }
+        self.original_sprites = {
+            "S": pygame.image.load(f"{SPRITE_FOLDER}/red_spy.png").convert_alpha(),
+            "1": pygame.image.load(f"{SPRITE_FOLDER}/red_marshal.png").convert_alpha(),
+            "G": pygame.image.load(f"{SPRITE_FOLDER}/red_general.png").convert_alpha(),
+            "2": pygame.image.load(f"{SPRITE_FOLDER}/red_coronel.png").convert_alpha(),
+            "3": pygame.image.load(f"{SPRITE_FOLDER}/red_major.png").convert_alpha(),
+            "C": pygame.image.load(f"{SPRITE_FOLDER}/red_captain.png").convert_alpha(),
+            "L": pygame.image.load(f"{SPRITE_FOLDER}/red_lieutenant.png").convert_alpha(),
+            "4": pygame.image.load(f"{SPRITE_FOLDER}/red_sergeant.png").convert_alpha(),
+            "8": pygame.image.load(f"{SPRITE_FOLDER}/red_scout.png").convert_alpha(),
+            "5": pygame.image.load(f"{SPRITE_FOLDER}/red_miner.png").convert_alpha(),
+            "B": pygame.image.load(f"{SPRITE_FOLDER}/red_bomb.png").convert_alpha(),
+            "F": pygame.image.load(f"{SPRITE_FOLDER}/red_flag.png").convert_alpha(),
+        }
         # =========================================================#
         self.scale_modification = self.player_data.ui_scale  # Scale modification
         self.prev_scale = self.scale_modification
@@ -323,15 +337,6 @@ class StrategoCustomsWindow():
         """
         self.deck_selector_data.in_custom_game = False
 
-    def deck_full(self):
-        """
-        This method verifies if the deck is full.
-        """
-        for row in range(len(self.deck)):
-            for col in range(len(self.deck[row])):
-                if self.deck[row][col] == '':
-                    return False
-        return True
 
     def start_local_server(self):
         """
@@ -365,12 +370,12 @@ class StrategoCustomsWindow():
         """
         This method starts the game.
         """
-        if self.deck_full():
-            print("Starting game...")
-            if self.host:
-                print("Caling start_local_server...")
-                self.start_local_server()
-            self.go_to_start()
+
+        print("Starting game...")
+        if self.host:
+            print("Caling start_local_server...")
+            self.start_local_server()
+        self.go_to_start()
 
     def layout_menu_widgets(self):
         """
@@ -396,10 +401,16 @@ class StrategoCustomsWindow():
         Rescales the size of the sprites
         """
         target = int(50 * self.scale_modification)
+
+        # Only scale if size changed
         if target != self.CELL_SIZE:
             self.CELL_SIZE = target
-            for k in list(self.sprites.keys()):
-                self.sprites[k] = pygame.transform.scale(self.sprites[k], (self.CELL_SIZE, self.CELL_SIZE))
+            self.sprites = {}
+
+            for key, image in self.original_sprites.items():
+                self.sprites[key] = pygame.transform.smoothscale(
+                    image, (self.CELL_SIZE, self.CELL_SIZE)
+                )
 
     def update(self, events: list[Event]):
         """
