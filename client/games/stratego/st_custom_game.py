@@ -74,89 +74,8 @@ class GreenHighlight(Selection):
 
 class DeckSelector():
     """
-    This class take care of drawing the grids for the deck selection.
+    This static class takes care of drawing the grids for the deck selection.
     """
-
-    @staticmethod
-    def handle_mouse_event(window: "StrategoCustomsWindow", event, top_grid, bottom_grid):
-        """
-        This function handles mouse events when a mouse button is pressed.
-        """
-        CELL_SIZE = 50
-        GRID_COLS = 10
-        GRID_ROWS = 4
-        TOP_GRID_Y = 70
-        BOTTOM_GRID_Y = 340
-        X_START = 336
-
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button down
-            mouse_x, mouse_y = event.pos
-            # Check if click is in top grid
-            if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
-                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
-                if top_grid[row][col] != "":  # There's a piece here
-                    window.dragging = True
-                    window.dragged_piece = top_grid[row][col]
-                    window.dragged_from = 'top'
-                    window.drag_row = row
-                    window.drag_col = col
-                    top_grid[row][col] = ""  # Temporarily remove from grid
-                    # Calculate offset to center the sprite on the mouse
-                    window.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)+20,
-                                        mouse_y - (TOP_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2)+30)
-            # Check if click is in bottom grid
-            elif (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
-                  X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
-                if bottom_grid[row][col] != "":  # There's a piece here
-                    window.dragging = True
-                    window.dragged_piece = bottom_grid[row][col]
-                    window.dragged_from = 'bottom'
-                    window.drag_row = row
-                    window.drag_col = col
-                    bottom_grid[row][col] = ""  # Temporarily remove from grid
-                    # Calculate offset to center the sprite on the mouse
-                    window.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)+20,
-                                        mouse_y - (BOTTOM_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2)+30)
-
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and window.dragging:  # Left mouse button up
-            mouse_x, mouse_y = event.pos
-            dropped = False
-
-            # Check if mouse is over bottom grid
-            if (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
-                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
-                if bottom_grid[row][col] == "":  # Only drop if the cell is empty
-                    bottom_grid[row][col] = window.dragged_piece
-                    dropped = True
-
-            # Check if mouse is over top grid
-            if (TOP_GRID_Y <= mouse_y < TOP_GRID_Y + GRID_ROWS * CELL_SIZE and
-                X_START <= mouse_x < X_START + GRID_COLS * CELL_SIZE):
-                col = (mouse_x - X_START) // CELL_SIZE
-                row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
-                if top_grid[row][col] == "":  # Only drop if the cell is empty
-                    top_grid[row][col] = window.dragged_piece
-                    dropped = True
-            # If drop failed, return to original position
-            if not dropped:
-                if window.dragged_from == 'top':
-                    top_grid[window.drag_row][window.drag_col] = window.dragged_piece
-                else:
-                    bottom_grid[window.drag_row][window.drag_col] = window.dragged_piece
-            #Reset drag state
-            window.dragging = False
-            window.dragged_piece = None
-            window.dragged_from = None
-            window.drag_row = None
-            window.drag_col = None
-            window.drag_offset = (0, 0)
-
 
     @staticmethod
     def draw(window: "StrategoCustomsWindow", surface: Surface, bottom_grid):
@@ -481,6 +400,7 @@ class StrategoCustomsWindow():
             self.CELL_SIZE = target
             for k in list(self.sprites.keys()):
                 self.sprites[k] = pygame.transform.scale(self.sprites[k], (self.CELL_SIZE, self.CELL_SIZE))
+
     def update(self, events: list[Event]):
         """
         Updates the UI.
@@ -491,6 +411,6 @@ class StrategoCustomsWindow():
 
         self.menu.draw(self.surface)
 
-        DeckSelector.draw(self, surface=self.surface, bottom_grid=self.deck)
+        DeckSelector.draw(window=self, surface=self.surface, bottom_grid=self.deck)
 
         pygame.display.flip()
