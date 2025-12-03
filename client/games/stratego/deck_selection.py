@@ -422,8 +422,8 @@ class StrategoSettingsWindow():
             'C': 4,
             'L': 4,
             '4': 4,
-            '8': 8,
             '5': 5,
+            '8': 8,
             'B': 6,
             'F': 1
         }
