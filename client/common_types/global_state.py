@@ -93,6 +93,7 @@ class LoreGlobalState:
 
         self.player_pos: tuple[float, float] = map_pos_to_real_pos(self.map.player_spawn_map_pos)
         self.player_speed: float = 5.0 # tiles per second
+        self.player_lives_left: int = 3
 
     
     def get_player_pos(self) -> Pair:

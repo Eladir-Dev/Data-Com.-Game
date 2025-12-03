@@ -9,6 +9,7 @@ LoreMapTile = Literal[
     'wall', 
     'floor', 
     'void', 
+    'enemy_spawn_pos',
     'secret_game_car', 
     'secret_dlc_store_coin',
     'secret_paint_bucket',
@@ -18,9 +19,10 @@ LoreResult = Literal['finished', 'failed']
 
 MAPS_DIR = Path(__file__).parent / "maps"
 TILE_SIZE = 32
-PLAYER_WIDTH = TILE_SIZE * 3 // 4
+ENTITY_WIDTH = TILE_SIZE * 3 // 4
 SPRITE_FOLDER = Path(__file__).parent / "assets"
 PLAYER_SPRITE_FILE_PATH = SPRITE_FOLDER / 'player.png'
+ENEMY_SPRITE_FILE_PATH = SPRITE_FOLDER / 'dead_zone.png'
 
 def str_to_lore_map_tile(s: str) -> LoreMapTile:
     match s:
@@ -31,6 +33,7 @@ def str_to_lore_map_tile(s: str) -> LoreMapTile:
         case 'C': return 'secret_game_car'
         case 'S': return 'secret_dlc_store_coin'
         case 'B': return 'secret_paint_bucket'
+        case 'E': return 'enemy_spawn_pos'
         case _: raise ValueError(f"unknown map tile string '{s}'")
 
 
@@ -51,6 +54,8 @@ class LoreMap:
 
         player_spawn_map_pos: Pair | None = None
 
+        self.enemy_spawn_map_positions: list[Pair] = []
+
         file_name = f"{MAPS_DIR}/map_{lore_kind}.txt"
 
         with open(file_name, "r") as f:
@@ -66,6 +71,9 @@ class LoreMap:
                     if tile == 'player_spawn_pos':
                         player_spawn_map_pos = (x, y)
 
+                    elif tile == 'enemy_spawn_pos':
+                        self.enemy_spawn_map_positions.append((x, y))
+
                     row.append(tile)
 
                 self.tiles.append(row)
@@ -75,9 +83,6 @@ class LoreMap:
             raise ValueError("Player spawn position not found")
         
         self.player_spawn_map_pos = player_spawn_map_pos
-
-        # for row in self.tiles:
-        #     print("".join([t[0] for t in row]))
 
 
     def get_tile_by_map_pos(self, map_pos: Pair) -> LoreMapTile | None:
@@ -97,6 +102,7 @@ def _get_tile_sprite_name(tile: LoreMapTile) -> str | None:
         case 'secret_game_car': return 'secret_racing_game_unlocker.png'
         case 'secret_paint_bucket': return 'paint_game_unlocker.png'
         case 'void': return None
+        case 'enemy_spawn_pos': return 'floor.png' # enemy spawn position is just rendered as floor
         case 'wall': return 'wall.png'
 
 

@@ -4,82 +4,9 @@ from pygame import Surface
 
 from common_types.global_state import LoreGlobalState
 from common_types.game_types import Pair, SCREEN_WIDTH, SCREEN_HEIGHT
-from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_path, LoreMapTile, LoreResult, PLAYER_WIDTH, PLAYER_SPRITE_FILE_PATH
-from ui.drawing_utils import draw_sprite_on_surface
-from ui import sprite_repository
-from pathlib import Path
-import functools
-
-
-class LoreEngine:
-    def __init__(self, client_state: LoreGlobalState):
-        self.client_state = client_state
-        self.current_kind = self.client_state.kind
-        self.result: LoreResult | None = None
-
-
-    def tick(self, player_movement: Pair, deltatime: float):
-        print(f"DELTATIME: {deltatime}s")
-
-        px, py = self.client_state.player_pos
-        dx, dy = player_movement
-
-        px += deltatime * dx * self.client_state.player_speed * TILE_SIZE
-        py += deltatime * dy * self.client_state.player_speed * TILE_SIZE
-
-        collisions = self.get_collisions((px, py))
-        if self.check_tile_collision(collisions, 'wall'):
-            return
-        
-        elif (
-            self.check_tile_collision(collisions, 'secret_game_car') or 
-            self.check_tile_collision(collisions, 'secret_dlc_store_coin') or 
-            self.check_tile_collision(collisions, 'secret_paint_bucket')
-        ):
-            self.result = 'finished'
-            return
-
-        self.client_state.player_pos = (px, py)
-
-
-    def get_collisions(self, new_pos: tuple[float, float]) -> set[LoreMapTile]:
-        # Player is drawn from the center.
-        corners: list[tuple[float, float]] = [
-            (new_pos[0] + PLAYER_WIDTH // 2, new_pos[1] + PLAYER_WIDTH // 2),
-            (new_pos[0] + PLAYER_WIDTH // 2, new_pos[1] - PLAYER_WIDTH // 2),
-            (new_pos[0] - PLAYER_WIDTH // 2, new_pos[1] + PLAYER_WIDTH // 2),
-            (new_pos[0] - PLAYER_WIDTH // 2, new_pos[1] - PLAYER_WIDTH // 2),
-        ]
-
-        collsions: set[LoreMapTile] = set()
-
-        for corner_pos in corners:
-            corner_map_pos = real_pos_to_map_pos((int(corner_pos[0]), int(corner_pos[1])))
-            tile = self.client_state.map.get_tile_by_map_pos(corner_map_pos)
-
-            if tile is None:
-                continue
-
-            collsions.add(tile)
-        
-        return collsions
-    
-
-    def check_tile_collision(self, collisions: set[LoreMapTile], tile_kind: LoreMapTile) -> bool:
-        return tile_kind in collisions
-
-
-_LORE_ENGINE: LoreEngine | None = None
-
-
-def get_lore_engine(client_state: LoreGlobalState) -> LoreEngine:
-    global _LORE_ENGINE
-
-    if _LORE_ENGINE is None or _LORE_ENGINE.current_kind != client_state.kind:
-        _LORE_ENGINE = LoreEngine(client_state)
-
-    return _LORE_ENGINE
-
+from games.lore.lore_types import map_pos_to_real_pos, real_pos_to_map_pos, TILE_SIZE, get_tile_sprite_file_path, LoreMapTile, LoreResult, ENTITY_WIDTH, PLAYER_SPRITE_FILE_PATH, ENEMY_SPRITE_FILE_PATH, LoreMap
+from ui.drawing_utils import draw_sprite_on_surface, draw_text
+from games.lore.lore_engine import get_lore_engine, LoreEngine
 
 def get_lore_window_subtitle(global_game_data: LoreGlobalState):
     if global_game_data.kind == 'secret_game':
@@ -151,12 +78,28 @@ def draw_map(surface: Surface, global_game_data: LoreGlobalState, camera_offset:
             )
 
 
+def draw_enemies(surface: Surface, global_game_data: LoreGlobalState, lore_engine: LoreEngine, camera_offset: Pair):
+    for enemy in lore_engine.enemies:
+        draw_pos = (
+            int(enemy.position[0]) + camera_offset[0], 
+            int(enemy.position[1]) + camera_offset[1],
+        )
+
+        draw_sprite_on_surface(
+            surface, 
+            global_game_data.ui_scale,
+            str(ENEMY_SPRITE_FILE_PATH),
+            draw_pos,
+            (TILE_SIZE, TILE_SIZE),
+            rect_origin='center',
+        )
+
+
 def draw_player(surface: Surface, global_game_data: LoreGlobalState, camera_offset: Pair):
     player_pos = global_game_data.get_player_pos()
 
     draw_pos = (
         player_pos[0] + camera_offset[0], 
-        # `player_pos` denotes the player's foot position, so we render the sprite slightly above this position.
         player_pos[1] + camera_offset[1],
     )
 
@@ -167,6 +110,19 @@ def draw_player(surface: Surface, global_game_data: LoreGlobalState, camera_offs
         draw_pos,
         (TILE_SIZE, TILE_SIZE),
         rect_origin='center',
+    )
+
+def draw_player_lives_left_ui(surface, global_game_data: LoreGlobalState):
+    text = f"Remaining Lives: {global_game_data.player_lives_left}/3"
+    font_size = TILE_SIZE
+
+    draw_text(
+        surface,
+        global_game_data.ui_scale,
+        text=text,
+        font_size=font_size,
+        location=(len(text) * font_size // 4, font_size // 2),
+        color=(255, 255, 255),
     )
 
 
@@ -206,5 +162,8 @@ def lore_update(events: list[Event], surface: Surface, global_game_data: LoreGlo
 
     lore_engine = get_lore_engine(global_game_data)
     lore_engine.tick(movement, deltatime)
+
+    draw_enemies(surface, global_game_data, lore_engine, camera_offset)
+    draw_player_lives_left_ui(surface, global_game_data)
 
     return lore_engine.result
