@@ -22,27 +22,20 @@
 import subprocess
 
 #==========================Imports================================#
-from ui.main_game_ui_sub_menus import MainGameSubMenus
-import requests
 from ui.drawing_utils import draw_text
 from typing import Callable
 import pygame
 from pygame import Surface
 from pygame.event import Event
 import pygame_menu
-import random
-from pygame_menu.widgets.core import Selection
+from pygame_menu.widgets.core.selection import Selection
 import pyperclip
-
-
-from . import stratego_types
 from .deck_selection import StrategoSettingsWindow
-#from stratego_types import *
-from .stratego_types import StrategoRenderedTile
 from common_types.global_state import GlobalClientState
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from pathlib import Path
 #=================================================================#
+
 SPRITE_FOLDER = Path(__file__).parent / "assets"
 """Sprite folder address"""
 
@@ -84,7 +77,8 @@ class DeckSelector():
     This class take care of drawing the grids for the deck selection.
     """
 
-    def handle_mouse_event(self, event, top_grid, bottom_grid):
+    @staticmethod
+    def handle_mouse_event(window: "StrategoCustomsWindow", event, top_grid, bottom_grid):
         """
         This function handles mouse events when a mouse button is pressed.
         """
@@ -103,14 +97,14 @@ class DeckSelector():
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
                 if top_grid[row][col] != "":  # There's a piece here
-                    self.dragging = True
-                    self.dragged_piece = top_grid[row][col]
-                    self.dragged_from = 'top'
-                    self.drag_row = row
-                    self.drag_col = col
+                    window.dragging = True
+                    window.dragged_piece = top_grid[row][col]
+                    window.dragged_from = 'top'
+                    window.drag_row = row
+                    window.drag_col = col
                     top_grid[row][col] = ""  # Temporarily remove from grid
                     # Calculate offset to center the sprite on the mouse
-                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)+20,
+                    window.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)+20,
                                         mouse_y - (TOP_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2)+30)
             # Check if click is in bottom grid
             elif (BOTTOM_GRID_Y <= mouse_y < BOTTOM_GRID_Y + GRID_ROWS * CELL_SIZE and
@@ -118,17 +112,17 @@ class DeckSelector():
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
                 if bottom_grid[row][col] != "":  # There's a piece here
-                    self.dragging = True
-                    self.dragged_piece = bottom_grid[row][col]
-                    self.dragged_from = 'bottom'
-                    self.drag_row = row
-                    self.drag_col = col
+                    window.dragging = True
+                    window.dragged_piece = bottom_grid[row][col]
+                    window.dragged_from = 'bottom'
+                    window.drag_row = row
+                    window.drag_col = col
                     bottom_grid[row][col] = ""  # Temporarily remove from grid
                     # Calculate offset to center the sprite on the mouse
-                    self.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)+20,
+                    window.drag_offset = (mouse_x - (X_START + col * CELL_SIZE + CELL_SIZE // 2)+20,
                                         mouse_y - (BOTTOM_GRID_Y + row * CELL_SIZE + CELL_SIZE // 2)+30)
 
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.dragging:  # Left mouse button up
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and window.dragging:  # Left mouse button up
             mouse_x, mouse_y = event.pos
             dropped = False
 
@@ -138,7 +132,7 @@ class DeckSelector():
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - BOTTOM_GRID_Y) // CELL_SIZE
                 if bottom_grid[row][col] == "":  # Only drop if the cell is empty
-                    bottom_grid[row][col] = self.dragged_piece
+                    bottom_grid[row][col] = window.dragged_piece
                     dropped = True
 
             # Check if mouse is over top grid
@@ -147,38 +141,38 @@ class DeckSelector():
                 col = (mouse_x - X_START) // CELL_SIZE
                 row = (mouse_y - TOP_GRID_Y) // CELL_SIZE
                 if top_grid[row][col] == "":  # Only drop if the cell is empty
-                    top_grid[row][col] = self.dragged_piece
+                    top_grid[row][col] = window.dragged_piece
                     dropped = True
             # If drop failed, return to original position
             if not dropped:
-                if self.dragged_from == 'top':
-                    top_grid[self.drag_row][self.drag_col] = self.dragged_piece
+                if window.dragged_from == 'top':
+                    top_grid[window.drag_row][window.drag_col] = window.dragged_piece
                 else:
-                    bottom_grid[self.drag_row][self.drag_col] = self.dragged_piece
+                    bottom_grid[window.drag_row][window.drag_col] = window.dragged_piece
             #Reset drag state
-            self.dragging = False
-            self.dragged_piece = None
-            self.dragged_from = None
-            self.drag_row = None
-            self.drag_col = None
-            self.drag_offset = (0, 0)
+            window.dragging = False
+            window.dragged_piece = None
+            window.dragged_from = None
+            window.drag_row = None
+            window.drag_col = None
+            window.drag_offset = (0, 0)
 
 
-
-    def draw(self, surface, bottom_grid):
+    @staticmethod
+    def draw(window: "StrategoCustomsWindow", surface: Surface, bottom_grid):
         """
         This function draws the grids and sprites for the Deck selection screen.
         """
-        for key in self.sprites:
-            self.sprites[key] = pygame.transform.scale(self.sprites[key], (self.CELL_SIZE, self.CELL_SIZE))
+        for key in window.sprites:
+            window.sprites[key] = pygame.transform.scale(window.sprites[key], (window.CELL_SIZE, window.CELL_SIZE))
 
         # Constants
-        CELL_SIZE = int(50 * self.scale_modification)
+        CELL_SIZE = int(50 * window.scale_modification)
         GRID_COLS = 10
         GRID_ROWS = 4
         TOP_GRID_Y = 70
-        BOTTOM_GRID_Y = int(340 * self.scale_modification)
-        X_START = int(336 * self.scale_modification)
+        BOTTOM_GRID_Y = int(340 * window.scale_modification)
+        X_START = int(336 * window.scale_modification)
         # Colors
         WHITE = (255, 255, 255)
         BLACK = (0, 0, 0)
@@ -192,22 +186,22 @@ class DeckSelector():
 
 
         pygame.draw.rect(surface, BLUE_BAR,
-                         (0, 0, 900 * self.scale_modification, 40 * self.scale_modification))  # Upper bar
+                         (0, 0, 900 * window.scale_modification, 40 * window.scale_modification))  # Upper bar
 
-        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40 * self.scale_modification, 900 * self.scale_modification,
-                                                3 * self.scale_modification))  # lines
+        pygame.draw.rect(surface, LIGHT_GRAY2, (0, 40 * window.scale_modification, 900 * window.scale_modification,
+                                                3 * window.scale_modification))  # lines
 
         # Render main text
         draw_text(surface, 1, "Stratego", 36,
-                  (SCREEN_WIDTH * self.scale_modification // 2, 20 * self.scale_modification), (255, 255, 255))
-        if self.first_run:
+                  (int(SCREEN_WIDTH * window.scale_modification // 2), int(20 * window.scale_modification)), (255, 255, 255))
+        if window.first_run:
             pygame.draw.rect(surface, CREMA,
-                             (275 * self.scale_modification, 30 * self.scale_modification, 650 * self.scale_modification,
-                              600 * self.scale_modification))  # Background
+                             (275 * window.scale_modification, 30 * window.scale_modification, 650 * window.scale_modification,
+                              600 * window.scale_modification))  # Background
 
             pygame.draw.rect(surface, (51, 49, 45),
-                             (300 * self.scale_modification, 50 * self.scale_modification, 575 * self.scale_modification,
-                              520 * self.scale_modification))  # Grid backgrounds
+                             (300 * window.scale_modification, 50 * window.scale_modification, 575 * window.scale_modification,
+                              520 * window.scale_modification))  # Grid backgrounds
 
             join_msg = [
                     "To be able to join a game you must write the host's",
@@ -220,26 +214,29 @@ class DeckSelector():
                     "The other player can only join when server starts."
                     ]
             marg_mod = 50
-            if self.host:
+
+            draw_x_pos = int(1175 * window.scale_modification // 2)
+            
+            if window.host:
                 # Render host game instructions
                 draw_text(surface, 1, host_msg[0], 30,
-                          (1175 * self.scale_modification // 2, marg_mod + 100 * self.scale_modification), (255, 255, 255))
+                          (draw_x_pos, int(marg_mod + 100 * window.scale_modification)), (255, 255, 255))
                 draw_text(surface, 1, host_msg[1], 30,
-                          (1175 * self.scale_modification // 2, marg_mod + 125 * self.scale_modification), (255, 255, 255))
+                          (draw_x_pos, int(marg_mod + 125 * window.scale_modification)), (255, 255, 255))
                 draw_text(surface, 1, host_msg[2], 30,
-                          (1175 * self.scale_modification // 2, marg_mod + 150 * self.scale_modification), (255, 255, 255))
+                          (draw_x_pos, int(marg_mod + 150 * window.scale_modification)), (255, 255, 255))
             else:
                 # Render join game instructions
                 draw_text(surface, 1, join_msg[0], 30,
-                          (1175 * self.scale_modification // 2, marg_mod + 100 * self.scale_modification),
+                          (draw_x_pos, int(marg_mod + 100 * window.scale_modification)),
                           (255, 255, 255))
                 draw_text(surface, 1, join_msg[1], 30,
-                          (1175 * self.scale_modification // 2, marg_mod + 125 * self.scale_modification),
+                          (draw_x_pos, int(marg_mod + 125 * window.scale_modification)),
                           (255, 255, 255))
                 draw_text(surface, 1, join_msg[2], 30,
-                          (1175 * self.scale_modification // 2, marg_mod + 150 * self.scale_modification),
+                          (draw_x_pos, int(marg_mod + 150 * window.scale_modification)),
                           (255, 255, 255))
-            self.first_run = False
+            window.first_run = False
 
 
         # Bottom grid outline: Identical to top for consistency.
@@ -258,7 +255,7 @@ class DeckSelector():
                 if piece != "":  # Only draw if there's a piece
                     x = X_START + col * CELL_SIZE
                     y = BOTTOM_GRID_Y + row * CELL_SIZE
-                    surface.blit(self.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
+                    surface.blit(window.sprites[piece], (x, y))  # Blit the sprite at the cell's top-left
 
 class StrategoCustomsWindow():
     def __init__(self,
