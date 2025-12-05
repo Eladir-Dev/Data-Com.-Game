@@ -67,7 +67,8 @@ class MainGameSubMenus:
 
         self.word_golf_menu = pygame_menu.Menu('Play Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.word_golf_menu.add.button('Find Game', self.start_loading_word_wolf_game)
-        self.word_golf_menu.add.button('Local Game', lambda: print("LOG: hosting Word Golf games is not implemented"))
+        self.word_golf_menu.add.button('Host Game', lambda: print("LOG: hosting Word Golf games is work in progress"))
+        self.word_golf_menu.add.button('Join Game', lambda: print("LOG: joining Word Golf games is work in progress"))
         self.menus.append(self.word_golf_menu)
 
         self.loading_window_word_golf = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
