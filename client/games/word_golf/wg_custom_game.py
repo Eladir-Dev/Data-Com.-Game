@@ -32,7 +32,6 @@ from pygame.event import Event
 import pygame_menu
 from pygame_menu.widgets.core.selection import Selection
 import pyperclip
-from .deck_selection import StrategoSettingsWindow
 from common_types.global_state import GlobalClientState
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
 from pathlib import Path
