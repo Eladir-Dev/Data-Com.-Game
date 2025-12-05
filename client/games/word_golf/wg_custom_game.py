@@ -12,15 +12,17 @@
 #      for Word Golf.                                              |
 # ----------------------------------------------------------------+
 # Last modification [December 5, 2025]:                           |
-#    * The following methods were added: Some from st_custom_game |
+#    * The following methods were added:                          |
 #                                                                 |
-#    * The following methods were eliminated: several             |
+#    * The following methods were eliminated:                     |
 #                                                                 |
-#    * Other:                                                     |
+#    * Other: The Constructor of WordGolfCustomWindow             |
+#             was worked on.                                      |
 #                                                                 |
 # ================================================================+
 import subprocess
 
+from pygame_menu import themes
 # ==========================Imports================================#
 from ui.drawing_utils import draw_text
 from typing import Callable
@@ -46,15 +48,25 @@ class WordGolfCustomsWindow():
                  go_to_start: Callable[[], None],
                  player_data: GlobalClientState,
                  host: bool,
-                 deck: list[list[str]],
-                 deck_selector_data: StrategoSettingsWindow
                  ):
 
-        # pygame.mixer.music.load("games/stratego/sfx/game_music_v1.wav")
-        # pygame.mixer.music.set_volume(.25)
-        # pygame.mixer.music.play(-1, 0.0)
+        self.surface = surface
+        self.player_data = player_data
+        # Methods
+        self.go_to_start = go_to_start
+        self.go_to_prev_menu = go_to_prev_menu
+        self.host = host
+        # =========================================================#
+        self.scale_modification = self.player_data.ui_scale  # Scale modification
+        self.prev_scale = self.scale_modification
+        # =========================================================#
 
-        #TODO: To be implemented.
+        self.menu = pygame_menu.Menu('Stratego+Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
+        if host:
+            self.code = self.menu.add.label(f"Code: {self.get_public_ip()}")
+        else:
+            self.code = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip)
+        self.start_game_button = self.menu.add.button('Start Game', self.start_game)
 
     def copy_code(self):
         """
