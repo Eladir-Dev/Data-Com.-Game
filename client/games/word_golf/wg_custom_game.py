@@ -20,21 +20,19 @@
 #             was worked on.                                      |
 #                                                                 |
 # ================================================================+
-import subprocess
 
-from pygame_menu import themes
 # ==========================Imports================================#
+import subprocess
+from pygame_menu import themes
 from ui.drawing_utils import draw_text
 from typing import Callable
 import pygame
 from pygame import Surface
 from pygame.event import Event
 import pygame_menu
-from pygame_menu.widgets.core.selection import Selection
 import pyperclip
 from common_types.global_state import GlobalClientState
 from common_types.game_types import SCREEN_WIDTH, SCREEN_HEIGHT
-from pathlib import Path
 
 # =================================================================#
 class WordGolfCustomsWindow():
