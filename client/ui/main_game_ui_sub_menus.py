@@ -13,6 +13,9 @@ from ui.drawing_utils import apply_ui_scale_pair, apply_ui_scale_int
 from ui import sprite_repository
 from typing import Callable
 
+
+
+
 class MainGameSubMenus:
     def __init__(
         self, 
@@ -67,8 +70,8 @@ class MainGameSubMenus:
 
         self.word_golf_menu = pygame_menu.Menu('Play Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
         self.word_golf_menu.add.button('Find Game', self.start_loading_word_wolf_game)
-        self.word_golf_menu.add.button('Host Game', lambda: print("LOG: hosting Word Golf games is work in progress"))
-        self.word_golf_menu.add.button('Join Game', lambda: print("LOG: joining Word Golf games is work in progress"))
+        self.word_golf_menu.add.button('Host Game', lambda: self.show_wg_host())
+        self.word_golf_menu.add.button('Join Game', lambda: self.show_wg_join())
         self.menus.append(self.word_golf_menu)
 
         self.loading_window_word_golf = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_BLUE)
@@ -115,6 +118,8 @@ class MainGameSubMenus:
         self.menus.append(self.settings_menu)
 
         self.arrow = pygame_menu.widgets.LeftArrowSelection(arrow_size=(10, 15))
+
+        self.change_game_state("main_menu")
 
 
     def general_update(self):
@@ -170,6 +175,14 @@ class MainGameSubMenus:
 
     def show_word_golf_menu(self):
         self.game_select_menu._open(self.word_golf_menu)
+
+    def show_wg_join(self):
+        print("Entering Word Golf custom game (Join)")
+        self.change_game_state("in_wg_custom_join")
+
+    def show_wg_host(self):
+        print("Entering Word Golf custom game (Host)")
+        self.change_game_state("in_wg_custom_host")
 
 
     def show_secret_game_menu(self):

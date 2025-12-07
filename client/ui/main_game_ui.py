@@ -19,6 +19,7 @@ from games.secret_dlc_store.secret_dlc_store_update import SecretDLCStoreUpdate
 from games.secret_paint_game.secret_paint_game_launcher import launch_secret_paint_game
 from games.secret_paint_game.secret_paint_game_updates import SecretPaintGameUpdate
 from ui import music_player
+from games.word_golf.wg_custom_game import WordGolfCustomsWindow
 
 class MainGameUI:
     def __init__(self):
@@ -55,7 +56,13 @@ class MainGameUI:
             player_data=self.client_state,
         )
         # ==============================================#
-
+        self.wg_custom_game_menu = WordGolfCustomsWindow(
+            surface=self.surface,
+            go_to_prev_menu=lambda: self.change_game_state('main_menu'),
+            go_to_start=self.start_loading_word_wolf_game,
+            player_data=self.client_state,
+            host=False,
+        )
         self.sub_menus = MainGameSubMenus(
             client_state=self.client_state,
             change_game_state=self.change_game_state,
@@ -148,6 +155,10 @@ class MainGameUI:
             elif game_state == 'in_deck_selection_state':
                 self.deck_selection_menu.update(events)
             # ==============================================#
+            elif game_state == 'in_wg_custom_host':
+                self.wg_custom_game_menu.update(events, True)
+            elif game_state == 'in_wg_custom_join':
+                self.wg_custom_game_menu.update(events, False)
 
             elif game_state == 'in_stratego_game':
                 assert self.client_state.stratego_state, "Stratego state was None"

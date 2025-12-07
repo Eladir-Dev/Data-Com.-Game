@@ -57,14 +57,15 @@ class WordGolfCustomsWindow():
         self.scale_modification = self.player_data.ui_scale  # Scale modification
         self.prev_scale = self.scale_modification
         # =========================================================#
-
-        self.menu = pygame_menu.Menu('Stratego+Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
+        self.old_host = self.host
+        self.menu = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
         if host:
             self.code = self.menu.add.label(f"Code: {self.get_public_ip()}")
         else:
             self.code = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip)
         self.start_game_button = self.menu.add.button('Start Game', self.start_game)
-
+        self.back = self.menu.add.button("<- Back", self.go_to_prev_menu)
+        self.first_run = True
     def copy_code(self):
         """
         This method save the IP address to the clipboard.
@@ -158,19 +159,33 @@ class WordGolfCustomsWindow():
         if self.host:
             self.copy_button.translate(pad, (h // 2) + spacing)
         self.return_b.translate(pad, h - int(60 * self.scale_modification))
+        self.back.translate(pad, h - int(60 * self.scale_modification))
 
-                )
 
-    def update(self, events: list[Event]):
+    def update(self, events: list[Event], host):
         """
         Updates the UI.
         """
-        self.label.set_value(self.player_data.username)
+        self.scale_modification = self.player_data.ui_scale
+        if self.old_host != host:
+            self.first_run = True
+        if not self.first_run:
+            self.menu.remove_widget(self.code)
 
+            if host:
+                print("Setting up code")
+                self.code = self.menu.add.label(f"Code: {self.get_public_ip()}")
+            else:
+                self.code = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip)
+            self.menu.remove_widget(self.start_game_button)
+            self.menu.remove_widget(self.back)
+            self.start_game_button = self.menu.add.button('Start Game', self.start_game)
+            self.back = self.menu.add.button("<- Back", self.go_to_prev_menu)
+            self.first_run = False
+
+        self.menu.resize(SCREEN_WIDTH*self.scale_modification, SCREEN_HEIGHT*self.scale_modification)
         self.menu.update(events)
 
         self.menu.draw(self.surface)
-
-        DeckSelector.draw(window=self, surface=self.surface, bottom_grid=self.deck)
 
         pygame.display.flip()
