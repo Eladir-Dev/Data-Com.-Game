@@ -166,10 +166,12 @@ class WordGolfCustomsWindow():
         """
         Updates the UI.
         """
+        self.host = host
         self.scale_modification = self.player_data.ui_scale
         if self.old_host != host:
             self.first_run = True
-        if not self.first_run:
+            self.old_host = host
+        if self.first_run:
             self.menu.remove_widget(self.code)
 
             if host:
