@@ -1,7 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
 # ================================================================+
 # Started on:  December 5, 2025                                   |
-# Finished on: _______                                            |
+# Finished on: December 9, 2025                                   |
 # Programmed by: Eduardo J. Matos                                 |
 # Collaborators:                                                  |
 #       * Eduardo J Matos Pérez                                   |
@@ -9,15 +9,15 @@
 # ----------------------------------------------------------------+
 # Description:                                                    |
 #      This code is responsible for managing the custom games     |
-#      for Word Golf.                                              |
+#      for Word Golf.                                             |
 # ----------------------------------------------------------------+
-# Last modification [December 5, 2025]:                           |
+# Last modification [December 9, 2025]:                           |
 #    * The following methods were added:                          |
 #                                                                 |
-#    * The following methods were eliminated:                     |
+#    * The following methods were eliminated: layout_menu_widgets |
 #                                                                 |
-#    * Other: The Constructor of WordGolfCustomWindow             |
-#             was worked on.                                      |
+#    * Other: Resize of the window was fixed and instructions for |
+#             join/host mechanics were added.                     |
 #                                                                 |
 # ================================================================+
 
@@ -58,14 +58,44 @@ class WordGolfCustomsWindow():
         self.prev_scale = self.scale_modification
         # =========================================================#
         self.old_host = self.host
+        self.join_msg = [
+            "To be able to join a game you must write the host's",
+            "code in the code box and wait for the host to start",
+            "the server before joining."
+        ]
+        self.host_msg = [
+            "To be able to host a game you must give the code",
+            "to the other player before starting the server.",
+            "The other player can only join when server starts."
+        ]
         self.menu = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
-        if host:
-            self.code = self.menu.add.label(f"Code: {self.get_public_ip()}")
-        else:
-            self.code = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip)
+        self.join_label = self.menu.add.label(f"{self.join_msg[0]}\n{self.join_msg[1]}\n{self.join_msg[2]}")
+        self.host_label = self.menu.add.label(f"{self.host_msg[0]}\n{self.host_msg[1]}\n{self.host_msg[2]}")
+        self.code = self.menu.add.label(f"Code: {self.get_public_ip()}")
+        self.code_join = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip)
+        self.copy_button = self.menu.add.button('Copy code', self.copy_code)
         self.start_game_button = self.menu.add.button('Start Game', self.start_game)
         self.back = self.menu.add.button("<- Back", self.go_to_prev_menu)
         self.first_run = True
+
+        for label in self.join_label:
+            label.hide()
+        self.code_join.hide()
+        for label in self.host_label:
+            label.hide()
+        self.code.hide()
+        self.copy_button.hide()
+
+        if self.host:
+            for label in self.host_label:
+                label.show()
+            self.code.show()
+            self.copy_button.show()
+        else:
+            for label in self.join_label:
+                label.show()
+            self.code_join.show()
+
     def copy_code(self):
         """
         This method save the IP address to the clipboard.
@@ -141,26 +171,6 @@ class WordGolfCustomsWindow():
             self.start_local_server()
         self.go_to_start()
 
-    def layout_menu_widgets(self):
-        """
-        This method lays out the menu widget.
-        """
-        # After any resize, recompute widget positions
-        w, h = self.menu.get_size()  # current menu size
-        pad = int(20 * self.scale_modification)
-        top = int(100 * self.scale_modification)
-        spacing = int(60 * self.scale_modification)
-
-        # left padding stays within menu
-        self.menu_title.translate(pad, int(37 * self.scale_modification))
-        self.label.translate(pad, top)
-        self.start_button.translate(pad, top + spacing)
-        self.ip.translate(pad, h // 2)
-        if self.host:
-            self.copy_button.translate(pad, (h // 2) + spacing)
-        self.return_b.translate(pad, h - int(60 * self.scale_modification))
-        self.back.translate(pad, h - int(60 * self.scale_modification))
-
 
     def update(self, events: list[Event], host):
         """
@@ -168,21 +178,42 @@ class WordGolfCustomsWindow():
         """
         self.host = host
         self.scale_modification = self.player_data.ui_scale
+
+        if self.prev_scale != self.scale_modification:
+            # compute new menu size (clamped)
+            new_w = max(200, int(SCREEN_WIDTH * self.scale_modification))
+            new_h = max(200, int(SCREEN_HEIGHT * self.scale_modification))
+
+            # resize menu
+            self.menu.resize(new_w, new_h)
+
+
+
+            self.prev_scale = self.scale_modification
+
         if self.old_host != host:
             self.first_run = True
             self.old_host = host
         if self.first_run:
-            self.menu.remove_widget(self.code)
 
             if host:
                 print("Setting up code")
-                self.code = self.menu.add.label(f"Code: {self.get_public_ip()}")
+                self.code_join.hide()
+                for label in self.join_label:
+                    label.hide()
+                for label in self.host_label:
+                    label.show()
+                self.code.show()
+                self.copy_button.show()
             else:
-                self.code = self.menu.add.text_input('Code: ', default="", onchange=self.set_ip)
-            self.menu.remove_widget(self.start_game_button)
-            self.menu.remove_widget(self.back)
-            self.start_game_button = self.menu.add.button('Start Game', self.start_game)
-            self.back = self.menu.add.button("<- Back", self.go_to_prev_menu)
+                self.code.hide()
+                for label in self.host_label:
+                    label.hide()
+                for label in self.join_label:
+                    label.show()
+                self.code_join.show()
+                self.copy_button.hide()
+
             self.first_run = False
 
         self.menu.resize(SCREEN_WIDTH*self.scale_modification, SCREEN_HEIGHT*self.scale_modification)
