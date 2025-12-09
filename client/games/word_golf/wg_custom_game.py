@@ -14,7 +14,9 @@
 # Last modification [December 9, 2025]:                           |
 #    * The following methods were added:                          |
 #                                                                 |
-#    * The following methods were eliminated: layout_menu_widgets |
+#    * The following methods were eliminated:                     |
+#               - layout_menu_widgets                             |
+#               - go_back                                         |
 #                                                                 |
 #    * Other: Resize of the window was fixed and instructions for |
 #             join/host mechanics were added.                     |
@@ -68,6 +70,7 @@ class WordGolfCustomsWindow():
             "to the other player before starting the server.",
             "The other player can only join when server starts."
         ]
+        # =========================================================#
         self.menu = pygame_menu.Menu('Word Golf', SCREEN_WIDTH, SCREEN_HEIGHT, theme=themes.THEME_SOLARIZED)
         self.join_label = self.menu.add.label(f"{self.join_msg[0]}\n{self.join_msg[1]}\n{self.join_msg[2]}")
         self.host_label = self.menu.add.label(f"{self.host_msg[0]}\n{self.host_msg[1]}\n{self.host_msg[2]}")
@@ -77,7 +80,7 @@ class WordGolfCustomsWindow():
         self.start_game_button = self.menu.add.button('Start Game', self.start_game)
         self.back = self.menu.add.button("<- Back", self.go_to_prev_menu)
         self.first_run = True
-
+        # =========================================================#
         for label in self.join_label:
             label.hide()
         self.code_join.hide()
@@ -126,12 +129,6 @@ class WordGolfCustomsWindow():
             print(f"ERROR: Could not get local IP: {e}")
             return "127.0.0.1"
 
-    def go_back(self):
-        """
-        Retruns to the previous menu
-        """
-        self.deck_selector_data.in_custom_game = False
-
     def start_local_server(self):
         """
         Start the local server
@@ -144,7 +141,6 @@ class WordGolfCustomsWindow():
             # Popen starts the process without waiting
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-            # Optional: Check if it started successfully after a short delay
             import time
             time.sleep(1)  # Wait 1 second
             if process.poll() is None:  # poll() returns None if still running
@@ -164,22 +160,19 @@ class WordGolfCustomsWindow():
         """
         This method starts the game.
         """
-
         print("Starting game...")
         if self.host:
-            print("Caling start_local_server...")
+            print("Calling start_local_server...")
             self.start_local_server()
         self.go_to_start()
-
 
     def update(self, events: list[Event], host):
         """
         Updates the UI.
         """
-        self.host = host
         self.scale_modification = self.player_data.ui_scale
 
-        if self.prev_scale != self.scale_modification:
+        if self.prev_scale != self.scale_modification: # If window scale was changed
             # compute new menu size (clamped)
             new_w = max(200, int(SCREEN_WIDTH * self.scale_modification))
             new_h = max(200, int(SCREEN_HEIGHT * self.scale_modification))
@@ -187,16 +180,15 @@ class WordGolfCustomsWindow():
             # resize menu
             self.menu.resize(new_w, new_h)
 
-
-
             self.prev_scale = self.scale_modification
 
-        if self.old_host != host:
+        if self.old_host != host: # if the value in host changed (user changed from host to join or join to host)
             self.first_run = True
             self.old_host = host
-        if self.first_run:
 
-            if host:
+        if self.first_run: # If in first run
+
+            if host: # Displays Host menu
                 print("Setting up code")
                 self.code_join.hide()
                 for label in self.join_label:
@@ -205,7 +197,8 @@ class WordGolfCustomsWindow():
                     label.show()
                 self.code.show()
                 self.copy_button.show()
-            else:
+
+            else: # Displays Join Menu
                 self.code.hide()
                 for label in self.host_label:
                     label.hide()
