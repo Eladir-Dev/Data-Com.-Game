@@ -164,6 +164,8 @@ class WordGolfCustomsWindow():
         if self.host:
             print("Calling start_local_server...")
             self.start_local_server()
+            import time
+            time.sleep(1)
         self.go_to_start()
 
     def update(self, events: list[Event], host):
