@@ -168,6 +168,7 @@ class WordGolfCustomsWindow():
             time.sleep(1)
         self.go_to_start()
 
+
     def update(self, events: list[Event], host):
         """
         Updates the UI.
